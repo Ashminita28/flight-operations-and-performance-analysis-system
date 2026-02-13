@@ -1,5 +1,4 @@
 import { describe, it, expect } from "vitest";
-import app from "../src/app";
 
 // 1.error path testing
 describe("happy health test", () => {
