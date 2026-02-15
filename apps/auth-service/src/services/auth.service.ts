@@ -1,51 +1,24 @@
-import jwt from "jsonwebtoken";
+import * as repo from "../repositories/auth-repository";
+// import {generateToken,compareToken} from "shared-utils";
 
-type User = {
-	id: number;
-	email: string;
-	password: string;
+export const register = async (data: any) => {
+	const existing = await repo.findUserByEmail(data.email);
+	if (existing) {
+		throw new Error("User exists");
+	}
+
+	const user = await repo.createUser(data);
+
+	// const token=generateToken({userId:user.id},"secret","24h");
+
+	return { user };
 };
 
-const users: User[] = [];
-const tokens: string[] = [];
-const SECRET = "secret";
+export const login = async (data: any) => {
+	const user = await repo.findUserByEmail(data.email);
+	if (!user) throw new Error("Invalid Credentials");
 
-// REGISTER
-export async function registerUser(email: string, password: string) {
-	const exists = users.find(u => u.email === email);
-	if (exists) throw new Error("User already exists");
+	// const token=generateToken({userId:user.id},"secret","24h");
 
-	const user: User = {
-		id: Date.now(),
-		email,
-		password,
-	};
-
-	users.push(user);
-
-	return { id: user.id, email: user.email };
-}
-
-// LOGIN
-export async function loginUser(email: string, password: string) {
-	const user = users.find(u => u.email === email && u.password === password);
-	if (!user) throw new Error("Invalid credentials");
-
-	const token = jwt.sign({ email: user.email }, SECRET);
-
-	return token;
-}
-
-// VERIFY TOKEN
-export function verifyToken(token: string): any {
-	if (tokens.includes(token)) {
-		throw new Error("Token invalid");
-	}
-	return jwt.verify(token, SECRET);
-}
-
-// LOGOUT
-export function logoutUser(token: string): boolean {
-	tokens.push(token);
-	return true;
-}
+	return { user };
+};

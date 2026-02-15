@@ -4,7 +4,7 @@ import {
 	loginUser,
 	verifyToken,
 	logoutUser,
-} from "../src/services/auth.service";
+} from "../services/auth.service";
 
 describe("Auth Service", () => {
 	// test for register

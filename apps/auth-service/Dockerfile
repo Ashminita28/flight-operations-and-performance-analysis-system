@@ -8,6 +8,8 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
 COPY apps ./apps
 
+COPY packages ./packages
+
 RUN pnpm install
 
 RUN pnpm --filter auth-service build
