@@ -1,23 +1,42 @@
-// import { Request,Response,NextFunction } from "express";
-// // import verifyToken from "shared-utils";
+import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-// export const authenticate=(req:Request,res:Response,next:NextFunction)=>{
-//     try{
-//         const token=req.headers.authorization?.split(" ")[1];
-//         if(!token){
-//             return res.status(401).json({error:"No token"});
-//         }
-//         // req.user=verifyToken(token,process.env.JWT_SECRET || "secret");
-//         next();
-//     }catch{
-//         res.status(401).json({error:"Invalid token"});
-//     }
-// };
+dotenv.config();
 
-// export const authorize=(...roles:String[])=>(req:Request,res:Response,next:NextFunction)=>{
-//    if(!roles.includes(req.user?.role)){
-//       return res.status(403).json({error:"Forbidden"})
-//    }
+const JWT_SECRET = process.env.AUTH_SECRET as string;
 
-//    next();
-// };
+export interface AuthRequest extends Request {
+	user?: any;
+}
+
+export const authenticate = (
+	req: AuthRequest,
+	res: Response,
+	next: NextFunction,
+) => {
+	const authHeader = req.headers.authorization;
+
+	if (!authHeader || !authHeader.startsWith("Bearer")) {
+		return res.status(401).json({
+			message: "Access token missing",
+		});
+	}
+
+	const token = authHeader.split(" ")[1];
+
+	if (!token) {
+		return res.status(401).json({ message: "Token missing" });
+	}
+	try {
+		const decoded = jwt.verify(token, JWT_SECRET);
+
+		req.user = decoded;
+
+		next();
+	} catch (error) {
+		return res.status(401).json({
+			message: "Invalid or expired token",
+		});
+	}
+};
