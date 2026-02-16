@@ -1,7 +1,28 @@
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, Model, Optional } from "sequelize";
 import sequelize from "@repo/shared-databse/dist/server";
 
-class User extends Model {}
+interface UserAttributes {
+	id: string;
+	name: string;
+	email: string;
+	password: string;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+type UserCreationAttributes = Optional<UserAttributes, "id">;
+
+class User
+	extends Model<UserAttributes, UserCreationAttributes>
+	implements UserAttributes
+{
+	public id!: string;
+	public name!: string;
+	public email!: string;
+	public password!: string;
+	public readonly createdAt!: Date;
+	public readonly updatedAt!: Date;
+}
 
 User.init(
 	{
@@ -14,6 +35,7 @@ User.init(
 		name: { type: DataTypes.STRING },
 
 		email: { type: DataTypes.STRING },
+		password: { type: DataTypes.STRING },
 		createdAt: {
 			allowNull: false,
 			type: DataTypes.DATE,
