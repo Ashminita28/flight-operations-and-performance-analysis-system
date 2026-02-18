@@ -1,24 +1,26 @@
 import { describe, it, expect } from "vitest";
-import {
-	registerUser,
-	loginUser,
-	verifyToken,
-	logoutUser,
-} from "../services/auth.service";
+import * as service from "../src/services/auth-service";
+import { vi } from "vitest";
+import * as repo from "../src/repositories/auth-repository";
+
+vi.mock("../src/repositories/auth.repository");
 
 describe("Auth Service", () => {
 	// test for register
 	describe("Register", () => {
 		it("should register a user successfully", async () => {
-			const user = await registerUser("register@test.com", "hihi123");
+			it("register user", async () => {
+				(repo.createUser as any).mockResolvedValue({ id: 1 });
+			});
+			const user = await service.registerService("register@test.com", "hiii23");
 			expect(user.email).toBe("register@test.com");
 		});
 
 		it("should throw error if user already exists", async () => {
-			await registerUser("duplicate@test.com", "hihi123");
+			await service.registerService("duplicate@test.com");
 
 			await expect(
-				registerUser("duplicate@test.com", "hihi123"),
+				service.registerService("duplicate@test.com"),
 			).rejects.toThrow();
 		});
 	});
@@ -26,25 +28,27 @@ describe("Auth Service", () => {
 	//   test for login
 	describe("Login", () => {
 		it("should login user and return token", async () => {
-			await registerUser("login@test.com", "hihi123");
+			await service.loginService("login@test.com");
 
-			const token = await loginUser("login@test.com", "hihi123");
+			const token = await service.loginService("login@test.com");
 
 			expect(token).toBeDefined();
 		});
 
 		it("should throw error for invalid credentials", async () => {
-			await expect(loginUser("wrong@test.com", "hihi123")).rejects.toThrow();
+			await expect(
+				service.loginService("wrong@test.com", "hihi123"),
+			).rejects.toThrow();
 		});
 	});
 
 	//   test for verigying the token
 	describe("JWT Verify", () => {
 		it("should verify token successfully", async () => {
-			await registerUser("verify@test.com", "hihi123");
-			const token = await loginUser("verify@test.com", "hihi123");
+			await service.registerService("verify@test.com", "hihi123");
+			const token = await loginService("verify@test.com", "hihi123");
 
-			const decoded = verifyToken(token);
+			const decoded = service.refreshTokenService(token);
 
 			expect(decoded.email).toBe("verify@test.com");
 		});
@@ -53,10 +57,10 @@ describe("Auth Service", () => {
 	//   test for logout
 	describe("Logout", () => {
 		it("should logout user and token", async () => {
-			await registerUser("logout@test.com", "hihi123");
-			const token = await loginUser("logout@test.com", "hihi123");
+			await service.registerService("logout@test.com", "hihi123");
+			const token = await service.loginService("logout@test.com", "hihi123");
 
-			const result = logoutUser(token);
+			const result = service.logoutService(token);
 
 			expect(result).toBe(true);
 		});

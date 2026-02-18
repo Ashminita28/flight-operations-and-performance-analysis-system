@@ -15,12 +15,10 @@ const checkPermission =
 			const user = await User.findByPk(req.user.userId, {
 				include: [
 					{
-						model: Role,
-						as: "roles",
+						association: "Roles",
 						include: [
 							{
-								model: Permission,
-								as: "permisions",
+								association: "Permissions",
 							},
 						],
 					},
@@ -33,10 +31,17 @@ const checkPermission =
 				return Send.unauthorized(res, null, "User not found");
 			}
 
+			console.log("USER:", user?.toJSON());
+			console.log("FULL USER:", JSON.stringify(user, null, 2));
+
+			const plainUser = user?.toJSON();
 			const permissions =
-				(user as any).Roles?.flatMap((r: any) =>
-					r.Permissions.map((p: any) => p.name),
+				plainUser?.Roles?.flatMap((r: any) =>
+					r.Permissions?.map((p: any) => p.name),
 				) || [];
+
+			console.log("USER PERMISSION:", permissions);
+			console.log("REQUIRED PERMISSION:", permissionName);
 
 			if (!permissions.includes(permissionName)) {
 				return Send.forbidden(res, null, "Not authorized");

@@ -82,9 +82,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 	try {
 		const result = await emailService.forgotPasswordService(req.body.email);
 
-		res.json(result);
-
-		return Send.success(res, res.json(result), "ok let me reset");
+		return Send.success(res, result, "ok let me reset");
 	} catch (error: any) {
 		console.error("forgot password failed:", error);
 		return Send.error(res, null, "forgot password failed");
@@ -100,9 +98,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 			password,
 			otp,
 		);
-		res.json(result);
-
-		return Send.success(res, res.json(result), "password reset successfully");
+		return Send.success(res, result, "password reset successfully");
 	} catch (error: any) {
 		console.error(" password reset failed:", error);
 		return Send.error(res, null, " password reset failed");

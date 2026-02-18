@@ -38,12 +38,13 @@ const login = z.object({
 // validation rules for register
 const register = z
 	.object({
-		username: usernameSchema,
+		name: usernameSchema,
 		email: z.string().email("Invalid email format"),
 		password: passwordSchema,
 		password_confirmation: z
 			.string()
 			.min(1, "Password confirmation is required"),
+		phone: z.string(),
 	})
 	.refine(data => data.password === data.password_confirmation, {
 		path: ["password_confirmation"],

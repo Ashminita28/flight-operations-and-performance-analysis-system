@@ -27,7 +27,7 @@ export const resetPasswordService = async (
 	newPassword: string,
 ) => {
 	const record: any = await repo.findOtp(email, otp);
-	if (!record || new Date() > record.expiresAt) {
+	if (!record || new Date() > new Date(record.expiresAt)) {
 		throw new Error("Invalid or expired OTP");
 	}
 	console.log("whyy:", record);

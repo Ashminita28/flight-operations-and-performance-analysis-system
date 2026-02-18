@@ -1,67 +1,71 @@
 import { Response } from "express";
 
 class Send {
-	static success(res: Response, data: any, message = "success") {
-		res.status(200).json({
+	static success(res: Response, data: any, message = "success"): Response {
+		return res.status(200).json({
 			ok: true,
 			message,
 			data,
 		});
-		return;
 	}
 
-	static error(res: Response, data: any, message = "error") {
-		res.status(500).json({
+	static error(res: Response, data: any, message = "error"): Response {
+		return res.status(500).json({
 			ok: false,
 			message,
 			data,
 		});
-		return;
 	}
 
-	static notFound(res: Response, data: any, message = "not found") {
-		res.status(404).json({
+	static notFound(res: Response, data: any, message = "not found"): Response {
+		return res.status(404).json({
 			ok: false,
 			message,
 			data,
 		});
-		return;
 	}
 
-	static unauthorized(res: Response, data: any, message = "unauthorized") {
-		res.status(401).json({
+	static unauthorized(
+		res: Response,
+		data: any,
+		message = "unauthorized",
+	): Response {
+		return res.status(401).json({
 			ok: false,
 			message,
 			data,
 		});
-		return;
 	}
 
-	static validationErrors(res: Response, errors: Record<string, string[]>) {
-		res.status(422).json({
+	static validationErrors(
+		res: Response,
+		errors: Record<string, string[]>,
+	): Response {
+		return res.status(422).json({
 			ok: false,
 			message: "Validation error",
 			errors,
 		});
-		return;
 	}
 
-	static forbidden(res: Response, data: any, message = "forbiden") {
-		res.status(403).json({
+	static forbidden(res: Response, data: any, message = "forbiden"): Response {
+		return res.status(403).json({
 			ok: false,
 			message,
 			data,
 		});
-		return;
 	}
 
-	static badRequest(res: Response, data: any, message = "bad request") {
-		res.status(400).json({
+	static badRequest(
+		res: Response,
+		data: any,
+		message = "bad request",
+	): Response {
+		return res.status(400).json({
 			ok: false,
 			message,
 			data,
 		});
-		return;
 	}
 }
 
