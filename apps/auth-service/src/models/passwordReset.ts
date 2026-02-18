@@ -15,9 +15,9 @@ PasswordReset.init(
 			primaryKey: true,
 			defaultValue: DataTypes.UUIDV4,
 		},
-		email: { type: DataTypes.UUID },
-		otp: { type: DataTypes.UUID },
-		expiresAt: { type: DataTypes.UUID },
+		email: { type: DataTypes.STRING },
+		otp: { type: DataTypes.STRING },
+		expiresAt: { type: DataTypes.STRING },
 	},
 	{ sequelize, tableName: "password_reset", timestamps: false },
 );

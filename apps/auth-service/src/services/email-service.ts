@@ -1,10 +1,14 @@
 import * as repo from "../repositories/passwordReset-repository";
+import * as userRepo from "../repositories/auth-repository";
 import { sendEmail } from "../utils/mail";
 import bcrypt from "bcrypt";
 import User from "../models/user";
 
 // 5.forgot password service
 export const forgotPasswordService = async (email: string) => {
+	const user = await userRepo.findUserByEmail(email);
+	console.log("HEYYYY:", user);
+	if (!user) throw new Error("User not found");
 	const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
 	const expires = new Date(Date.now() + 10 * 60 * 1000);
@@ -26,7 +30,7 @@ export const resetPasswordService = async (
 	if (!record || new Date() > record.expiresAt) {
 		throw new Error("Invalid or expired OTP");
 	}
-
+	console.log("whyy:", record);
 	const hashed = await bcrypt.hash(newPassword, 10);
 
 	await User.update({ password: hashed }, { where: { email } });
