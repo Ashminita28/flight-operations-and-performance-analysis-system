@@ -5,7 +5,7 @@ class PasswordReset extends Model {
 	declare id: string;
 	declare email: string;
 	declare otp: string;
-	declare expiresIn: Date;
+	declare expiresAt: Date;
 }
 
 PasswordReset.init(
@@ -17,7 +17,7 @@ PasswordReset.init(
 		},
 		email: { type: DataTypes.STRING },
 		otp: { type: DataTypes.STRING },
-		expiresAt: { type: DataTypes.STRING },
+		expiresAt: { type: DataTypes.DATE },
 	},
 	{ sequelize, tableName: "password_reset", timestamps: false },
 );

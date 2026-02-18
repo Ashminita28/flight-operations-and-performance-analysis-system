@@ -7,11 +7,12 @@ export default {
 	async up(queryInterface: QueryInterface) {
 		await queryInterface.createTable("Permissions", {
 			id: {
+				allowNull: false,
 				type: DataTypes.UUID,
 				primaryKey: true,
 				defaultValue: DataTypes.UUIDV4,
 			},
-			permission: { type: DataTypes.STRING },
+			name: { allowNull: false, type: DataTypes.STRING, unique: true },
 			createdAt: {
 				allowNull: false,
 				type: DataTypes.DATE,

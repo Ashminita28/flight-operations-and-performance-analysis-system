@@ -6,11 +6,18 @@ import { DataTypes, QueryInterface } from "sequelize";
 export default {
 	async up(queryInterface: QueryInterface) {
 		await queryInterface.createTable("role_permissions", {
-			roleId: {
+			id: {
+				allowNull: false,
+				primaryKey: true,
 				type: DataTypes.UUID,
 			},
-			permissionId: {
+			role_id: {
 				type: DataTypes.UUID,
+				allowNull: false,
+			},
+			permission_id: {
+				type: DataTypes.UUID,
+				allowNull: false,
 			},
 		});
 	},

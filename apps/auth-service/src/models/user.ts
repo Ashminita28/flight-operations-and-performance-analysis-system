@@ -2,14 +2,13 @@ import { DataTypes, Model } from "sequelize";
 import sequelize from "@repo/shared-databse/dist/server.js";
 
 class User extends Model {
-	declare id: string;
-	declare name: string;
-	declare email: string;
-	declare password: string;
-	declare roleId: string;
-	declare refreshToken: string;
-	declare readonly createdAt: Date;
-	declare readonly updatedAt: Date;
+	public id!: string;
+	public name!: string;
+	public email!: string;
+	public phone!: string;
+	public password!: string;
+	public status!: "inactive" | "active" | "suspended";
+	public refreshToken!: string;
 }
 
 User.init(
@@ -23,12 +22,13 @@ User.init(
 		name: {
 			type: DataTypes.STRING,
 		},
+		phone: DataTypes.STRING,
 		email: {
 			type: DataTypes.STRING,
 		},
 		password: { type: DataTypes.STRING },
-		roleId: { type: DataTypes.STRING },
-		refreshToken: { type: DataTypes.STRING },
+		status: DataTypes.ENUM("inactive", "active", "suspended"),
+		refreshToken: DataTypes.STRING,
 	},
 	{
 		sequelize,

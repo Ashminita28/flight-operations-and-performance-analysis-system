@@ -16,10 +16,21 @@ export default {
 				type: DataTypes.STRING,
 			},
 			email: {
+				allowNull: false,
+				unique: true,
 				type: DataTypes.STRING,
 			},
+			phone: {
+				type: DataTypes.STRING,
+				unique: true,
+			},
+
 			password: { type: DataTypes.STRING },
-			roleId: { type: DataTypes.STRING },
+			status: {
+				type: DataTypes.ENUM,
+				values: ["inactive", "active", "suspended"],
+				defaultValue: "inactive",
+			},
 			refreshToken: { type: DataTypes.STRING },
 			createdAt: {
 				allowNull: false,

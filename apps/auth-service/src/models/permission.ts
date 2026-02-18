@@ -2,8 +2,8 @@ import sequelize from "@repo/shared-databse/dist/server.js";
 import { DataTypes, Model } from "sequelize";
 
 class Permission extends Model {
-	declare id: string;
-	declare name: string;
+	public id!: string;
+	public name!: string;
 }
 
 Permission.init(
@@ -13,10 +13,11 @@ Permission.init(
 			primaryKey: true,
 			defaultValue: DataTypes.UUIDV4,
 		},
-		permission: { type: DataTypes.STRING },
+		name: { type: DataTypes.STRING },
 	},
 	{
 		sequelize,
+		modelName: "Permission",
 		tableName: "Permissions",
 		timestamps: true,
 	},

@@ -2,8 +2,8 @@ import { DataTypes, Model } from "sequelize";
 import sequelize from "@repo/shared-databse/dist/server";
 
 class Role extends Model {
-	declare id: string;
-	declare name: string;
+	public id!: string;
+	public name!: string;
 }
 
 Role.init(
@@ -14,9 +14,8 @@ Role.init(
 			allowNull: false,
 			defaultValue: DataTypes.UUIDV4,
 		},
-		role: {
+		name: {
 			type: DataTypes.STRING,
-			unique: true,
 		},
 	},
 	{

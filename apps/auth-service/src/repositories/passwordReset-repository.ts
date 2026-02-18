@@ -7,12 +7,12 @@ export const createOtp = async (
 ) => {
 	const createotp = await PasswordReset.create({ email, otp, expiresAt });
 	console.log("OTP-CREATION", createotp);
-	return createotp;
+	return createotp?.dataValues;
 };
 
 export const findOtp = async (email: string, otp: string) => {
 	const findotp = await PasswordReset.findOne({ where: { email, otp } });
-	return findotp;
+	return findotp?.dataValues;
 };
 
 export const deleteOtp = async (email: string) => {

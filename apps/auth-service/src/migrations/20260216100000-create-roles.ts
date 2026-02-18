@@ -12,7 +12,8 @@ export default {
 				allowNull: false,
 				defaultValue: DataTypes.UUIDV4,
 			},
-			role: {
+			name: {
+				allowNull: false,
 				type: DataTypes.STRING,
 				unique: true,
 			},
