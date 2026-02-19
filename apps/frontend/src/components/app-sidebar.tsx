@@ -1,149 +1,102 @@
+"use client";
+
 import * as React from "react";
 import {
-	IconCamera,
-	IconChartBar,
-	IconDashboard,
-	IconDatabase,
-	IconFileAi,
-	IconFileDescription,
-	IconFileWord,
-	IconFolder,
-	IconHelp,
-	IconInnerShadowTop,
-	IconListDetails,
-	IconReport,
-	IconSearch,
-	IconSettings,
-	IconUsers,
-} from "@tabler/icons-react";
+	AudioWaveform,
+	BookOpen,
+	Command,
+	GalleryVerticalEnd,
+	Settings2,
+	SquareTerminal,
+} from "lucide-react";
 
-import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
 	Sidebar,
 	SidebarContent,
 	SidebarFooter,
 	SidebarHeader,
-	SidebarMenu,
-	SidebarMenuButton,
-	SidebarMenuItem,
+	SidebarRail,
 } from "@/components/ui/sidebar";
 
+// This is sample data.
 const data = {
 	user: {
 		name: "shadcn",
 		email: "m@example.com",
 		avatar: "/avatars/shadcn.jpg",
 	},
+	teams: [
+		{
+			name: "Manager",
+			logo: GalleryVerticalEnd,
+			plan: "Flight management",
+		},
+		{
+			name: "Airline Staff",
+			logo: AudioWaveform,
+			plan: "Operation Management",
+		},
+		{
+			name: "Analyst",
+			logo: Command,
+			plan: "Performance Management",
+		},
+	],
 	navMain: [
 		{
-			title: "Dashboard",
-			url: "#",
-			icon: IconDashboard,
-		},
-		{
-			title: "Lifecycle",
-			url: "#",
-			icon: IconListDetails,
-		},
-		{
-			title: "Analytics",
-			url: "#",
-			icon: IconChartBar,
-		},
-		{
-			title: "Projects",
-			url: "#",
-			icon: IconFolder,
-		},
-		{
-			title: "Team",
-			url: "#",
-			icon: IconUsers,
-		},
-	],
-	navClouds: [
-		{
-			title: "Capture",
-			icon: IconCamera,
+			title: "User Profile",
+			url: "/me",
+			icon: SquareTerminal,
 			isActive: true,
-			url: "#",
-			items: [
-				{
-					title: "Active Proposals",
-					url: "#",
-				},
-				{
-					title: "Archived",
-					url: "#",
-				},
-			],
 		},
 		{
-			title: "Proposal",
-			icon: IconFileDescription,
+			title: "Documentation",
 			url: "#",
+			icon: BookOpen,
 			items: [
 				{
-					title: "Active Proposals",
+					title: "Introduction",
 					url: "#",
 				},
 				{
-					title: "Archived",
+					title: "Get Started",
+					url: "#",
+				},
+				{
+					title: "Tutorials",
+					url: "#",
+				},
+				{
+					title: "Changelog",
 					url: "#",
 				},
 			],
 		},
-		{
-			title: "Prompts",
-			icon: IconFileAi,
-			url: "#",
-			items: [
-				{
-					title: "Active Proposals",
-					url: "#",
-				},
-				{
-					title: "Archived",
-					url: "#",
-				},
-			],
-		},
-	],
-	navSecondary: [
 		{
 			title: "Settings",
 			url: "#",
-			icon: IconSettings,
-		},
-		{
-			title: "Get Help",
-			url: "#",
-			icon: IconHelp,
-		},
-		{
-			title: "Search",
-			url: "#",
-			icon: IconSearch,
-		},
-	],
-	documents: [
-		{
-			name: "Data Library",
-			url: "#",
-			icon: IconDatabase,
-		},
-		{
-			name: "Reports",
-			url: "#",
-			icon: IconReport,
-		},
-		{
-			name: "Word Assistant",
-			url: "#",
-			icon: IconFileWord,
+			icon: Settings2,
+			items: [
+				{
+					title: "General",
+					url: "#",
+				},
+				{
+					title: "Team",
+					url: "#",
+				},
+				{
+					title: "Billing",
+					url: "#",
+				},
+				{
+					title: "Limits",
+					url: "#",
+				},
+			],
 		},
 	],
 };
@@ -151,35 +104,19 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
 		<Sidebar
-			collapsible="offcanvas"
+			collapsible="icon"
 			{...props}
 		>
 			<SidebarHeader>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton
-							asChild
-							className="data-[slot=sidebar-menu-button]:!p-1.5"
-						>
-							<a href="#">
-								<IconInnerShadowTop className="!size-5" />
-								<span className="text-base font-semibold">Acme Inc.</span>
-							</a>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
+				<TeamSwitcher teams={data.teams} />
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={data.navMain} />
-				<NavDocuments items={data.documents} />
-				<NavSecondary
-					items={data.navSecondary}
-					className="mt-auto"
-				/>
 			</SidebarContent>
 			<SidebarFooter>
 				<NavUser user={data.user} />
 			</SidebarFooter>
+			<SidebarRail />
 		</Sidebar>
 	);
 }
