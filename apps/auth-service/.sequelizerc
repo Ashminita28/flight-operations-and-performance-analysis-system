@@ -1,0 +1,11 @@
+require("ts-node/register");
+const path = require('path');
+
+const basePath= __dirname;
+
+module.exports = {
+    config: path.join(basePath,'src/config/config.js'),
+    'models-path': path.join(basePath,'src/models'),
+    'migrations-path': path.join(basePath,'src/migrations'),
+    'seeders-path': path.join(basePath,'src/seeders')
+};

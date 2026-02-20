@@ -1,18 +1,8 @@
 "use client";
 
 import * as React from "react";
-import {
-	AudioWaveform,
-	BookOpen,
-	Command,
-	GalleryVerticalEnd,
-	Settings2,
-	SquareTerminal,
-} from "lucide-react";
-
-import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/auth-store";
 import {
 	Sidebar,
 	SidebarContent,
@@ -21,100 +11,53 @@ import {
 	SidebarRail,
 } from "@/components/ui/sidebar";
 
-// This is sample data.
-const data = {
-	user: {
-		name: "shadcn",
-		email: "m@example.com",
-		avatar: "/avatars/shadcn.jpg",
-	},
-	teams: [
-		{
-			name: "Manager",
-			logo: GalleryVerticalEnd,
-			plan: "Flight management",
-		},
-		{
-			name: "Airline Staff",
-			logo: AudioWaveform,
-			plan: "Operation Management",
-		},
-		{
-			name: "Analyst",
-			logo: Command,
-			plan: "Performance Management",
-		},
-	],
-	navMain: [
-		{
-			title: "User Profile",
-			url: "/me",
-			icon: SquareTerminal,
-			isActive: true,
-		},
-		{
-			title: "Documentation",
-			url: "#",
-			icon: BookOpen,
-			items: [
-				{
-					title: "Introduction",
-					url: "#",
-				},
-				{
-					title: "Get Started",
-					url: "#",
-				},
-				{
-					title: "Tutorials",
-					url: "#",
-				},
-				{
-					title: "Changelog",
-					url: "#",
-				},
-			],
-		},
-		{
-			title: "Settings",
-			url: "#",
-			icon: Settings2,
-			items: [
-				{
-					title: "General",
-					url: "#",
-				},
-				{
-					title: "Team",
-					url: "#",
-				},
-				{
-					title: "Billing",
-					url: "#",
-				},
-				{
-					title: "Limits",
-					url: "#",
-				},
-			],
-		},
-	],
-};
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const user = useAuthStore(s => s.user);
+	const logout = useAuthStore(s => s.logout);
+	const navigate = useNavigate();
+
+	const handleLogout = async () => {
+		await logout();
+		navigate("/login");
+	};
+
+	// decide dashboard route based on role
+	const getDashboardRoute = () => {
+		if (user?.roles?.includes("Manager")) return "/manager";
+		if (user?.roles?.includes("Analyst")) return "/analyst";
+		if (user?.roles?.includes("Operations")) return "/operations";
+		return "/";
+	};
 	return (
 		<Sidebar
 			collapsible="icon"
 			{...props}
 		>
-			<SidebarHeader>
-				<TeamSwitcher teams={data.teams} />
-			</SidebarHeader>
+			<SidebarHeader>Fligo</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={data.navMain} />
+				{/* Dashboard */}
+				<Link
+					to={getDashboardRoute()}
+					className="block px-4 py-2 rounded-md bg-sky-800"
+				>
+					Dashboard
+				</Link>
+
+				{/* Profile */}
+				<Link
+					to="/profile"
+					className="block px-4 py-2 rounded-md bg-sky-800"
+				>
+					User Profile
+				</Link>
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={data.user} />
+				<button
+					onClick={handleLogout}
+					className="w-full bg-white text-sky-950 px-4 py-2 rounded-md"
+				>
+					Logout
+				</button>
 			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>

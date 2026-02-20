@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -14,119 +16,112 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import axios from "axios";
+import { useAuthStore } from "../store/auth-store";
+import { useNavigate } from "react-router-dom";
 
-// interface SignupFormProps{
-// 	onSubmit:(data:{
-// 		name:string,
-// 		email:string,
-// 		phone:string,
-// 		password:string;
-// 	})=>void
-// }
+export function SignupForm() {
+	const register = useAuthStore(s => s.register);
+	const navigate = useNavigate();
 
-export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
 	const [formData, setFormData] = useState({
-		username: "",
+		name: "",
 		email: "",
 		phone: "",
 		password: "",
 	});
+
 	const [message, setMessage] = useState("");
 
-	const handleChange = (e: { target: { name: any; value: any } }) => {
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
 
-	const handleSubmit = async (e: { preventDefault: () => void }) => {
+	const handleSubmit = async (e: React.SubmitEvent) => {
 		e.preventDefault();
 		try {
-			const res = await axios.post(
-				"http://localhost:3000/api/auth/register",
-				formData,
+			await register(
+				formData.name,
+				formData.email,
+				formData.phone,
+				formData.password,
 			);
-			setMessage(res.data.message);
-		} catch (err) {
-			setMessage("Something went wrong");
+			setMessage("Account created successfully");
+			navigate("/login");
+		} catch (err: any) {
+			setMessage(err.message || "Registration failed");
 		}
 	};
+
 	return (
-		<Card {...props}>
+		<Card className="bg-white">
 			<CardHeader>
 				<CardTitle>Create an account</CardTitle>
-				<CardDescription>
-					Enter your information below to create your account
-				</CardDescription>
+				<CardDescription>Enter your information below</CardDescription>
 			</CardHeader>
+
 			<CardContent>
 				<form onSubmit={handleSubmit}>
 					<FieldGroup>
 						<Field>
-							<FieldLabel htmlFor="name">Full Name</FieldLabel>
+							<FieldLabel>Full Name</FieldLabel>
 							<Input
+								name="name"
 								onChange={handleChange}
-								id="name"
-								type="text"
-								placeholder="John Doe"
 								required
 							/>
 						</Field>
+
 						<Field>
-							<FieldLabel htmlFor="email">Email</FieldLabel>
+							<FieldLabel>Email</FieldLabel>
 							<Input
-								onChange={handleChange}
-								id="email"
+								name="email"
 								type="email"
-								placeholder="m@example.com"
+								onChange={handleChange}
 								required
 							/>
-							<FieldDescription>
-								We&apos;ll use this to contact you. We will not share your email
-								with anyone else.
-							</FieldDescription>
 						</Field>
+
 						<Field>
-							<FieldLabel htmlFor="phone">Phone</FieldLabel>
+							<FieldLabel>Phone</FieldLabel>
 							<Input
+								name="phone"
 								onChange={handleChange}
-								id="phone"
-								type="number"
-								placeholder="+91-96785432"
 								required
 							/>
-							<FieldDescription>
-								We&apos;ll use this to send you message.
-							</FieldDescription>
 						</Field>
+
 						<Field>
-							<FieldLabel htmlFor="password">Password</FieldLabel>
+							<FieldLabel>Password</FieldLabel>
 							<Input
-								onChange={handleChange}
-								id="password"
+								name="password"
 								type="password"
+								onChange={handleChange}
 								required
 							/>
-							<FieldDescription>
-								Must be at least 8 characters long.
+						</Field>
+
+						<Field>
+							<Button
+								type="submit"
+								className="bg-sky-950 w-full"
+							>
+								Create Account
+							</Button>
+
+							<FieldDescription className="text-center mt-3">
+								Already have an account?{" "}
+								<a
+									href="/login"
+									className="underline"
+								>
+									Sign in
+								</a>
 							</FieldDescription>
 						</Field>
-						<FieldGroup>
-							<Field>
-								<Button type="submit">Create Account</Button>
-								<Button
-									variant="outline"
-									type="button"
-								>
-									Sign up with Google
-								</Button>
-								<FieldDescription className="px-6 text-center">
-									Already have an account? <a href="/login">Sign in</a>
-								</FieldDescription>
-							</Field>
-						</FieldGroup>
 					</FieldGroup>
 				</form>
-				{message && <p>{message}</p>}
+
+				{message && <p className="mt-4 text-center text-red-500">{message}</p>}
 			</CardContent>
 		</Card>
 	);
