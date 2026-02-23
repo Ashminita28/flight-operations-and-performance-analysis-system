@@ -2,8 +2,8 @@
 	"name": "@repo/shared-databse",
 	"version": "1.0.0",
 	"description": "",
-	"main": "dist/server.js",
-	"types": "dist/server.d.ts",
+	"main": "dist/config/sequelize-connection.js",
+	"types": "dist/config/sequelize-connection.d.ts",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "tsc",
