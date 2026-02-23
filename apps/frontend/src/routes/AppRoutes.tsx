@@ -22,7 +22,11 @@ function AppRoutes() {
 				/>
 				<Route
 					path="/login"
-					element={<Login />}
+					element={
+						<ProtectedRoute>
+							<Login />
+						</ProtectedRoute>
+					}
 				/>
 				<Route
 					path="/register"
