@@ -4,10 +4,22 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "tsc",
+		"start": "node dist/server.js",
+		"dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/server.ts"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"packageManager": "pnpm@10.29.3"
+	"packageManager": "pnpm@10.29.3",
+	"devDependencies": {
+		"@repo/shared-databse": "workspace:*",
+		"@types/node": "^25.3.0",
+		"@types/nodemon": "^3.1.1",
+		"nodemon": "^3.1.11",
+		"sequelize-cli": "^6.6.5",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.9.3"
+	}
 }
