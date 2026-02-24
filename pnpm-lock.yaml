@@ -177,6 +177,22 @@ importers:
         version: 5.9.3
 
   apps/flight-service:
+    dependencies:
+      axios:
+        specifier: ^1.13.5
+        version: 1.13.5
+      dotenv:
+        specifier: ^17.3.1
+        version: 17.3.1
+      pg:
+        specifier: ^8.18.0
+        version: 8.18.0
+      pg-hstore:
+        specifier: ^2.3.4
+        version: 2.3.4
+      sequelize:
+        specifier: ^6.37.7
+        version: 6.37.7(pg-hstore@2.3.4)(pg@8.18.0)
     devDependencies:
       "@types/node":
         specifier: ^25.3.0
