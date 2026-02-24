@@ -14,7 +14,6 @@
 	"license": "ISC",
 	"packageManager": "pnpm@10.29.3",
 	"dependencies": {
-		"@repo/shared-databse": "workspace:*",
 		"@types/cookie-parser": "^1.4.10",
 		"bcrypt": "^6.0.0",
 		"body-parser": "^2.2.2",
