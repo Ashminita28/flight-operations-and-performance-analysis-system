@@ -12,8 +12,8 @@ COPY packages ./packages
 
 RUN pnpm install
 
-RUN pnpm --filter auth-service build
+RUN pnpm --filter aircraft-service build
 
-EXPOSE 3000
+EXPOSE 3002
 
-CMD ["pnpm","--filter","auth-service","start"]
+CMD ["pnpm","--filter","aircraft-service","start"]
