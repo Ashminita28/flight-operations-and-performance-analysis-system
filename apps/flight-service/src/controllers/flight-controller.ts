@@ -1,47 +1,55 @@
-// import { Request, Response } from "express";
-// import * as service from "../services/flight-service";
+import { Request, Response } from "express";
+import * as service from "../services/flight-service";
 
-// export const createFlight = async (req: Request, res: Response) => {
-// 	try {
-// 		const { aircraft_id, route_id, departure_time } = req.body;
-// 		const result = await service.createFlightService(
-// 			aircraft_id,
-// 			route_id,
-// 			departure_time,
-// 		);
-// 		res.status(200).send(result.json());
-// 	} catch (err) {
-// 		console.error("flight not created", err);
-// 		res.status(500);
-// 	}
-// };
+interface IdParams {
+	id: string;
+}
 
-// export const updateFlight = async (req: Request, res: Response) => {
-// 	try {
-// 		const result = await service.updateFlighService(req.body.id, req.body);
-// 		res.status(200);
-// 	} catch (err) {
-// 		console.error("flight not updated", err);
-// 		res.status(500);
-// 	}
-// };
+export const createFlight = async (req: Request<IdParams>, res: Response) => {
+	try {
+		console.log("ikaiskis");
+		const flight = await service.createFlightService(req.params.id, req.body);
+		console.log("sircraft created:-", flight);
 
-// export const getFlights = async (req: Request, res: Response) => {
-// 	try {
-// 		const result = await service.getAllFlightsService();
-// 		res.status(200);
-// 	} catch (err) {
-// 		console.error("cannot get flights", err);
-// 		res.status(500);
-// 	}
-// };
+		res.status(201).json(flight);
+	} catch (err: any) {
+		res.status(500).json({
+			message: err.message,
+		});
+	}
+};
 
-// export const getFlightById = async (req: Request, res: Response) => {
-// 	try {
-// 		const result = await service.getFlightByIdService(req.body.id);
-// 		res.status(200);
-// 	} catch (err) {
-// 		console.error("cannot get flight by id", err);
-// 		res.status(500);
-// 	}
-// };
+export const getFlights = async (req: Request, res: Response) => {
+	const flights = await service.getAllFlights();
+
+	res.json(flights);
+};
+
+export const getFlightById = async (req: Request<IdParams>, res: Response) => {
+	const flight = await service.getFlightById(req.params.id);
+
+	res.json(flight);
+};
+
+export const updateFlightStatus = async (
+	req: Request<IdParams>,
+	res: Response,
+) => {
+	const flight = await service.updateFlightStatusService(
+		req.params.id,
+		req.body.status,
+		req.body.delay_reason,
+		req.body.delay_minutes,
+	);
+
+	res.json(flight);
+};
+
+export const assignCrew = async (req: Request, res: Response) => {
+	const record = await service.assignCrewService(
+		req.body.flight_id,
+		req.body.crew_id,
+	);
+
+	res.json(record);
+};
