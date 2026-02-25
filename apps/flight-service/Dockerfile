@@ -12,8 +12,8 @@ COPY apps ./apps
 
 RUN pnpm install
 
-RUN pnpm --filter auth-service build
+RUN pnpm --filter flight-service build
 
-EXPOSE 3000
+EXPOSE 3002
 
-CMD ["pnpm","--filter","auth-service","start"]
+CMD ["pnpm","--filter","flight-service","start"]

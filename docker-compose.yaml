@@ -24,6 +24,30 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
+  aircraft-service:
+    build:
+      context: .
+      dockerfile: apps/aircraft-service/Dockerfile
+    container_name: aircraft_service
+    env_file:
+      - .env
+    ports:
+      - "3002:3002"
+    restart: unless-stopped
+    depends_on:
+      - postgres
+  flight-service:
+    build:
+      context: .
+      dockerfile: apps/flight-service/Dockerfile
+    container_name: flight_service
+    env_file:
+      - .env
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    depends_on:
+      - postgres
   frontend:
     build:
       context: .
@@ -34,6 +58,8 @@ services:
     restart: unless-stopped
     depends_on:
       - auth-service
+      - aircraft-service
+      - flight-service
 
 volumes:
   postgres_data:
