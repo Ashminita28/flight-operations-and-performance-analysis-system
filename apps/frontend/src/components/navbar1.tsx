@@ -45,9 +45,6 @@ export function Navbar1() {
 								Login
 							</Button>
 						</Link>
-						<Link to="/register">
-							<Button className="bg-white text-sky-950">Register</Button>
-						</Link>
 					</>
 				)}
 			</div>

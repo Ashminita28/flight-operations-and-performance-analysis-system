@@ -1,9 +1,7 @@
 import { Router } from "express";
-import constants from "../utils/constants";
 import { adminController } from "../controllers/admin-controller";
-import checkPermission from "../middlewares/role-middleware";
-import { authenticate } from "../middlewares/auth-middleware";
-import Send from "../utils/response-utils";
+import { authenticate } from "@package/shared-middleware";
+import { authorizeRole } from "@package/shared-middleware";
 
 const adminRouter: Router = Router();
 
@@ -21,28 +19,8 @@ const adminRouter: Router = Router();
 adminRouter.get(
 	"/users",
 	authenticate,
-	checkPermission(constants.PERMISSION_VIEW_ALL_USERS),
+	authorizeRole(["Admin"]),
 	adminController,
-);
-
-/**
- * @swagger
- * /admin/dashboard:
- *   get:
- *     summary: Access admin dashboard
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: Admin dashboard data
- */
-
-adminRouter.get(
-	"/dashboard",
-	authenticate,
-	checkPermission(constants.PERMISSION_VIEW_ADMIN_DASHBOARD),
-	(req, res) => {
-		return Send.success(res, "", "Admin dashboard access allowed.");
-	},
 );
 
 export default adminRouter;

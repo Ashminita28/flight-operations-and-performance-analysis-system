@@ -14,21 +14,11 @@ export class Flight extends Model {
 
 	declare departure_date: Date;
 
-	declare planned_departure_time: Date;
+	declare departure_datetime: Date;
 
-	declare planned_arrival_time: Date;
-
-	declare actual_departure_time: Date;
-
-	declare actual_arrival_time: Date;
+	declare arrival_datetime: Date;
 
 	declare status: string;
-
-	declare delay_minutes: number;
-
-	declare fuel_used: number;
-
-	declare payload_weight: number;
 
 	declare readonly created_at: Date;
 	declare readonly updated_at: Date;
@@ -52,21 +42,11 @@ Flight.init(
 
 		departure_date: DataTypes.DATEONLY,
 
-		planned_departure_time: DataTypes.TIME,
+		departure_datetime: DataTypes.TIME,
 
-		planned_arrival_time: DataTypes.TIME,
+		arrival_datetime: DataTypes.TIME,
 
-		actual_departure_time: DataTypes.TIME,
-
-		actual_arrival_time: DataTypes.TIME,
-
-		status: DataTypes.STRING,
-
-		delay_minutes: DataTypes.INTEGER,
-
-		fuel_used: DataTypes.DECIMAL,
-
-		payload_weight: DataTypes.DECIMAL,
+		status: DataTypes.ENUM("Scheduled", "Delayed", "Cancelled", "Completed"),
 	},
 	{
 		sequelize,

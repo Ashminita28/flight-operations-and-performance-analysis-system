@@ -32,12 +32,12 @@ export const getAircraft = async (
 };
 
 export const getAircraftById = async (
-	req: Request<IdParams>,
+	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		const { id } = req.params;
+		const id = req.params.id as string;
 		if (!id) {
 			return res.status(400).json({ message: "Aircraf id required" });
 		}
@@ -49,12 +49,13 @@ export const getAircraftById = async (
 };
 
 export const updateAircraft = async (
-	req: Request<IdParams>,
+	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		const aircraft = await service.updateAircraft(req.params.id, req.body);
+		const id = req.params.id as string;
+		const aircraft = await service.updateAircraft(id, req.body);
 		res.json(aircraft);
 	} catch (error) {
 		next(error);
@@ -62,12 +63,13 @@ export const updateAircraft = async (
 };
 
 export const deleteAircraft = async (
-	req: Request<IdParams>,
+	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		await service.deleteAircraft(req.params.id);
+		const id = req.params.id as string;
+		await service.deleteAircraft(id);
 		res.json({ message: "Aircraft deleted successfully" });
 	} catch (error) {
 		next(error);
@@ -75,12 +77,13 @@ export const deleteAircraft = async (
 };
 
 export const addMaintenance = async (
-	req: Request<IdParams>,
+	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		const record = await service.addMaintenanceRecord(req.params.id, req.body);
+		const id = req.params.id as string;
+		const record = await service.addMaintenanceRecord(id, req.body);
 		res.status(201).json(record);
 	} catch (error) {
 		next(error);

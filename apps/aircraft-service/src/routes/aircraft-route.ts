@@ -7,48 +7,47 @@ import {
 	deleteAircraft,
 	addMaintenance,
 } from "../controllers/aircraft-controller";
-import { checkRole } from "../middlewares/permission-middleware";
+
 import constants from "../utils/constants";
-import { authenticate } from "../middlewares/auth-middleware";
+import { authenticate } from "@package/shared-middleware";
+import { authorizeRole } from "@package/shared-middleware";
 
 const aircraftRouter: Router = Router();
 
 aircraftRouter.post(
 	"/",
 	authenticate,
-	checkRole(constants.ROLE_OPERATIONS),
+	authorizeRole(["Operations"]),
 	createAircraft,
 );
 aircraftRouter.get(
 	"/",
 	authenticate,
-	checkRole(constants.ROLE_OPERATIONS),
-	checkRole(constants.ROLE_MANAGEMENT),
+	authorizeRole(["Operations", "Manager"]),
 	getAircraft,
 );
 aircraftRouter.get(
 	"/:id",
 	authenticate,
-	checkRole(constants.ROLE_OPERATIONS),
-	checkRole(constants.ROLE_MANAGEMENT),
+	authorizeRole(["Operations", "Manager"]),
 	getAircraftById,
 );
 aircraftRouter.put(
 	"/:id",
 	authenticate,
-	checkRole(constants.ROLE_OPERATIONS),
+	authorizeRole(["Operations", "Manager"]),
 	updateAircraft,
 );
 aircraftRouter.delete(
 	"/:id",
 	authenticate,
-	checkRole(constants.ROLE_MANAGEMENT),
+	authorizeRole(["Manager"]),
 	deleteAircraft,
 );
 aircraftRouter.post(
 	"/:id/maintenance",
 	authenticate,
-	checkRole(constants.ROLE_OPERATIONS),
+	authorizeRole(["Operations"]),
 	addMaintenance,
 );
 

@@ -38,10 +38,12 @@ Permission.belongsToMany(Role, {
 
 Aircraft.hasMany(AircraftMaintenance, {
 	foreignKey: "aircraft_id",
+	as: "maintenance_records",
 });
 
 AircraftMaintenance.belongsTo(Aircraft, {
 	foreignKey: "aircraft_id",
+	as: "maintenance_records",
 });
 
 /* FLIGHT RELATIONS */

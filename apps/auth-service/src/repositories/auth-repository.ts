@@ -1,9 +1,9 @@
-import Role from "../models/role";
-import User from "../models/user";
+import { Role } from "@package/shared-database";
+import { User } from "@package/shared-database";
 
 export const findUserByEmail = async (email: string) => {
 	const user = await User.findOne({ where: { email } });
-	console.log("hfjdhfd:", user?.dataValues);
+	console.log("hfjdhfd:", user);
 	return user?.dataValues;
 };
 
@@ -14,8 +14,8 @@ export const findUserProfile = async (id: string) => {
 	});
 	return user?.dataValues;
 };
-export const createUser = async (data: any, transaction?: any) => {
-	const user = await User.create(data, { transaction });
+export const createUser = async (data: any) => {
+	const user = await User.create(data);
 	console.log("hiiiiheloo:", user);
 	return user?.dataValues;
 };

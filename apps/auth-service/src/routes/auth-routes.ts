@@ -5,7 +5,8 @@ import {
 	logoutUser,
 	refreshToken,
 } from "../controllers/auth-controller";
-import { authenticate } from "../middlewares/auth-middleware";
+import { authenticate } from "@package/shared-middleware";
+import { authorizeRole } from "@package/shared-middleware";
 
 const authRouter: Router = Router();
 
@@ -33,7 +34,12 @@ const authRouter: Router = Router();
  *         description: User registered successfully
  */
 
-authRouter.post("/register", registerUser);
+authRouter.post(
+	"/register",
+	authenticate,
+	authorizeRole(["Admin"]),
+	registerUser,
+);
 
 /**
  * @swagger

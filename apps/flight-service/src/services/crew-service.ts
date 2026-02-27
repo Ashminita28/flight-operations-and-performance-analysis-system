@@ -1,4 +1,4 @@
-import Crew from "../models/crew";
+import { Crew } from "@package/shared-database";
 
 export const createCrewService = async (data: any) => {
 	return await Crew.create(data);

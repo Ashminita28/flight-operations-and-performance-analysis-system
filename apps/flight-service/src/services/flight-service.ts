@@ -1,21 +1,22 @@
-import axios from "axios";
-import Flight from "../models/flight";
-import FlightCrew from "../models/flight-crew";
-import Crew from "../models/crew";
-import { Aircraft } from "../models/aircraft";
+// import axios from "axios";
+// import Flight from "../models/flight";
+// import FlightCrew from "../models/flight-crew";
+// import Crew from "../models/crew";
+// import { refreshDashboard } from "./dashboard-service";
+// import { Aircraft } from "../models/connection-models/aircraft";
 
-// const aircraft_service = "http://localhost:3002/";
+import { Flight, FlightCrew, Crew, Aircraft } from "@package/shared-database";
 
 // create flight service only if aircraft available
-export const createFlightService = async (id: string, data: any) => {
-	console.log("j:-", data);
-	console.log("hsjjdmksksl");
-	console.log("aircraft id:-", data.aircraft_id);
-	// const aircraft = await axios.get(`${aircraft_service}/${data.aircraft_id}`);
-	// const aircraft=await Aircraft.findByPk(data.aircraft_id);
-	// if (!aircraft) throw new Error("Aircraft not found");
-	const flight = await Flight.create(data);
-	return flight;
+export const createFlightService = async (data: any) => {
+	try {
+		console.log("j:-", data);
+		console.log("hsjjdmksksl");
+		const flight = await Flight.create(data);
+		return flight;
+	} catch (error: any) {
+		throw new Error(error.message);
+	}
 };
 
 // get all the flights
@@ -72,4 +73,20 @@ export const assignCrewService = async (flight_id: string, crew_id: string) => {
 		flight_id,
 		crew_id,
 	});
+};
+
+export const assignAircraftService = async (
+	aircraft_id: string,
+	flight_id: string,
+) => {
+	const flight = await Aircraft.findByPk(flight_id);
+	if (!flight) throw new Error("flight not found");
+	const aircraft = await Aircraft.findByPk(aircraft_id);
+
+	if (!aircraft) throw new Error("aircraft not found");
+
+	await flight.update({ aircraft_id: aircraft_id });
+	return {
+		message: "Aircraft assigned successfully",
+	};
 };

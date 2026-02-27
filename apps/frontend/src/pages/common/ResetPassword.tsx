@@ -2,8 +2,11 @@ import { useState } from "react";
 import { api } from "../../api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 export default function ResetPassword() {
+	const navigate = useNavigate();
+
 	const [email, setEmail] = useState("");
 	const [otp, setOtp] = useState("");
 	const [password, setPassword] = useState("");
@@ -13,12 +16,23 @@ export default function ResetPassword() {
 		e.preventDefault();
 
 		try {
-			await api("/reset-password", {
+			await api("/password/reset-password", {
 				method: "POST",
-				body: JSON.stringify({ email, otp, password }),
+
+				body: JSON.stringify({
+					email,
+
+					otp,
+
+					password,
+				}),
 			});
 
-			setMessage("Password reset successful");
+			setMessage("Password Reset Success");
+
+			setTimeout(() => {
+				navigate("/login");
+			}, 1500);
 		} catch (err: any) {
 			setMessage(err.message);
 		}
@@ -28,9 +42,11 @@ export default function ResetPassword() {
 		<div className="min-h-screen bg-sky-950 flex items-center justify-center">
 			<form
 				onSubmit={handleSubmit}
-				className="bg-white p-6 rounded-xl w-80 space-y-4"
+				className="bg-white p-8 rounded-xl w-96 space-y-5 shadow-lg"
 			>
-				<h2 className="text-xl font-semibold text-center">Reset Password</h2>
+				<h2 className="text-2xl font-bold text-center text-sky-950">
+					Reset Password
+				</h2>
 
 				<Input
 					placeholder="Email"

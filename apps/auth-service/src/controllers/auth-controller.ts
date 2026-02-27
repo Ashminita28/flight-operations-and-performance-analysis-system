@@ -1,17 +1,25 @@
 import { Request, Response } from "express";
 import * as service from "../services/auth-service";
-import * as emailService from "../services/email-service";
-import Send from "../utils/response-utils";
+import Send from "../validations/response";
 import z from "zod";
 import authSchema from "../validations/auth-schema";
 
 // register user
 export const registerUser = async (req: Request, res: Response) => {
 	try {
-		const { name, email, phone, password } = req.body as z.infer<
-			typeof authSchema.register
-		>;
-		const result = await service.registerService(name, email, phone, password);
+		const { first_name, last_name, email, phone, password, roleName } =
+			req.body;
+		if (!first_name || !last_name || !email || !password) {
+			return Send.badRequest(res, null, "Required fields missing");
+		}
+		const result = await service.registerService(
+			first_name,
+			last_name,
+			email,
+			phone,
+			password,
+			roleName,
+		);
 		return Send.success(res, result, "User successfully registered.");
 	} catch (error: any) {
 		console.error("REGISTER ERROR:", error);
@@ -23,6 +31,10 @@ export const registerUser = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
 	try {
 		const { email, password } = req.body as z.infer<typeof authSchema.login>;
+
+		if (!email || !password) {
+			return Send.badRequest(res, null, "Email and password required");
+		}
 		const { accessToken, refreshToken, user } = await service.loginService(
 			email,
 			password,
@@ -80,7 +92,7 @@ export const refreshToken = async (req: any, res: Response) => {
 // password forgot
 export const forgotPassword = async (req: Request, res: Response) => {
 	try {
-		const result = await emailService.forgotPasswordService(req.body.email);
+		const result = await service.forgotPasswordService(req.body.email);
 		res.json(result);
 
 		// return Send.success(res, result, "ok let me reset");
@@ -94,11 +106,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 export const resetPassword = async (req: Request, res: Response) => {
 	try {
 		const { email, password, otp } = req.body;
-		const result = await emailService.resetPasswordService(
-			email,
-			password,
-			otp,
-		);
+		const result = await service.resetPasswordService(email, otp, password);
 		res.json(result);
 		// return Send.success(res, result, "password reset successfully");
 	} catch (error: any) {

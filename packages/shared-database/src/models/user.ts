@@ -1,5 +1,6 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../sequelize-connection";
+import { Role } from "./role";
 
 export class User extends Model {
 	declare id: string;
@@ -13,6 +14,7 @@ export class User extends Model {
 
 	declare readonly created_at: Date;
 	declare readonly updated_at: Date;
+	declare roles?: Role[];
 }
 
 User.init(

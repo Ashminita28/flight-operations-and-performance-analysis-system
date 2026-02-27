@@ -4,124 +4,208 @@ import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardHeader,
 	CardTitle,
+	CardDescription,
 } from "@/components/ui/card";
-import {
-	Field,
-	FieldDescription,
-	FieldGroup,
-	FieldLabel,
-} from "@/components/ui/field";
+
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+
 import { Input } from "@/components/ui/input";
+
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+
 import { useState } from "react";
 import { useAuthStore } from "../store/auth-store";
 import { useNavigate } from "react-router-dom";
 
 export function SignupForm() {
 	const register = useAuthStore(s => s.register);
+
 	const navigate = useNavigate();
 
-	const [formData, setFormData] = useState({
-		name: "",
+	const [form, setForm] = useState({
+		first_name: "",
+
+		last_name: "",
+
 		email: "",
+
 		phone: "",
+
 		password: "",
+
+		roleName: "Operations",
 	});
 
 	const [message, setMessage] = useState("");
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setFormData({ ...formData, [e.target.name]: e.target.value });
-	};
-
-	const handleSubmit = async (e: React.SubmitEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+
 		try {
 			await register(
-				formData.name,
-				formData.email,
-				formData.phone,
-				formData.password,
+				form.first_name,
+
+				form.last_name,
+
+				form.email,
+
+				form.phone,
+
+				form.password,
+
+				form.roleName,
 			);
-			setMessage("Account created successfully");
-			navigate("/login");
+
+			setMessage("User Registered Successfully");
+
+			navigate("/admin");
 		} catch (err: any) {
-			setMessage(err.message || "Registration failed");
+			setMessage(err.message || "Registration Failed");
 		}
 	};
 
 	return (
 		<Card className="bg-white">
 			<CardHeader>
-				<CardTitle>Create an account</CardTitle>
-				<CardDescription>Enter your information below</CardDescription>
+				<CardTitle>Register User</CardTitle>
+
+				<CardDescription>Admin creates users here</CardDescription>
 			</CardHeader>
 
 			<CardContent>
 				<form onSubmit={handleSubmit}>
 					<FieldGroup>
 						<Field>
-							<FieldLabel>Full Name</FieldLabel>
+							<FieldLabel>First Name</FieldLabel>
+
 							<Input
-								name="name"
-								onChange={handleChange}
+								value={form.first_name}
+								onChange={e =>
+									setForm({
+										...form,
+
+										first_name: e.target.value,
+									})
+								}
+								required
+							/>
+						</Field>
+
+						<Field>
+							<FieldLabel>Last Name</FieldLabel>
+
+							<Input
+								value={form.last_name}
+								onChange={e =>
+									setForm({
+										...form,
+
+										last_name: e.target.value,
+									})
+								}
 								required
 							/>
 						</Field>
 
 						<Field>
 							<FieldLabel>Email</FieldLabel>
+
 							<Input
-								name="email"
 								type="email"
-								onChange={handleChange}
+								value={form.email}
+								onChange={e =>
+									setForm({
+										...form,
+
+										email: e.target.value,
+									})
+								}
 								required
 							/>
 						</Field>
 
 						<Field>
 							<FieldLabel>Phone</FieldLabel>
+
 							<Input
-								name="phone"
-								onChange={handleChange}
+								value={form.phone}
+								onChange={e =>
+									setForm({
+										...form,
+
+										phone: e.target.value,
+									})
+								}
 								required
 							/>
 						</Field>
 
 						<Field>
 							<FieldLabel>Password</FieldLabel>
+
 							<Input
-								name="password"
 								type="password"
-								onChange={handleChange}
+								value={form.password}
+								onChange={e =>
+									setForm({
+										...form,
+
+										password: e.target.value,
+									})
+								}
 								required
 							/>
 						</Field>
 
 						<Field>
-							<Button
-								type="submit"
-								className="bg-sky-950 w-full"
-							>
-								Create Account
-							</Button>
+							<FieldLabel>Role</FieldLabel>
 
-							<FieldDescription className="text-center mt-3">
-								Already have an account?{" "}
-								<a
-									href="/login"
-									className="underline"
-								>
-									Sign in
-								</a>
-							</FieldDescription>
+							<Select
+								value={form.roleName}
+								onValueChange={value =>
+									setForm({
+										...form,
+
+										roleName: value,
+									})
+								}
+							>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+
+								<SelectContent>
+									<SelectItem value="Operations">Operations</SelectItem>
+
+									<SelectItem value="Manager">Manager</SelectItem>
+
+									<SelectItem value="Analyst">Analyst</SelectItem>
+
+									<SelectItem value="Admin">Admin</SelectItem>
+								</SelectContent>
+							</Select>
 						</Field>
+
+						<Button
+							type="submit"
+							className="bg-sky-950 w-full"
+						>
+							Register User
+						</Button>
+
+						{message && (
+							<p className="text-center text-red-500 mt-3">{message}</p>
+						)}
 					</FieldGroup>
 				</form>
-
-				{message && <p className="mt-4 text-center text-red-500">{message}</p>}
 			</CardContent>
 		</Card>
 	);

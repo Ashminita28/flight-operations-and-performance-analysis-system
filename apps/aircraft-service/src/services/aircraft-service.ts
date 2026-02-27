@@ -1,13 +1,14 @@
-import { Aircraft, AircraftMaintenance } from "../models";
+import { Aircraft, AircraftMaintenance } from "@package/shared-database";
 
 // Create Aircraft
 export const createAircraft = async (data: any) => {
-	return Aircraft.create(data);
+	const aircraft = await Aircraft.create(data);
+	return aircraft;
 };
 
 // Get All Aircraft with Maintenance
 export const getAllAircraft = async () => {
-	return Aircraft.findAll({
+	return await Aircraft.findAll({
 		include: [
 			{
 				model: AircraftMaintenance,

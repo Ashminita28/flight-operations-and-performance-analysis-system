@@ -1,20 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
-
-import sequelize from "@repo/shared-databse";
+import sequelize from "@package/shared-database/dist/sequelize-connection";
 import app from "./app";
-import User from "./models/user";
-import Role from "./models/role";
-import { Permission } from "./models/association";
 
 const start = async () => {
 	try {
-		console.log("USER permissions:", Object.keys(User.associations));
-		console.log("ROLE permissions:", Object.keys(Role.associations));
-		console.log(
-			"PERMISSION permissions:",
-			Object.keys(Permission.associations),
-		);
 		await sequelize.authenticate();
 		console.log("DB connected");
 		app.listen(3000, () => {

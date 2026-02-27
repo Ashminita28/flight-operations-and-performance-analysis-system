@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-import sequelize from "./config/db-connection";
+import sequelize from "@package/shared-database/dist/sequelize-connection";
 
 import app from "./app";
 
@@ -16,5 +16,4 @@ const start = async () => {
 		process.exit(1);
 	}
 };
-
 start();

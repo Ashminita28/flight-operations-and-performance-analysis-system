@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import User from "../models/user";
-import Send from "../utils/response-utils";
+import Send from "../validations/response";
+
 import { findAllUsers } from "../repositories/auth-repository";
 
 export const adminController = async (req: Request, res: Response) => {

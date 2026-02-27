@@ -1,4 +1,4 @@
-import PasswordReset from "../models/passwordReset";
+import { PasswordReset } from "@package/shared-database";
 
 export const createOtp = async (
 	email: string,

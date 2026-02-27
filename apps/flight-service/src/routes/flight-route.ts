@@ -6,52 +6,51 @@ import {
 	getFlightById,
 	updateFlightStatus,
 	assignCrew,
+	assignAircraft,
 } from "../controllers/flight-controller";
-import { checkRole } from "../middlewares/permission-middleware";
-import constants from "../utils/constants";
-import { getDashboard } from "../controllers/dashboard-controller";
-import { authenticate } from "../middlewares/auth-middleware";
+import { authenticate, authorizeRole } from "@package/shared-middleware";
 
 const flightRouter: Router = Router();
 
 flightRouter.post(
 	"/",
 	authenticate,
-	checkRole(constants.ROLE_OPERATIONS),
+	authorizeRole(["Operations"]),
 	createFlight,
 );
 
 flightRouter.get(
 	"/",
 	authenticate,
-	checkRole(constants.ROLE_MANAGEMENT),
-	checkRole(constants.ROLE_OPERATIONS),
-	checkRole(constants.ROLE_ANALYST),
+	authorizeRole(["Manager", "Operations", "Analyst"]),
 	getFlights,
 );
 
 flightRouter.get(
 	"/:id",
 	authenticate,
-	checkRole(constants.ROLE_OPERATIONS),
-	checkRole(constants.ROLE_MANAGEMENT),
+	authorizeRole(["Manager", "Operations"]),
 	getFlightById,
 );
 
 flightRouter.patch(
 	"/:id/status",
 	authenticate,
-	checkRole(constants.ROLE_OPERATIONS),
+	authorizeRole(["Operations"]),
 	updateFlightStatus,
 );
 
 flightRouter.post(
 	"/assign-crew",
 	authenticate,
-	checkRole(constants.ROLE_OPERATIONS),
+	authorizeRole(["Operations"]),
 	assignCrew,
 );
-
-flightRouter.get("/dashboard", authenticate, getDashboard);
+flightRouter.post(
+	"/assign-aircraft",
+	authenticate,
+	authorizeRole(["Operations"]),
+	assignAircraft,
+);
 
 export default flightRouter;

@@ -1,55 +1,106 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import * as service from "../services/flight-service";
 
-interface IdParams {
-	id: string;
-}
-
-export const createFlight = async (req: Request<IdParams>, res: Response) => {
+// Create Flight
+export const createFlight = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
 	try {
-		console.log("ikaiskis");
-		const flight = await service.createFlightService(req.params.id, req.body);
-		console.log("sircraft created:-", flight);
+		const flight = await service.createFlightService(req.body);
 
 		res.status(201).json(flight);
-	} catch (err: any) {
-		res.status(500).json({
-			message: err.message,
-		});
+	} catch (error) {
+		next(error);
 	}
 };
 
-export const getFlights = async (req: Request, res: Response) => {
-	const flights = await service.getAllFlights();
-
-	res.json(flights);
+// Get All Flights
+export const getFlights = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const flights = await service.getAllFlights();
+		res.json(flights);
+	} catch (error) {
+		next(error);
+	}
 };
 
-export const getFlightById = async (req: Request<IdParams>, res: Response) => {
-	const flight = await service.getFlightById(req.params.id);
+// Get Flight by ID
 
-	res.json(flight);
+export const getFlightById = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const id = req.params.id as string;
+		const flight = await service.getFlightById(id);
+
+		res.json(flight);
+	} catch (error) {
+		next(error);
+	}
 };
+
+// Update Status
 
 export const updateFlightStatus = async (
-	req: Request<IdParams>,
+	req: Request,
 	res: Response,
+	next: NextFunction,
 ) => {
-	const flight = await service.updateFlightStatusService(
-		req.params.id,
-		req.body.status,
-		req.body.delay_reason,
-		req.body.delay_minutes,
-	);
+	try {
+		const id = req.params.id as string;
+		const flight = await service.updateFlightStatusService(
+			id,
+			req.body.status,
+			req.body.delay_reason,
+			req.body.delay_minutes,
+		);
 
-	res.json(flight);
+		res.json(flight);
+	} catch (error) {
+		next(error);
+	}
 };
 
-export const assignCrew = async (req: Request, res: Response) => {
-	const record = await service.assignCrewService(
-		req.body.flight_id,
-		req.body.crew_id,
-	);
+// Assign Crew
 
-	res.json(record);
+export const assignCrew = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const record = await service.assignCrewService(
+			req.body.flight_id,
+			req.body.crew_id,
+		);
+
+		res.json(record);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const assignAircraft = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const result = await service.assignAircraftService(
+			req.body.flight_id,
+			req.body.aircraft_id,
+		);
+
+		res.json(result);
+	} catch (err) {
+		next(err);
+	}
 };

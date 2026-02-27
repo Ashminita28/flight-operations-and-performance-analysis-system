@@ -28,7 +28,7 @@ export function LoginForm({
 			if (user?.roles?.includes("Admin")) {
 				navigate("/admin");
 			} else if (user?.roles?.includes("Manager")) {
-				navigate("/manager");
+				navigate("/flight-dashboard");
 			} else if (user?.roles?.includes("Analyst")) {
 				navigate("/analyst");
 			} else if (user?.roles?.includes("Operations")) {

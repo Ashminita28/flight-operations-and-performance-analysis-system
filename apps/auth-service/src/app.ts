@@ -1,5 +1,5 @@
 import express, { Express } from "express";
-import "./models/association";
+import "@package/shared-database";
 import authRouter from "./routes/auth-routes";
 import cookieParser from "cookie-parser";
 import passwordRouter from "./routes/password-routes";
@@ -47,9 +47,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use("/api/auth", authRouter);
-app.use("/api", passwordRouter);
+app.use("/api/password", passwordRouter);
 app.use("/api/admin", adminRouter);
-app.use("/api", userRouter);
+app.use("/api/user", userRouter);
 console.log(Object.keys(swaggerSpec.paths || {}));
 // DISPLAY THE SWAGGER UI
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

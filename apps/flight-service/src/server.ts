@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config;
 import app from "./app";
-import sequelize from "./config/db-connections";
+import sequelize from "@package/shared-database/dist/sequelize-connection";
 
 const start = async () => {
 	try {

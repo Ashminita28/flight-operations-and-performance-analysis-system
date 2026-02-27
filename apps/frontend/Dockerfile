@@ -16,7 +16,7 @@ COPY packages ./packages
 COPY apps ./apps
  
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install 
  
 
 RUN pnpm --filter frontend build

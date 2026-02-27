@@ -1,6 +1,6 @@
-import User from "../models/user";
-import Role from "../models/role";
-import Permission from "../models/permission";
+import { User } from "@package/shared-database";
+import { Role } from "@package/shared-database";
+import { Permission } from "@package/shared-database";
 
 export const findUserByEmailWithRoles = async (email: string) => {
 	const user = await User.findOne({
