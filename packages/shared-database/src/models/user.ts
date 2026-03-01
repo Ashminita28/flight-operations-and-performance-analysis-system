@@ -12,9 +12,9 @@ export class User extends Model {
 	declare status: string;
 	declare refresh_token: string | null;
 
-	declare readonly created_at: Date;
-	declare readonly updated_at: Date;
-	declare roles?: Role[];
+	declare readonly createdAt: Date;
+	declare readonly updatedAt: Date;
+	public Roles!: Role[];
 }
 
 User.init(

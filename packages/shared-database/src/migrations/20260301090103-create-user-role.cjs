@@ -1,24 +1,18 @@
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		await queryInterface.createTable("user_roles", {
+			id: {
+				type: Sequelize.UUID,
+				primaryKey: true,
+				defaultValue: Sequelize.UUIDV4,
+			},
+
 			user_id: {
 				type: Sequelize.UUID,
-				allowNull: false,
-				references: {
-					model: "users",
-					key: "id",
-				},
-				onDelete: "CASCADE",
 			},
 
 			role_id: {
 				type: Sequelize.UUID,
-				allowNull: false,
-				references: {
-					model: "roles",
-					key: "id",
-				},
-				onDelete: "CASCADE",
 			},
 
 			createdAt: {
@@ -30,11 +24,6 @@ module.exports = {
 				type: Sequelize.DATE,
 				defaultValue: Sequelize.NOW,
 			},
-		});
-		await queryInterface.addConstraint("user_roles", {
-			fields: ["role_id", "user_id"],
-			type: "primary key",
-			name: "pk_user_roles",
 		});
 	},
 

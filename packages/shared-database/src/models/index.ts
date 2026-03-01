@@ -67,6 +67,7 @@ export function setupAssociations() {
 
 export {
 	Role,
+	Permission,
 	RolePermission,
 	User,
 	UserRole,

@@ -1,41 +1,28 @@
-import { Model, DataTypes, Optional } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 import sequelize from "../sequelize-connection";
 
-interface RolePermissionsAttributes {
-	role_id: string;
-	permission_id: string;
-	createdAt?: Date;
+export class RolePermission extends Model {
+	declare id: string;
 
-	updatedAt?: Date;
-}
-
-type RolePermissionCreationAttributes = Optional<
-	RolePermissionsAttributes,
-	"role_id" | "permission_id" | "createdAt" | "updatedAt"
->;
-
-export class RolePermission
-	extends Model<RolePermissionsAttributes, RolePermissionCreationAttributes>
-	implements RolePermissionsAttributes
-{
 	declare role_id: string;
-	declare permission_id: string;
-	declare createdAt: Date;
 
-	declare updatedAt: Date;
+	declare permission_id: string;
+
+	declare readonly createdAt: Date;
+	declare readonly updatedAt: Date;
 }
 
 RolePermission.init(
 	{
-		role_id: {
+		id: {
 			type: DataTypes.UUID,
 			primaryKey: true,
+			defaultValue: DataTypes.UUIDV4,
 		},
 
-		permission_id: {
-			type: DataTypes.UUID,
-			primaryKey: true,
-		},
+		role_id: DataTypes.UUID,
+
+		permission_id: DataTypes.UUID,
 	},
 	{
 		sequelize,

@@ -14,15 +14,15 @@ export class UserRole extends Model {
 
 UserRole.init(
 	{
-		user_id: {
+		id: {
 			type: DataTypes.UUID,
 			primaryKey: true,
+			defaultValue: DataTypes.UUIDV4,
 		},
 
-		role_id: {
-			type: DataTypes.UUID,
-			primaryKey: true,
-		},
+		user_id: DataTypes.UUID,
+
+		role_id: DataTypes.UUID,
 	},
 	{
 		sequelize,

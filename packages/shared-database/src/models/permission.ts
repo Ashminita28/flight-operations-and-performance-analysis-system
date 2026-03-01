@@ -1,31 +1,12 @@
-import { Model, DataTypes, Optional } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 import sequelize from "../sequelize-connection";
 
-interface PermissionAttributes {
-	id: string;
-	resource: string;
-	action: string;
-	description: string;
-	createdAt?: Date;
-	updatedAt?: Date;
-}
-
-type PermissionCreationAttributes = Optional<
-	PermissionAttributes,
-	"id" | "description" | "createdAt" | "updatedAt"
->;
-
-export class Permission
-	extends Model<PermissionAttributes, PermissionCreationAttributes>
-	implements PermissionAttributes
-{
+export class Permission extends Model {
 	declare id: string;
-	declare resource: string;
-	declare action: string;
-	declare description: string;
-	declare createdAt: Date;
+	declare name: string;
 
-	declare updatedAt: Date;
+	declare readonly createdAt: Date;
+	declare readonly updatedAt: Date;
 }
 
 Permission.init(
@@ -36,17 +17,10 @@ Permission.init(
 			defaultValue: DataTypes.UUIDV4,
 		},
 
-		resource: {
-			type: DataTypes.STRING(100),
-			allowNull: false,
+		name: {
+			type: DataTypes.STRING,
+			unique: true,
 		},
-
-		action: {
-			type: DataTypes.STRING(50),
-			allowNull: false,
-		},
-
-		description: DataTypes.TEXT,
 	},
 	{
 		sequelize,

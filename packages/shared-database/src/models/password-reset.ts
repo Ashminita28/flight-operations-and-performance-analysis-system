@@ -1,55 +1,32 @@
-import { Model, DataTypes, Optional } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 import sequelize from "../sequelize-connection";
 
-interface PasswordResetAttributes {
-	id: string;
-	user_id: string;
-	token: string;
-	expires_at: Date;
-	used: boolean;
-	createdAt?: Date;
-	updatedAt?: Date;
-}
-
-type PasswordResetCreationAttributes = Optional<
-	PasswordResetAttributes,
-	"id" | "createdAt" | "updatedAt"
->;
-
-export class PasswordReset
-	extends Model<PasswordResetAttributes, PasswordResetCreationAttributes>
-	implements PasswordResetAttributes
-{
+export class PasswordReset extends Model {
 	declare id: string;
-	declare user_id: string;
-	declare token: string;
+
+	declare email: string;
+
+	declare otp: string;
+
 	declare expires_at: Date;
-	declare used: boolean;
-	declare createdAt: Date;
-	declare updatedAt: Date;
+
+	declare readonly createdAt: Date;
+	declare readonly updatedAt: Date;
 }
 
 PasswordReset.init(
 	{
 		id: {
 			type: DataTypes.UUID,
-			allowNull: false,
 			primaryKey: true,
 			defaultValue: DataTypes.UUIDV4,
 		},
-		user_id: {
-			type: DataTypes.UUID,
-			allowNull: false,
-		},
-		token: {
-			type: DataTypes.STRING,
-		},
-		expires_at: {
-			type: DataTypes.DATE,
-		},
-		used: {
-			type: DataTypes.BOOLEAN,
-		},
+
+		email: DataTypes.STRING,
+
+		otp: DataTypes.STRING,
+
+		expires_at: DataTypes.DATE,
 	},
 	{
 		sequelize,

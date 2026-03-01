@@ -1,30 +1,13 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 import sequelize from "../sequelize-connection";
 
-interface RoleAttributes {
-	id: string;
-	name: string;
-	description?: string;
-	createdAt?: Date;
-
-	updatedAt?: Date;
-}
-
-type RoleCreationAttributes = Optional<
-	RoleAttributes,
-	"id" | "createdAt" | "updatedAt"
->;
-
-export class Role
-	extends Model<RoleAttributes, RoleCreationAttributes>
-	implements RoleAttributes
-{
+export class Role extends Model {
 	declare id: string;
 	declare name: string;
-	declare description?: string;
-	declare createdAt: Date;
+	declare description: string;
 
-	declare updatedAt: Date;
+	declare readonly createdAt: Date;
+	declare readonly updatedAt: Date;
 }
 
 Role.init(
@@ -36,11 +19,9 @@ Role.init(
 		},
 
 		name: {
-			type: DataTypes.STRING(50),
-			allowNull: false,
+			type: DataTypes.STRING,
 			unique: true,
 		},
-
 		description: DataTypes.TEXT,
 	},
 	{

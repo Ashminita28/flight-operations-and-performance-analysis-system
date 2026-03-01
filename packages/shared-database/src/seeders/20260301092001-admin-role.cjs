@@ -5,7 +5,7 @@ const crypto = require("crypto");
 module.exports = {
 	async up(queryInterface) {
 		const user = await queryInterface.sequelize.query(
-			`SELECT id FROM users WHERE email='ashminita_aviation@gmail.com'`,
+			`SELECT id FROM users WHERE email='ashminita_aviation23@gmail.com'`,
 			{ type: queryInterface.sequelize.QueryTypes.SELECT },
 		);
 
@@ -16,6 +16,7 @@ module.exports = {
 
 		await queryInterface.bulkInsert("user_roles", [
 			{
+				id: crypto.randomUUID(),
 				user_id: user[0].id,
 				role_id: role[0].id,
 				createdAt: new Date(),
