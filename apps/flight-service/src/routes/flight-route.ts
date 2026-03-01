@@ -1,56 +1,69 @@
-import express from "express";
 import { Router } from "express";
 import {
-	createFlight,
-	getFlights,
-	getFlightById,
-	updateFlightStatus,
-	assignCrew,
 	assignAircraft,
+	createFlightController,
+	getAllFlightsController,
+	getFlightByIdController,
+	updateFlightByIdController,
+	deleteFlightById,
+	getTodaysFlightUpdates,
+	searchFlightController,
+	changeFlightStatusByIdController,
 } from "../controllers/flight-controller";
 import { authenticate, authorizeRole } from "@package/shared-middleware";
 
 const flightRouter: Router = Router();
 
 flightRouter.post(
-	"/",
+	"/flights",
 	authenticate,
 	authorizeRole(["Operations"]),
-	createFlight,
+	createFlightController,
 );
 
 flightRouter.get(
-	"/",
+	"/flights",
 	authenticate,
-	authorizeRole(["Manager", "Operations", "Analyst"]),
-	getFlights,
+	authorizeRole(["Manager", "Operations", "Analyst", "Admin"]),
+	getAllFlightsController,
 );
 
 flightRouter.get(
-	"/:id",
+	"/flights/:id",
 	authenticate,
-	authorizeRole(["Manager", "Operations"]),
-	getFlightById,
+	authorizeRole(["Operations"]),
+	getFlightByIdController,
+);
+
+flightRouter.put(
+	"/flights/:id",
+	authorizeRole(["Operations"]),
+	updateFlightByIdController,
 );
 
 flightRouter.patch(
-	"/:id/status",
+	"/flights/:id/status",
 	authenticate,
 	authorizeRole(["Operations"]),
-	updateFlightStatus,
+	changeFlightStatusByIdController,
 );
 
-flightRouter.post(
-	"/assign-crew",
+flightRouter.delete(
+	"/flights/:id",
 	authenticate,
 	authorizeRole(["Operations"]),
-	assignCrew,
+	deleteFlightById,
 );
-flightRouter.post(
-	"/assign-aircraft",
+flightRouter.get(
+	"/flights/today",
 	authenticate,
-	authorizeRole(["Operations"]),
-	assignAircraft,
+	authorizeRole(["Manager", "Operations", "Analyst", "Admin"]),
+	getTodaysFlightUpdates,
+);
+flightRouter.get(
+	"/flights/search",
+	authorizeRole(["Manager", "Operations", "Analyst", "Admin"]),
+	searchFlightController,
 );
 
 export default flightRouter;
