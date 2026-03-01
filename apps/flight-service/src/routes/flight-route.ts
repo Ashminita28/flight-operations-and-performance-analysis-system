@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-	assignAircraft,
 	createFlightController,
 	getAllFlightsController,
 	getFlightByIdController,
@@ -17,52 +16,52 @@ const flightRouter: Router = Router();
 flightRouter.post(
 	"/flights",
 	authenticate,
-	authorizeRole(["Operations"]),
+	authorizeRole("Operations"),
 	createFlightController,
 );
 
 flightRouter.get(
 	"/flights",
 	authenticate,
-	authorizeRole(["Manager", "Operations", "Analyst", "Admin"]),
+	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	getAllFlightsController,
 );
 
 flightRouter.get(
 	"/flights/:id",
 	authenticate,
-	authorizeRole(["Operations"]),
+	authorizeRole("Operations"),
 	getFlightByIdController,
 );
 
 flightRouter.put(
 	"/flights/:id",
-	authorizeRole(["Operations"]),
+	authorizeRole("Operations"),
 	updateFlightByIdController,
 );
 
 flightRouter.patch(
 	"/flights/:id/status",
 	authenticate,
-	authorizeRole(["Operations"]),
+	authorizeRole("Operations"),
 	changeFlightStatusByIdController,
 );
 
 flightRouter.delete(
 	"/flights/:id",
 	authenticate,
-	authorizeRole(["Operations"]),
+	authorizeRole("Operations"),
 	deleteFlightById,
 );
 flightRouter.get(
 	"/flights/today",
 	authenticate,
-	authorizeRole(["Manager", "Operations", "Analyst", "Admin"]),
+	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	getTodaysFlightUpdates,
 );
 flightRouter.get(
 	"/flights/search",
-	authorizeRole(["Manager", "Operations", "Analyst", "Admin"]),
+	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	searchFlightController,
 );
 

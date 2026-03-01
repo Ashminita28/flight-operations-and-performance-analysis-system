@@ -1,17 +1,43 @@
-// import axios from "axios";
-// import Flight from "../models/flight";
-// import FlightCrew from "../models/flight-crew";
-// import Crew from "../models/crew";
-// import { refreshDashboard } from "./dashboard-service";
-// import { Aircraft } from "../models/connection-models/aircraft";
-
-import { Flight, FlightCrew, Crew, Aircraft } from "@package/shared-database";
+import { Flight, Aircraft } from "@package/shared-database";
+import { Op } from "sequelize";
 
 // create flight service only if aircraft available
 export const createFlightService = async (data: any) => {
 	try {
-		console.log("j:-", data);
-		console.log("hsjjdmksksl");
+		if (
+			new Date(data.scheduled_arrival) <= new Date(data.scheduled_departure)
+		) {
+			throw new Error("Arrival time must be after departure time");
+		}
+		if (data.origin_airport === data.destination_airport) {
+			throw new Error("Origin and destination cannot be true");
+		}
+		const aircraft = await Aircraft.findByPk(data.aircraft_id);
+		if (!aircraft) {
+			throw new Error("Aircraft not found");
+		}
+		if (aircraft.status === "maintainance") {
+			throw new Error("Aircraft is under maintainance");
+		}
+		const overlappingFlight = await Flight.findOne({
+			where: {
+				aircraft_id: data.aircraft_id,
+				scheduled_departure: {
+					[Op.lt]: data.scheduled_arrival,
+				},
+				scheduled_arrival: {
+					[Op.gt]: data.scheduled_departure,
+				},
+			},
+		});
+
+		if (overlappingFlight) {
+			const error: any = new Error(
+				"Aircraft already assigned to overlapping flight",
+			);
+			error.statusCode = 409;
+			throw error;
+		}
 		const flight = await Flight.create(data);
 		return flight;
 	} catch (error: any) {
@@ -40,53 +66,47 @@ export const updateFlight = async (id: string, data: any) => {
 };
 
 // update status of flight service
-export const updateFlightStatusService = async (
-	id: string,
-	status: string,
-	delay_reason?: string,
-	delay_minutes?: number,
-) => {
+export const updateFlightStatusService = async (id: string, status: string) => {
 	const flight = await Flight.findByPk(id);
 
 	if (!flight) throw new Error("Flight not found");
 
 	await flight.update({
 		status,
-		delay_reason,
-		delay_minutes,
 	});
 
 	return flight;
 };
 
-// assign crew to flight
-export const assignCrewService = async (flight_id: string, crew_id: string) => {
-	const flight = await Flight.findByPk(flight_id);
-
-	if (!flight) throw new Error("Flight not found");
-
-	const crew = await Crew.findByPk(crew_id);
-
-	if (!crew) throw new Error("Crew not found");
-
-	return FlightCrew.create({
-		flight_id,
-		crew_id,
+// Search Flight
+export const searchFlight = async (flightNumber: string) => {
+	return await Flight.findAll({
+		where: {
+			flight_number: {
+				[Op.iLike]: `%${flightNumber}%`,
+			},
+		},
 	});
 };
 
-export const assignAircraftService = async (
-	aircraft_id: string,
-	flight_id: string,
-) => {
-	const flight = await Aircraft.findByPk(flight_id);
-	if (!flight) throw new Error("flight not found");
-	const aircraft = await Aircraft.findByPk(aircraft_id);
+// delete flight
+export const deleteFlight = async (id: string) => {
+	const flight = await Flight.findByPk(id);
 
-	if (!aircraft) throw new Error("aircraft not found");
+	if (!flight) {
+		throw new Error("Flight not found");
+	}
 
-	await flight.update({ aircraft_id: aircraft_id });
-	return {
-		message: "Aircraft assigned successfully",
-	};
+	await flight.destroy();
+};
+
+// Today's Flights
+export const getTodaysFlights = async () => {
+	const today = new Date().toISOString().split("T")[0];
+
+	return await Flight.findAll({
+		where: {
+			flight_date: today,
+		},
+	});
 };

@@ -2,12 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import * as service from "../services/flight-service";
 
 // Create Flight
-export const createFlight = async (
+export const createFlightController = async (
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
+		console.log("iuiu", req.body);
 		const flight = await service.createFlightService(req.body);
 
 		res.status(201).json(flight);
@@ -17,7 +18,7 @@ export const createFlight = async (
 };
 
 // Get All Flights
-export const getFlights = async (
+export const getAllFlightsController = async (
 	req: Request,
 	res: Response,
 	next: NextFunction,
@@ -31,8 +32,7 @@ export const getFlights = async (
 };
 
 // Get Flight by ID
-
-export const getFlightById = async (
+export const getFlightByIdController = async (
 	req: Request,
 	res: Response,
 	next: NextFunction,
@@ -47,21 +47,15 @@ export const getFlightById = async (
 	}
 };
 
-// Update Status
-
-export const updateFlightStatus = async (
+// Update flight by id
+export const updateFlightByIdController = async (
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
 		const id = req.params.id as string;
-		const flight = await service.updateFlightStatusService(
-			id,
-			req.body.status,
-			req.body.delay_reason,
-			req.body.delay_minutes,
-		);
+		const flight = await service.updateFlight(id, req.body);
 
 		res.json(flight);
 	} catch (error) {
@@ -69,38 +63,90 @@ export const updateFlightStatus = async (
 	}
 };
 
-// Assign Crew
-
-export const assignCrew = async (
+// Delete Flight
+export const deleteFlightById = async (
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		const record = await service.assignCrewService(
-			req.body.flight_id,
-			req.body.crew_id,
-		);
+		const id = req.params.id as string;
 
-		res.json(record);
+		if (!id) {
+			return res.status(400).json({
+				success: false,
+				message: "Flight ID is required",
+			});
+		}
+
+		await service.deleteFlight(id);
+
+		res.status(200).json({
+			success: true,
+			message: "Flight deleted successfully",
+		});
 	} catch (error) {
 		next(error);
 	}
 };
 
-export const assignAircraft = async (
+// Today's Flights
+export const getTodaysFlightUpdates = async (
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		const result = await service.assignAircraftService(
-			req.body.flight_id,
-			req.body.aircraft_id,
-		);
+		const flights = await service.getTodaysFlights();
 
-		res.json(result);
-	} catch (err) {
-		next(err);
+		res.status(200).json({
+			success: true,
+			data: flights,
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+// change flight status by id
+export const changeFlightStatusByIdController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const id = req.params.id as string;
+		const flight = await service.updateFlightStatusService(id, req.body.status);
+
+		res.json(flight);
+	} catch (error) {
+		next(error);
+	}
+};
+
+// Search Flight
+export const searchFlightController = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const flightNumber = req.query.flight_number as string;
+
+		if (!flightNumber) {
+			return res.status(400).json({
+				success: false,
+				message: "Flight number query parameter is required",
+			});
+		}
+
+		const flights = await service.searchFlight(flightNumber);
+
+		res.status(200).json({
+			success: true,
+			data: flights,
+		});
+	} catch (error) {
+		next(error);
 	}
 };

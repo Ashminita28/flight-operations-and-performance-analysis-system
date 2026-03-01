@@ -1,19 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config;
 import app from "./app";
-import sequelize from "@package/shared-database/dist/sequelize-connection";
+import { initializeModels } from "@package/shared-database";
 
 const start = async () => {
-	try {
-		await sequelize.authenticate();
-		console.log("DB connected");
-		app.listen(3001, () => {
-			console.log("flight service unning on port 3001");
-		});
-	} catch (err) {
-		console.error("error occurred:", err);
-		process.exit(1);
-	}
+	await initializeModels();
+	app.listen(3001, () => {
+		console.log("flight service unning on port 3001");
+	});
 };
 
 start();
