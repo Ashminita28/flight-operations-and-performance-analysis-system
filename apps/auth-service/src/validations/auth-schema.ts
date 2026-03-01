@@ -39,7 +39,7 @@ const login = z.object({
 const register = z.object({
 	name: usernameSchema,
 	email: z.string().email("Invalid email format"),
-	password: passwordSchema,
+	password_hash: passwordSchema,
 	roleName: z.string(),
 	phone: z.string(),
 });

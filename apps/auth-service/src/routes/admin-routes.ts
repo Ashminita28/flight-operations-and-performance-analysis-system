@@ -19,7 +19,7 @@ const adminRouter: Router = Router();
 adminRouter.get(
 	"/users",
 	authenticate,
-	authorizeRole(["Admin"]),
+	authorizeRole("Admin"),
 	adminController,
 );
 

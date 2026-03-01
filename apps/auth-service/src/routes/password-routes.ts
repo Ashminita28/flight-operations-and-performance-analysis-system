@@ -14,7 +14,7 @@ const passwordRouter: Router = Router();
  *         description: OTP sent
  */
 
-passwordRouter.post("/forgot-password", forgotPassword);
+passwordRouter.post("/auth/forgot-password", forgotPassword);
 
 /**
  * @swagger
@@ -27,6 +27,6 @@ passwordRouter.post("/forgot-password", forgotPassword);
  *         description: Password reset successful
  */
 
-passwordRouter.post("/reset-password", resetPassword);
+passwordRouter.post("/auth/reset-password", resetPassword);
 
 export default passwordRouter;

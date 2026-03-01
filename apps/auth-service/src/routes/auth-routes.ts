@@ -35,9 +35,9 @@ const authRouter: Router = Router();
  */
 
 authRouter.post(
-	"/register",
+	"/auth/register",
 	authenticate,
-	authorizeRole(["Admin"]),
+	authorizeRole("Admin"),
 	registerUser,
 );
 
@@ -62,7 +62,7 @@ authRouter.post(
  *       200:
  *         description: Login successful
  */
-authRouter.post("/login", loginUser);
+authRouter.post("/auth/login", loginUser);
 
 /**
  * @swagger
@@ -75,7 +75,7 @@ authRouter.post("/login", loginUser);
  *         description: Token refreshed
  */
 
-authRouter.post("/refresh-token", refreshToken);
+authRouter.post("/auth/refresh-token", refreshToken);
 
 /**
  * @swagger
@@ -88,6 +88,6 @@ authRouter.post("/refresh-token", refreshToken);
  *         description: Logout successful
  */
 
-authRouter.post("/logout", authenticate, logoutUser);
+authRouter.post("/auth/logout", authenticate, logoutUser);
 
 export default authRouter;

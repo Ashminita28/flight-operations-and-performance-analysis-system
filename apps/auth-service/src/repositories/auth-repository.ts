@@ -39,7 +39,7 @@ export const updateUser = async (data: any) => {
 };
 
 export const saveRefreshToken = async (id: string, token: string) => {
-	const user = await User.update({ refreshToken: token }, { where: { id } });
+	const user = await User.update({ refresh_token: token }, { where: { id } });
 	console.log("saved token:", user);
 	return user;
 };

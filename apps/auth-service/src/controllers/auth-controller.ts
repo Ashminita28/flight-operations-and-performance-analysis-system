@@ -12,6 +12,7 @@ export const registerUser = async (req: Request, res: Response) => {
 		if (!first_name || !last_name || !email || !password) {
 			return Send.badRequest(res, null, "Required fields missing");
 		}
+
 		const result = await service.registerService(
 			first_name,
 			last_name,
