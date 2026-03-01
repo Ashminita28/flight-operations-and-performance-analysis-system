@@ -13,6 +13,6 @@ app.use(
 
 app.use(express.json());
 app.use(cookieParser());
-app.use("/api/aircraft", aircraftRouter);
+app.use("/api", aircraftRouter);
 
 export default app;
