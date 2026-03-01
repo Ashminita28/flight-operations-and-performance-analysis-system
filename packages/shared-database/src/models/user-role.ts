@@ -8,26 +8,25 @@ export class UserRole extends Model {
 
 	declare role_id: string;
 
-	declare readonly created_at: Date;
-	declare readonly updated_at: Date;
+	declare readonly createdAt: Date;
+	declare readonly updatedAt: Date;
 }
 
 UserRole.init(
 	{
-		id: {
+		user_id: {
 			type: DataTypes.UUID,
 			primaryKey: true,
-			defaultValue: DataTypes.UUIDV4,
 		},
 
-		user_id: DataTypes.UUID,
-
-		role_id: DataTypes.UUID,
+		role_id: {
+			type: DataTypes.UUID,
+			primaryKey: true,
+		},
 	},
 	{
 		sequelize,
-		tableName: "UserRoles",
+		tableName: "user_roles",
 		timestamps: true,
-		underscored: true,
 	},
 );

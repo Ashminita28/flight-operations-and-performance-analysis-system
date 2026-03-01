@@ -4,38 +4,42 @@ const crypto = require("crypto");
 
 module.exports = {
 	async up(queryInterface) {
-		await queryInterface.bulkInsert("Roles", [
+		await queryInterface.bulkInsert("roles", [
 			{
 				id: crypto.randomUUID(),
 				name: "Admin",
-				created_at: new Date(),
-				updated_at: new Date(),
+				description: "System Administrator",
+				createdAt: new Date(),
+				updatedAt: new Date(),
 			},
 
 			{
 				id: crypto.randomUUID(),
 				name: "Manager",
-				created_at: new Date(),
-				updated_at: new Date(),
+				description: "Management User",
+				createdAt: new Date(),
+				updatedAt: new Date(),
 			},
 
 			{
 				id: crypto.randomUUID(),
 				name: "Operations",
-				created_at: new Date(),
-				updated_at: new Date(),
+				description: "Operation staff",
+				createdAt: new Date(),
+				updatedAt: new Date(),
 			},
 
 			{
 				id: crypto.randomUUID(),
 				name: "Analyst",
-				created_at: new Date(),
-				updated_at: new Date(),
+				description: "Performance Analyst",
+				createdAt: new Date(),
+				updatedAt: new Date(),
 			},
 		]);
 	},
 
 	async down(queryInterface) {
-		await queryInterface.bulkDelete("Roles", null, {});
+		await queryInterface.bulkDelete("roles", null, {});
 	},
 };

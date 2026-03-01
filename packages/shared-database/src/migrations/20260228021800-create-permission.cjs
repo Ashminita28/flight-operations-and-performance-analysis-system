@@ -1,37 +1,38 @@
 "use strict";
-
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		await queryInterface.createTable("RolePermissions", {
+		await queryInterface.createTable("permissions", {
 			id: {
 				type: Sequelize.UUID,
+				allowNull: false,
 				primaryKey: true,
 				defaultValue: Sequelize.UUIDV4,
 			},
-
-			role_id: {
-				type: Sequelize.UUID,
+			resource: {
+				type: Sequelize.STRING(100),
 				allowNull: false,
 			},
-
-			permission_id: {
-				type: Sequelize.UUID,
+			action: {
+				type: Sequelize.STRING(50),
 				allowNull: false,
 			},
-
-			created_at: {
+			description: {
+				type: Sequelize.TEXT,
+			},
+			createdAt: {
 				type: Sequelize.DATE,
+				allowNull: false,
 				defaultValue: Sequelize.NOW,
 			},
-
-			updated_at: {
+			updatedAt: {
 				type: Sequelize.DATE,
+				allowNull: false,
 				defaultValue: Sequelize.NOW,
 			},
 		});
 	},
-
 	async down(queryInterface) {
-		await queryInterface.dropTable("RolePermissions");
+		await queryInterface.dropTable("permissions");
 	},
 };

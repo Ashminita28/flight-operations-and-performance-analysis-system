@@ -1,65 +1,128 @@
-import { Model, DataTypes } from "sequelize";
+import { Model, DataTypes, Optional } from "sequelize";
 import sequelize from "../sequelize-connection";
 
-export class Aircraft extends Model {
+interface AircraftAttributes {
+	id: string;
+
+	registration: string;
+
+	icao_type: string;
+
+	manufacturer: string;
+
+	model: string;
+
+	seat_capacity: number;
+
+	fuel_capacity_kg: string;
+
+	max_payload_kg: string;
+
+	year_of_manufacture: number;
+
+	status: string;
+
+	base_airport_code: string;
+
+	notes?: string;
+
+	createdAt?: Date;
+
+	updatedAt?: Date;
+}
+
+type AircraftCreationAttributes = Optional<
+	AircraftAttributes,
+	"id" | "createdAt" | "updatedAt"
+>;
+
+export class Aircraft
+	extends Model<AircraftAttributes, AircraftCreationAttributes>
+	implements AircraftAttributes
+{
 	declare id: string;
 
-	declare registration_number: string;
+	declare registration: string;
 
-	declare model: string;
+	declare icao_type: string;
 
 	declare manufacturer: string;
 
-	declare capacity: number;
+	declare model: string;
 
-	declare manufacture_year: number;
+	declare seat_capacity: number;
 
-	declare total_flight_hours: number;
+	declare fuel_capacity_kg: string;
 
-	declare is_active: boolean;
+	declare max_payload_kg: string;
 
-	declare last_maintenance_date: Date;
+	declare year_of_manufacture: number;
 
-	declare next_maintenance_date: Date;
+	declare status: string;
 
-	declare notes: string;
+	declare base_airport_code: string;
 
-	declare readonly created_at: Date;
-	declare readonly updated_at: Date;
+	declare notes?: string;
+
+	declare createdAt: Date;
+
+	declare updatedAt: Date;
 }
-
 Aircraft.init(
 	{
 		id: {
 			type: DataTypes.UUID,
+			allowNull: false,
 			primaryKey: true,
 			defaultValue: DataTypes.UUIDV4,
 		},
-
-		registration_number: DataTypes.STRING,
-
-		model: DataTypes.STRING,
-
-		manufacturer: DataTypes.STRING,
-
-		capacity: DataTypes.INTEGER,
-
-		manufacture_year: DataTypes.INTEGER,
-
-		total_flight_hours: DataTypes.DECIMAL,
-
-		is_active: DataTypes.BOOLEAN,
-
-		last_maintenance_date: DataTypes.DATE,
-
-		next_maintenance_date: DataTypes.DATE,
-
-		notes: DataTypes.TEXT,
+		registration: {
+			type: DataTypes.STRING(20),
+			allowNull: false,
+			unique: true,
+		},
+		icao_type: {
+			type: DataTypes.STRING(10),
+			allowNull: false,
+		},
+		manufacturer: {
+			type: DataTypes.STRING(100),
+			allowNull: false,
+		},
+		model: {
+			type: DataTypes.STRING(100),
+			allowNull: false,
+		},
+		seat_capacity: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+		},
+		fuel_capacity_kg: {
+			type: DataTypes.DECIMAL(10, 2),
+			allowNull: false,
+		},
+		max_payload_kg: {
+			type: DataTypes.DECIMAL(10, 2),
+			allowNull: false,
+		},
+		year_of_manufacture: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+		},
+		status: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		base_airport_code: {
+			type: DataTypes.STRING(10),
+		},
+		notes: {
+			type: DataTypes.TEXT,
+		},
 	},
 	{
 		sequelize,
-		tableName: "Aircraft",
+		tableName: "aircraft",
 		timestamps: true,
-		underscored: true,
 	},
 );

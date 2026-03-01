@@ -1,35 +1,33 @@
 import { Model, DataTypes, Optional } from "sequelize";
 import sequelize from "../sequelize-connection";
 
-interface PasswordResetAttributes {
+interface RefreshTokenAttributes {
 	id: string;
 	user_id: string;
 	token: string;
-	expires_at: Date;
-	used: boolean;
+	expires_at: string;
+	revoked: string;
 	createdAt?: Date;
 	updatedAt?: Date;
 }
 
-type PasswordResetCreationAttributes = Optional<
-	PasswordResetAttributes,
+type RefreshTokenCreationAttributes = Optional<
+	RefreshTokenAttributes,
 	"id" | "createdAt" | "updatedAt"
 >;
-
-export class PasswordReset
-	extends Model<PasswordResetAttributes, PasswordResetCreationAttributes>
-	implements PasswordResetAttributes
+export class RefreshToken
+	extends Model<RefreshTokenAttributes, RefreshTokenCreationAttributes>
+	implements RefreshTokenAttributes
 {
 	declare id: string;
 	declare user_id: string;
 	declare token: string;
-	declare expires_at: Date;
-	declare used: boolean;
+	declare expires_at: string;
+	declare revoked: string;
 	declare createdAt: Date;
 	declare updatedAt: Date;
 }
-
-PasswordReset.init(
+RefreshToken.init(
 	{
 		id: {
 			type: DataTypes.UUID,
@@ -43,17 +41,19 @@ PasswordReset.init(
 		},
 		token: {
 			type: DataTypes.STRING,
+			allowNull: false,
 		},
 		expires_at: {
 			type: DataTypes.DATE,
 		},
-		used: {
+		revoked: {
 			type: DataTypes.BOOLEAN,
+			defaultValue: false,
 		},
 	},
 	{
 		sequelize,
-		tableName: "password_resets",
+		tableName: "refresh_tokens",
 		timestamps: true,
 	},
 );
