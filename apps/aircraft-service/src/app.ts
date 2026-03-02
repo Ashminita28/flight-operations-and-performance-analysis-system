@@ -2,6 +2,7 @@ import express, { Express } from "express";
 import aircraftRouter from "./routes/aircraft-route";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import { errorHandler } from "@package/shared-middleware";
 
 const app: Express = express();
 app.use(
@@ -14,5 +15,6 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", aircraftRouter);
+app.use(errorHandler);
 
 export default app;

@@ -36,7 +36,10 @@ export const createAircraftController = async (
 			base_airport_code,
 			notes,
 		});
-		res.status(201).json(aircraft);
+		res.status(201).json({
+			success: true,
+			data: aircraft,
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -50,7 +53,10 @@ export const getAllAircraftController = async (
 ) => {
 	try {
 		const aircraft = await service.getAllAircraft();
-		res.json(aircraft);
+		res.status(201).json({
+			success: true,
+			data: aircraft,
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -68,7 +74,10 @@ export const getAircraftByIdController = async (
 			return res.status(400).json({ message: "Aircraf id required" });
 		}
 		const aircraft = await service.getAircraftById(id);
-		res.json(aircraft);
+		res.status(201).json({
+			success: true,
+			data: aircraft,
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -83,7 +92,10 @@ export const updateAircraftByIdController = async (
 	try {
 		const id = req.params.id as string;
 		const aircraft = await service.updateAircraft(id, req.body);
-		res.json(aircraft);
+		res.status(201).json({
+			success: true,
+			data: aircraft,
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -123,7 +135,10 @@ export const deleteAircraftByIdController = async (
 	try {
 		const id = req.params.id as string;
 		await service.deleteAircraft(id);
-		res.json({ message: "Aircraft deleted successfully" });
+		res.status(201).json({
+			success: true,
+			message: "Aircraft deleted successfully",
+		});
 	} catch (error) {
 		next(error);
 	}
