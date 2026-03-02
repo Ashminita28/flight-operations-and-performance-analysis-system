@@ -1,33 +1,76 @@
-// 'use strict';
-// const {
-//   Model
-// } = require('sequelize');
-// module.exports = (sequelize, DataTypes) => {
-//   class OperationalEvent extends Model {
-//     /**
-//      * Helper method for defining associations.
-//      * This method is not a part of Sequelize lifecycle.
-//      * The `models/index` file will call this method automatically.
-//      */
-//     static associate(models) {
-//       // define association here
-//     }
-//   }
-//   OperationalEvent.init({
-//     id: DataTypes.UUID,
-//     flight_id: DataTypes.UUID,
-//     event_type: DataTypes.STRING,
-//     delay_category_id: DataTypes.UUID,
-//     delay_minutes: DataTypes.INTEGER,
-//     description: DataTypes.TEXT,
-//     event_time: DataTypes.DATE,
-//     resolved_at: DataTypes.DATE,
-//     severity: DataTypes.STRING,
-//     reported_by: DataTypes.UUID,
-//     created_at: DataTypes.DATE
-//   }, {
-//     sequelize,
-//     modelName: 'OperationalEvent',
-//   });
-//   return OperationalEvent;
-// };
+import { Model, DataTypes, Optional } from "sequelize";
+import sequelize from "../sequelize-connection";
+
+interface OperationalEventAttributes {
+	id: string;
+	flight_id: string;
+	event_type: string;
+	delay_category_id: string;
+	delay_minutes: string;
+	description: string;
+	event_time: Date;
+	resolved_at: Date;
+	severity: string;
+	reported_by: string;
+	createdAt?: Date;
+	updatedAt?: Date;
+}
+
+type OperationalEventCreationAttributes = Optional<
+	OperationalEventAttributes,
+	"id" | "createdAt" | "updatedAt"
+>;
+
+export class OperationalEvent
+	extends Model<OperationalEventAttributes, OperationalEventCreationAttributes>
+	implements OperationalEventAttributes
+{
+	declare id: string;
+	declare flight_id: string;
+	declare event_type: string;
+	declare delay_category_id: string;
+	declare delay_minutes: string;
+	declare description: string;
+	declare event_time: Date;
+	declare resolved_at: Date;
+	declare severity: string;
+	declare reported_by: string;
+	declare createdAt: Date;
+	declare updatedAt: Date;
+}
+OperationalEvent.init(
+	{
+		id: {
+			type: DataTypes.UUID,
+			allowNull: false,
+			primaryKey: true,
+			defaultValue: DataTypes.UUIDV4,
+		},
+		flight_id: DataTypes.UUID,
+
+		event_type: DataTypes.STRING,
+		delay_category_id: DataTypes.UUID,
+
+		delay_minutes: DataTypes.INTEGER,
+
+		description: {
+			type: DataTypes.TEXT,
+			allowNull: false,
+		},
+		event_time: {
+			type: DataTypes.DATE,
+			allowNull: false,
+		},
+		resolved_at: DataTypes.DATE,
+		severity: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		reported_by: DataTypes.UUID,
+	},
+	{
+		sequelize,
+		tableName: "operational_events",
+		timestamps: true,
+	},
+);
