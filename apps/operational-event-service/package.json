@@ -1,0 +1,34 @@
+{
+	"name": "operational-event-service",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "tsc",
+		"start": "node dist/server.js",
+		"dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/server.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.29.3",
+	"dependencies": {
+		"dotenv": "^17.3.1",
+		"express": "^5.2.1",
+		"helmet": "^8.1.0",
+		"morgan": "^1.10.1"
+	},
+	"devDependencies": {
+		"@package/shared-middleware": "workspace:*",
+		"@package/shared-database": "workspace:*",
+		"@package/shared-utils": "workspace:*",
+		"@types/express": "^5.0.6",
+		"@types/helmet": "^4.0.0",
+		"@types/morgan": "^1.9.10",
+		"@types/node": "^25.3.3",
+		"nodemon": "^3.1.11",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.9.3"
+	}
+}
