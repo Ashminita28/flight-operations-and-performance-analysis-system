@@ -11,7 +11,10 @@ export const createFlightController = async (
 		console.log("iuiu", req.body);
 		const flight = await service.createFlightService(req.body);
 
-		res.status(201).json(flight);
+		res.status(201).json({
+			success: true,
+			data: flight,
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -25,7 +28,10 @@ export const getAllFlightsController = async (
 ) => {
 	try {
 		const flights = await service.getAllFlights();
-		res.json(flights);
+		res.status(201).json({
+			success: true,
+			data: flights,
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -41,7 +47,10 @@ export const getFlightByIdController = async (
 		const id = req.params.id as string;
 		const flight = await service.getFlightById(id);
 
-		res.json(flight);
+		res.status(201).json({
+			success: true,
+			data: flight,
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -57,7 +66,10 @@ export const updateFlightByIdController = async (
 		const id = req.params.id as string;
 		const flight = await service.updateFlight(id, req.body);
 
-		res.json(flight);
+		res.status(201).json({
+			success: true,
+			data: flight,
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -118,7 +130,10 @@ export const changeFlightStatusByIdController = async (
 		const id = req.params.id as string;
 		const flight = await service.updateFlightStatusService(id, req.body.status);
 
-		res.json(flight);
+		res.status(201).json({
+			success: true,
+			data: flight,
+		});
 	} catch (error) {
 		next(error);
 	}
