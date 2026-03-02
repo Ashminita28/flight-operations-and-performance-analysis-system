@@ -25,16 +25,10 @@ export function LoginForm({
 		try {
 			await login(email, password);
 			const user = useAuthStore.getState().user;
-			if (user?.roles?.includes("Admin")) {
-				navigate("/admin");
-			} else if (user?.roles?.includes("Manager")) {
-				navigate("/flight-dashboard");
-			} else if (user?.roles?.includes("Analyst")) {
-				navigate("/analyst");
-			} else if (user?.roles?.includes("Operations")) {
-				navigate("/operations");
-			} else {
+			if (user) {
 				navigate("/main-dashboard");
+			} else {
+				navigate("/login");
 			}
 		} catch (err: any) {
 			setError(err.message || "Login failed");

@@ -1,65 +1,92 @@
-"use client";
-
 import * as React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/auth-store";
+import { useEffect } from "react";
+import { IconChartBar, IconUsers } from "@tabler/icons-react";
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import {
 	Sidebar,
 	SidebarContent,
 	SidebarFooter,
 	SidebarHeader,
-	SidebarRail,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Plane } from "lucide-react";
+import { api } from "@/api/api";
+
+const data = {
+	navMain: [
+		{
+			title: "Manage User",
+			url: "/register",
+			icon: IconUsers,
+		},
+		{
+			title: "Flights",
+			url: "/flight-dashboard",
+			icon: IconChartBar,
+		},
+		{
+			title: "Aircraft",
+			url: "/aircraft",
+			icon: IconChartBar,
+		},
+		{
+			title: "Analytics",
+			url: "/analytics",
+			icon: IconChartBar,
+		},
+	],
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-	const user = useAuthStore(s => s.user);
-	const logout = useAuthStore(s => s.logout);
-	const navigate = useNavigate();
+	const [user, setUser] = React.useState<{
+		name: string;
+		email: string;
+		avatar: string;
+	} | null>(null);
 
-	const handleLogout = async () => {
-		await logout();
-		navigate("/login");
-	};
+	useEffect(() => {
+		async function fetchUser() {
+			try {
+				const res = await api("/profile", {
+					method: "GET",
+				});
+				setUser(res);
+			} catch (error) {
+				console.error("Failed to fetch user");
+			}
+		}
+		fetchUser();
+	}, []);
 
-	// decide dashboard route based on role
-	const getDashboardRoute = () => {
-		if (user?.roles?.includes("Manager")) return "/manager";
-		if (user?.roles?.includes("Analyst")) return "/analyst";
-		if (user?.roles?.includes("Operations")) return "/operations";
-		return "/";
-	};
 	return (
 		<Sidebar
-			collapsible="icon"
+			collapsible="offcanvas"
 			{...props}
 		>
-			<SidebarHeader>Fligo</SidebarHeader>
+			<SidebarHeader>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							asChild
+							className="data-[slot=sidebar-menu-button]:p-1.5!"
+						>
+							<a href="/">
+								<Plane className="size-5!" />
+								<span className="text-base font-semibold">Fligo</span>
+							</a>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
+			</SidebarHeader>
 			<SidebarContent>
-				{/* Dashboard */}
-				<Link
-					to={getDashboardRoute()}
-					className="block px-4 py-2 rounded-md bg-sky-800"
-				>
-					Dashboard
-				</Link>
-
-				{/* Profile */}
-				<Link
-					to="/profile"
-					className="block px-4 py-2 rounded-md bg-sky-800"
-				>
-					User Profile
-				</Link>
+				<NavMain items={data.navMain} />
 			</SidebarContent>
 			<SidebarFooter>
-				<button
-					onClick={handleLogout}
-					className="w-full bg-white text-sky-950 px-4 py-2 rounded-md"
-				>
-					Logout
-				</button>
+				<NavUser user={user} />
 			</SidebarFooter>
-			<SidebarRail />
 		</Sidebar>
 	);
 }

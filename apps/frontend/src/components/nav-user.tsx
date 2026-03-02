@@ -1,17 +1,9 @@
-import {
-	BadgeCheck,
-	Bell,
-	ChevronsUpDown,
-	CreditCard,
-	LogOut,
-	Sparkles,
-} from "lucide-react";
+import { IconDotsVertical, IconLogout } from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
@@ -23,6 +15,8 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar";
+import { api } from "@/api/api";
+import { useNavigate } from "react-router-dom";
 
 export function NavUser({
 	user,
@@ -31,9 +25,22 @@ export function NavUser({
 		name: string;
 		email: string;
 		avatar: string;
-	};
+	} | null;
 }) {
 	const { isMobile } = useSidebar();
+	const navigate = useNavigate();
+
+	if (!user) return null;
+	const handleLogout = async () => {
+		try {
+			await api("/logout", {
+				method: "POST",
+			});
+			navigate("/login");
+		} catch (error) {
+			console.error("Logout Failed");
+		}
+	};
 
 	return (
 		<SidebarMenu>
@@ -44,7 +51,7 @@ export function NavUser({
 							size="lg"
 							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						>
-							<Avatar className="h-8 w-8 rounded-lg">
+							<Avatar className="h-8 w-8 rounded-lg grayscale">
 								<AvatarImage
 									src={user.avatar}
 									alt={user.name}
@@ -53,9 +60,11 @@ export function NavUser({
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
 								<span className="truncate font-medium">{user.name}</span>
-								<span className="truncate text-xs">{user.email}</span>
+								<span className="text-muted-foreground truncate text-xs">
+									{user.email}
+								</span>
 							</div>
-							<ChevronsUpDown className="ml-auto size-4" />
+							<IconDotsVertical className="ml-auto size-4" />
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent
@@ -71,39 +80,20 @@ export function NavUser({
 										src={user.avatar}
 										alt={user.name}
 									/>
-									<AvatarFallback className="rounded-lg">CN</AvatarFallback>
+									<AvatarFallback className="rounded-lg">ME</AvatarFallback>
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
 									<span className="truncate font-medium">{user.name}</span>
-									<span className="truncate text-xs">{user.email}</span>
+									<span className="text-muted-foreground truncate text-xs">
+										{user.email}
+									</span>
 								</div>
 							</div>
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
-						<DropdownMenuGroup>
-							<DropdownMenuItem>
-								<Sparkles />
-								Upgrade to Pro
-							</DropdownMenuItem>
-						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
-						<DropdownMenuGroup>
-							<DropdownMenuItem>
-								<BadgeCheck />
-								Account
-							</DropdownMenuItem>
-							<DropdownMenuItem>
-								<CreditCard />
-								Billing
-							</DropdownMenuItem>
-							<DropdownMenuItem>
-								<Bell />
-								Notifications
-							</DropdownMenuItem>
-						</DropdownMenuGroup>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem>
-							<LogOut />
+						<DropdownMenuItem onClick={handleLogout}>
+							<IconLogout />
 							Log out
 						</DropdownMenuItem>
 					</DropdownMenuContent>

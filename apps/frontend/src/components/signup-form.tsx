@@ -66,7 +66,7 @@ export function SignupForm() {
 
 			setMessage("User Registered Successfully");
 
-			navigate("/admin");
+			navigate("/main-dashboard");
 		} catch (err: any) {
 			setMessage(err.message || "Registration Failed");
 		}
