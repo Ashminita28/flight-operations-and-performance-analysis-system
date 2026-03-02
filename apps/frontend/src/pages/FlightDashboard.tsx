@@ -1,15 +1,27 @@
 import { useEffect, useState } from "react";
 import { api } from "@/api/api";
-
-import { AppSidebar } from "@/components/app-sidebar";
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { DataTable } from "@/components/data-table";
-import { SectionCards } from "@/components/section-cards";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import FlightRegistration from "./operations/FlightRegistration";
+
+type FlightRow = {
+	id: string;
+	flightNumber: string;
+	airline: string;
+	route: string;
+	status: string;
+	aircraft: string;
+	date: string;
+	departure: string;
+	arrival: string;
+	return: string;
+};
 
 export default function FlightDashboard() {
-	const [data, setData] = useState([]);
+	const [data, setData] = useState<FlightRow[]>([]);
+	const [isOpen, setIsOpen] = useState(false);
+	const handleOpenModal = () => {
+		setIsOpen(true);
+	};
 
 	useEffect(() => {
 		loadFlights();
@@ -17,58 +29,44 @@ export default function FlightDashboard() {
 
 	async function loadFlights() {
 		try {
-			const res = await api("/flights/");
+			const res = await api<{ success: boolean; data: any[] }>("/flights");
+			console.log("Flights from backed", res);
 
-			const formatted = res.data.map((f: any, index: number) => ({
-				id: index + 1,
-
-				header: f.flight_number,
-
-				type: f.departure_airport + " → " + f.arrival_airport,
-
+			const formatted: FlightRow[] = res.data.map((f: any) => ({
+				id: f.id,
+				flightNumber: f.flight_number,
+				airline: f.airline_code,
+				route: `${f.origin_airport} → ${f.destination_airport}`,
 				status: f.status,
-
-				target: f.departure_datetime,
-
-				limit: f.arrival_datetime,
-
-				reviewer: "Assigned",
+				aircraft: f.aircraft_id,
+				date: f.flight_date,
+				departure: new Date(f.scheduled_departure).toISOString(),
+				arrival: new Date(f.scheduled_arrival).toISOString(),
+				return: f.is_return_flight ?? "",
 			}));
 
 			setData(formatted);
 		} catch (err) {
-			console.log(err);
+			console.error("Error loading flights:", err);
 		}
 	}
 
 	return (
-		<SidebarProvider
-			style={
-				{
-					"--sidebar-width": "calc(var(--spacing) * 72)",
-					"--header-height": "calc(var(--spacing) * 12)",
-				} as React.CSSProperties
-			}
-		>
-			<AppSidebar variant="inset" />
-
-			<SidebarInset>
-				<SiteHeader />
-
-				<div className="flex flex-1 flex-col">
-					<div className="@container/main flex flex-1 flex-col gap-2">
-						<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-							<SectionCards />
-
-							<div className="px-4 lg:px-6">
-								<ChartAreaInteractive />
-							</div>
-
-							<DataTable data={data} />
-						</div>
-					</div>
+		<div className="flex flex-1 flex-col">
+			<div className="@container/main flex flex-1 flex-col gap-2">
+				<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+					<DataTable
+						initialData={data}
+						onAddClick={handleOpenModal}
+					/>
+					{isOpen && (
+						<FlightRegistration
+							onClose={() => setIsOpen(false)}
+							refreshFlights={loadFlights}
+						/>
+					)}
 				</div>
-			</SidebarInset>
-		</SidebarProvider>
+			</div>
+		</div>
 	);
 }
