@@ -446,6 +446,43 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  apps/performance-capture-service:
+    dependencies:
+      dotenv:
+        specifier: ^17.3.1
+        version: 17.3.1
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      "@package/shared-database":
+        specifier: workspace:*
+        version: link:../../packages/shared-database
+      "@package/shared-middleware":
+        specifier: workspace:*
+        version: link:../../packages/shared-middleware
+      "@package/shared-utils":
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
+      "@types/express":
+        specifier: ^5.0.6
+        version: 5.0.6
+      "@types/node":
+        specifier: ^25.3.3
+        version: 25.3.3
+      nodemon:
+        specifier: ^3.1.11
+        version: 3.1.11
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@25.3.3)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/shared-database:
     dependencies:
       bcrypt:
@@ -10153,12 +10190,12 @@ snapshots:
 
   "@types/bcrypt@6.0.0":
     dependencies:
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   "@types/body-parser@1.19.6":
     dependencies:
       "@types/connect": 3.4.38
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   "@types/chai@5.2.3":
     dependencies:
@@ -10167,7 +10204,7 @@ snapshots:
 
   "@types/connect@3.4.38":
     dependencies:
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   "@types/cookie-parser@1.4.10(@types/express@5.0.6)":
     dependencies:
@@ -10177,7 +10214,7 @@ snapshots:
 
   "@types/cors@2.8.19":
     dependencies:
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   "@types/d3-array@3.2.2": {}
 
@@ -10215,7 +10252,7 @@ snapshots:
 
   "@types/express-serve-static-core@5.1.1":
     dependencies:
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
       "@types/qs": 6.14.0
       "@types/range-parser": 1.2.7
       "@types/send": 1.2.1
@@ -10239,13 +10276,13 @@ snapshots:
   "@types/jsonwebtoken@9.0.10":
     dependencies:
       "@types/ms": 2.1.0
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   "@types/methods@1.1.4": {}
 
   "@types/morgan@1.9.10":
     dependencies:
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   "@types/ms@2.1.0": {}
 
@@ -10267,7 +10304,7 @@ snapshots:
 
   "@types/nodemailer@7.0.10":
     dependencies:
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   "@types/nodemon@3.1.1":
     dependencies:
@@ -10275,7 +10312,7 @@ snapshots:
 
   "@types/pg@8.16.0":
     dependencies:
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
       pg-protocol: 1.11.0
       pg-types: 2.2.0
 
@@ -10308,12 +10345,12 @@ snapshots:
 
   "@types/send@1.2.1":
     dependencies:
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   "@types/serve-static@2.2.0":
     dependencies:
       "@types/http-errors": 2.0.5
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   "@types/statuses@2.0.6": {}
 
@@ -10321,7 +10358,7 @@ snapshots:
     dependencies:
       "@types/cookiejar": 2.1.5
       "@types/methods": 1.1.4
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
       form-data: 4.0.5
 
   "@types/supertest@6.0.3":
@@ -13284,7 +13321,7 @@ snapshots:
 
   wkx@0.5.0:
     dependencies:
-      "@types/node": 25.3.0
+      "@types/node": 25.3.3
 
   word-wrap@1.2.5: {}
 

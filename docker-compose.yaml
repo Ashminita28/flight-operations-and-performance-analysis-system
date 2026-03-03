@@ -48,6 +48,30 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
+  operational-event-service:
+    build:
+      context: .
+      dockerfile: apps/operational-event-service/Dockerfile
+    container_name: operational_event_service
+    env_file:
+      - .env
+    ports:
+      - "3004:3004"
+    restart: unless-stopped
+    depends_on:
+      - postgres
+  performance-capture-service:
+    build:
+      context: .
+      dockerfile: apps/performance-capture-service/Dockerfile
+    container_name: performance_capture_service
+    env_file:
+      - .env
+    ports:
+      - "3005:3005"
+    restart: unless-stopped
+    depends_on:
+      - postgres
   frontend:
     build:
       context: .
@@ -60,6 +84,8 @@ services:
       - auth-service
       - aircraft-service
       - flight-service
+      - operational-event-service
+      - performance-capture-service
 
 volumes:
   postgres_data:
