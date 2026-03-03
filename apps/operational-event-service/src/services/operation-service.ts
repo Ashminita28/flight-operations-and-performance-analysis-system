@@ -1,49 +1,66 @@
+import { OperationalEvent } from "@package/shared-database";
 import * as repo from "../repositories/operation-repository";
-import * as delayCategoryRepo from "../repositories/delaycategory-repository";
+import { ApiError } from "@package/shared-utils";
 
 export const operationService = {
-	async createOperationalEvent(flightId: string, data: any, userId: string) {
-		const flight = await repo.findFlightById(flightId);
-		if (!flight) throw new Error("Flight not found");
+	async createOperationalEvent(data: {
+		flight_id: string;
+		event_type: string | undefined;
+		delay_category_id?: string | undefined;
+		delay_minutes?: number | undefined;
+		description?: string | undefined;
+		event_time?: string | undefined;
+		severity: string;
+	}) {
+		const flight = await repo.findFlightById(data.flight_id);
 
-		const validTypes = [
-			"delay",
-			"diversion",
-			"cancellation",
-			"equipment_change",
-			"gate_change",
-			"crew_change",
-			"medical",
-			"security",
-		];
-
-		if (!validTypes.includes(data.event_type))
-			throw new Error("Invalid event type");
+		if (!flight) {
+			throw new ApiError(404, "Flight not found");
+		}
 
 		if (data.event_type === "delay") {
-			if (!data.delay_category_id) throw new Error("Delay category required");
+			if (!data.delay_category_id || !data.delay_minutes) {
+				throw new ApiError(
+					400,
+					"Delay category and delay minutes are required for delay events",
+				);
+			}
 
-			if (!data.delay_minutes || data.delay_minutes <= 0)
-				throw new Error("Delay minutes must be positive");
-
-			const category = await delayCategoryRepo.findById(data.delay_category_id);
-			if (!category) throw new Error("Invalid delay category");
+			await repo.updateFlightStatus(data.flight_id, "delayed");
 		}
-		if (!data.event_time) throw new Error("Event time required");
 
-		return await repo.create({
-			...data,
-			flight_id: flightId,
-			reported_by: userId,
-		});
+		if (data.event_type === "cancellation") {
+			await repo.updateFlightStatus(data.flight_id, "cancelled");
+		}
+
+		if (data.event_type === "diversion") {
+			await repo.updateFlightStatus(data.flight_id, "diverted");
+		}
+
+		const event = await repo.create(data);
+
+		return event;
 	},
 
 	async updateEvent(flightId: string, eventId: string, data: any) {
 		const event = await repo.findById(eventId);
 		if (!event) throw new Error("Event not found");
 
-		if (event.resolved_at) throw new Error("Cannot update resolved event");
-
 		return await repo.update(eventId, data);
+	},
+
+	async getEventsByFlight(flightId: string) {
+		const flight = await repo.findFlightById(flightId);
+
+		if (!flight) {
+			throw new ApiError(404, "Flight not found");
+		}
+
+		return repo.findEventsByFlight(flightId);
+	},
+
+	async getAllFlightEvents() {
+		const flight = await OperationalEvent.findAll();
+		return flight;
 	},
 };
