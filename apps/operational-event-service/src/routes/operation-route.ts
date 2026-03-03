@@ -12,4 +12,8 @@ operationRouter.put(
 	OperationController.changeFlightEvent,
 );
 
+operationRouter.get("/events", OperationController.getAllEvents);
+
+operationRouter.post("/flights/:flight_id", OperationController.getByFlight);
+
 export default operationRouter;
