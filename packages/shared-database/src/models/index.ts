@@ -11,6 +11,7 @@ import { Flight } from "./flight";
 import { FlightStatusHistory } from "./flight-status-history";
 import { OperationalEvent } from "./operational-event";
 import { DelayCategory } from "./delay-category";
+import { FlightPerformance } from "./flight-performance";
 
 export function setupAssociations() {
 	User.belongsToMany(Role, {
@@ -80,6 +81,14 @@ export function setupAssociations() {
 	OperationalEvent.belongsTo(DelayCategory, {
 		foreignKey: "delay_category_id",
 	});
+
+	Flight.hasOne(FlightPerformance, {
+		foreignKey: "flight_id",
+	});
+
+	FlightPerformance.belongsTo(Flight, {
+		foreignKey: "flight_id",
+	});
 }
 
 export {
@@ -96,4 +105,5 @@ export {
 	FlightStatusHistory,
 	DelayCategory,
 	OperationalEvent,
+	FlightPerformance,
 };
