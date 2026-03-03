@@ -17,6 +17,7 @@
 		"typescript": "^5.9.3"
 	},
 	"devDependencies": {
+		"@package/shared-utils": "workspace:*",
 		"@types/jsonwebtoken": "~9.0.10",
 		"@types/node": "^25.3.0"
 	}

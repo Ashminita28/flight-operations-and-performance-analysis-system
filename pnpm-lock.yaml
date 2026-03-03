@@ -411,6 +411,9 @@ importers:
       morgan:
         specifier: ^1.10.1
         version: 1.10.1
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       "@package/shared-database":
         specifier: workspace:*
@@ -486,6 +489,9 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
     devDependencies:
+      "@package/shared-utils":
+        specifier: workspace:*
+        version: link:../shared-utils
       "@types/jsonwebtoken":
         specifier: ~9.0.10
         version: 9.0.10

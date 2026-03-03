@@ -17,11 +17,12 @@
 		"dotenv": "^17.3.1",
 		"express": "^5.2.1",
 		"helmet": "^8.1.0",
-		"morgan": "^1.10.1"
+		"morgan": "^1.10.1",
+		"zod": "^4.3.6"
 	},
 	"devDependencies": {
-		"@package/shared-middleware": "workspace:*",
 		"@package/shared-database": "workspace:*",
+		"@package/shared-middleware": "workspace:*",
 		"@package/shared-utils": "workspace:*",
 		"@types/express": "^5.0.6",
 		"@types/helmet": "^4.0.0",
