@@ -84,181 +84,190 @@ export default function FlightRegistration({
 				<CardTitle>Register Flight</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<Form {...form}>
-					<form
-						onSubmit={form.handleSubmit(onSubmit)}
-						className="space-y-4"
-					>
-						<FormField
-							control={form.control}
-							name="flight_number"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Flight Number</FormLabel>
-									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="airline_code"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Airline Code</FormLabel>
-									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="status"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Status</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										defaultValue={field.value}
-									>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue placeholder="Select status" />
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											<SelectItem value="scheduled">Scheduled</SelectItem>
-											<SelectItem value="boarding">Boarding</SelectItem>
-											<SelectItem value="departed">Departed</SelectItem>
-											<SelectItem value="landed">Landed</SelectItem>
-											<SelectItem value="cancelled">Cancelled</SelectItem>
-											<SelectItem value="delayed">Delayed</SelectItem>
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="flight_date"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Flight Date</FormLabel>
-									<FormControl>
-										<Input
-											type="date"
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="origin_airport"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Origin</FormLabel>
-									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="destination_airport"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Destination</FormLabel>
-									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="aircraft_id"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Aircraft</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										defaultValue={field.value}
-									>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue placeholder="Select aircraft" />
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											{aircraft.map(a => (
-												<SelectItem
-													key={a.id}
-													value={a.id}
-												>
-													{a.registration} - {a.model}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="scheduled_departure"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Departure</FormLabel>
-									<FormControl>
-										<Input
-											type="datetime-local"
-											{...field}
-										/>
-									</FormControl>
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="scheduled_arrival"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Arrival</FormLabel>
-									<FormControl>
-										<Input
-											type="datetime-local"
-											{...field}
-										/>
-									</FormControl>
-								</FormItem>
-							)}
-						/>
-
-						<Button
-							type="submit"
-							className="w-full bg-blue-600"
+				<div className="px-7 pb-7">
+					<Form {...form}>
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="space-y-4"
 						>
-							Register Flight
-						</Button>
-					</form>
-				</Form>
+							<div className="grid grid-cols-2 gap-3">
+								<FormField
+									control={form.control}
+									name="flight_number"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Flight Number</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+
+								<FormField
+									control={form.control}
+									name="airline_code"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Airline Code</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							<div className="grid grid-cols-2 gap-3 mt-3">
+								<FormField
+									control={form.control}
+									name="status"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Status</FormLabel>
+											<Select
+												onValueChange={field.onChange}
+												defaultValue={field.value}
+											>
+												<FormControl>
+													<SelectTrigger>
+														<SelectValue placeholder="Select status" />
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													<SelectItem value="scheduled">Scheduled</SelectItem>
+													<SelectItem value="boarding">Boarding</SelectItem>
+													<SelectItem value="departed">Departed</SelectItem>
+													<SelectItem value="landed">Landed</SelectItem>
+													<SelectItem value="cancelled">Cancelled</SelectItem>
+													<SelectItem value="delayed">Delayed</SelectItem>
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="flight_date"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Flight Date</FormLabel>
+											<FormControl>
+												<Input
+													type="date"
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							<div className="grid grid-cols-2 gap-3 mt-3">
+								<FormField
+									control={form.control}
+									name="origin_airport"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Origin</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+
+								<FormField
+									control={form.control}
+									name="destination_airport"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Destination</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+
+							<FormField
+								control={form.control}
+								name="aircraft_id"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Aircraft</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											defaultValue={field.value}
+										>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue placeholder="Select aircraft" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{aircraft.map(a => (
+													<SelectItem
+														key={a.id}
+														value={a.id}
+													>
+														{a.registration} - {a.model}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<div className="grid grid-cols-2 gap-3 mt-3">
+								<FormField
+									control={form.control}
+									name="scheduled_departure"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Departure</FormLabel>
+											<FormControl>
+												<Input
+													type="datetime-local"
+													{...field}
+												/>
+											</FormControl>
+										</FormItem>
+									)}
+								/>
+
+								<FormField
+									control={form.control}
+									name="scheduled_arrival"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Arrival</FormLabel>
+											<FormControl>
+												<Input
+													type="datetime-local"
+													{...field}
+												/>
+											</FormControl>
+										</FormItem>
+									)}
+								/>
+							</div>
+
+							<Button
+								type="submit"
+								className="w-full bg-blue-600"
+							>
+								Register Flight
+							</Button>
+						</form>
+					</Form>
+				</div>
 			</CardContent>
 		</Card>
 	);
