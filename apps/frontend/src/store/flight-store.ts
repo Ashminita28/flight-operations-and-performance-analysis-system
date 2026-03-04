@@ -1,21 +1,13 @@
 import { create } from "zustand";
 import { api } from "@/api/api";
-
-export interface Flight {
-	id: string;
-	flight_number: string;
-	origin_airport: string;
-	destination_airport: string;
-	status: string;
-	aircraft_id: string;
-	scheduled_departure: string;
-	scheduled_arrival: string;
-}
+import type { Flight } from "@/types/flight-types";
 
 interface FlightState {
 	flights: Flight[];
+	selectedFlight: Flight | null;
 	loading: boolean;
 	fetchFlights: () => Promise<void>;
+	fetchFlightById: (id: string) => Promise<void>;
 	fetchTodayFlights: () => Promise<void>;
 	searchFlights: (flightNumber: string) => Promise<void>;
 	createFlight: (data: any) => Promise<void>;
@@ -26,6 +18,7 @@ interface FlightState {
 
 export const useFlightStore = create<FlightState>(set => ({
 	flights: [],
+	selectedFlight: null,
 	loading: false,
 
 	fetchFlights: async () => {
@@ -35,6 +28,18 @@ export const useFlightStore = create<FlightState>(set => ({
 			const res = await api<{ success: boolean; data: Flight[] }>("/flights/");
 
 			set({ flights: res.data });
+		} finally {
+			set({ loading: false });
+		}
+	},
+
+	fetchFlightById: async id => {
+		set({ loading: true });
+		try {
+			const res = await api<{ success: boolean; data: Flight }>(
+				`/flights/${id}`,
+			);
+			set({ selectedFlight: res.data });
 		} finally {
 			set({ loading: false });
 		}
