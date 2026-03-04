@@ -4,8 +4,8 @@ import { createOperationalEventSchema } from "../validations/operational-event-v
 export const OperationController = {
 	async recordFlightEvent(req: Request, res: Response, next: NextFunction) {
 		try {
+			const flightId = req.params.flightId;
 			const {
-				flight_id,
 				event_type,
 				delay_category_id,
 				delay_minutes,
@@ -15,7 +15,7 @@ export const OperationController = {
 			} = req.body;
 			console.log("valid:-", req.body);
 			const validate = createOperationalEventSchema.parse({
-				flight_id,
+				flight_id: flightId,
 				event_type,
 				delay_category_id,
 				delay_minutes,
@@ -37,8 +37,8 @@ export const OperationController = {
 	async changeFlightEvent(req: Request, res: Response, next: NextFunction) {
 		try {
 			const event = await operationService.updateEvent(
-				req.params.flight_id as string,
-				req.params.eventId as string,
+				req.params.flightId as string,
+				req.params.id as string,
 				req.body,
 			);
 			res.status(200).json({
