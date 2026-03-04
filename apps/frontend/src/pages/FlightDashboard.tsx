@@ -19,6 +19,7 @@ type FlightRow = {
 export default function FlightDashboard() {
 	const [data, setData] = useState<FlightRow[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
+
 	const handleOpenModal = () => {
 		setIsOpen(true);
 	};
@@ -29,16 +30,30 @@ export default function FlightDashboard() {
 
 	async function loadFlights() {
 		try {
-			const res = await api<{ success: boolean; data: any[] }>("/flights");
-			console.log("Flights from backed", res);
+			const [flightsRes, aircraftRes] = await Promise.all([
+				api<{ success: boolean; data: any[] }>("/flights"),
+				api<{ success: boolean; data: any[] }>("/aircraft").catch(() => ({
+					success: false,
+					data: [],
+				})),
+			]);
 
-			const formatted: FlightRow[] = res.data.map((f: any) => ({
+			console.log("Flights from backend", flightsRes);
+
+			const aircraftMap: Record<string, string> = {};
+			if (aircraftRes.data) {
+				aircraftRes.data.forEach((a: any) => {
+					aircraftMap[a.id] = a.name ?? a.model ?? a.registration ?? a.id;
+				});
+			}
+
+			const formatted: FlightRow[] = flightsRes.data.map((f: any) => ({
 				id: f.id,
 				flightNumber: f.flight_number,
 				airline: f.airline_code,
 				route: `${f.origin_airport} → ${f.destination_airport}`,
 				status: f.status,
-				aircraft: f.aircraft_id,
+				aircraft: aircraftMap[f.aircraft_id] ?? f.aircraft_id,
 				date: f.flight_date,
 				departure: new Date(f.scheduled_departure).toISOString(),
 				arrival: new Date(f.scheduled_arrival).toISOString(),
@@ -60,10 +75,12 @@ export default function FlightDashboard() {
 						onAddClick={handleOpenModal}
 					/>
 					{isOpen && (
-						<FlightRegistration
-							onClose={() => setIsOpen(false)}
-							refreshFlights={loadFlights}
-						/>
+						<div className="fixed inset-0 backdrop-blur-sm bg-white/30  bg-opacity-50 flex items-center justify-center z-50">
+							<FlightRegistration
+								onClose={() => setIsOpen(false)}
+								refreshFlights={loadFlights}
+							/>
+						</div>
 					)}
 				</div>
 			</div>
