@@ -17,7 +17,7 @@ export const FlightPerformanceService = {
 			throw new ApiError(404, "Flight not found");
 		}
 
-		if (flight.status !== "scheduled") {
+		if (flight.status !== "landed") {
 			throw new ApiError(
 				400,
 				"Performance can only be recorded for completed flights",
