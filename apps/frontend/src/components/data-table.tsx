@@ -29,6 +29,7 @@ import {
 	IconLayoutColumns,
 	IconLoader,
 	IconPlus,
+	IconSearch,
 	IconTrendingUp,
 } from "@tabler/icons-react";
 import {
@@ -47,7 +48,6 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { toast } from "sonner";
 import { z } from "zod";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -97,6 +97,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
 
 interface DataTableProps {
 	initialData: z.infer<typeof schema>[];
@@ -259,34 +260,6 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
 			</Badge>
 		),
 	},
-	{
-		accessorKey: "return",
-		header: "Return",
-		cell: ({ row }) => (
-			<form
-				onSubmit={e => {
-					e.preventDefault();
-					toast.promise(new Promise(resolve => setTimeout(resolve, 1000)), {
-						loading: `Saving ${row.original.return}`,
-						success: "Done",
-						error: "Error",
-					});
-				}}
-			>
-				<Label
-					htmlFor={`${row.original.id}-target`}
-					className="sr-only"
-				>
-					Return
-				</Label>
-				<Input
-					className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-					defaultValue={row.original.return}
-					id={`${row.original.id}-target`}
-				/>
-			</form>
-		),
-	},
 
 	{
 		id: "actions",
@@ -318,6 +291,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
 ];
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
+	const navigate = useNavigate();
 	const { transform, transition, setNodeRef, isDragging } = useSortable({
 		id: row.original.id,
 	});
@@ -332,6 +306,7 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 				transform: CSS.Transform.toString(transform),
 				transition: transition,
 			}}
+			onClick={() => navigate(`/flights/${row.original.id}`)}
 		>
 			{row.getVisibleCells().map(cell => (
 				<TableCell key={cell.id}>
@@ -344,9 +319,19 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 
 export function DataTable({ initialData, onAddClick }: DataTableProps) {
 	const [data, setData] = React.useState(() => initialData);
+	const [searchQuery, setSearchQuery] = React.useState("");
+
 	React.useEffect(() => {
 		setData(initialData);
 	}, [initialData]);
+
+	const filteredData = React.useMemo(() => {
+		if (!searchQuery.trim()) return data;
+		return data.filter(item =>
+			item.flightNumber.toLowerCase().includes(searchQuery.toLowerCase()),
+		);
+	}, [data, searchQuery]);
+
 	const [rowSelection, setRowSelection] = React.useState({});
 	const [columnVisibility, setColumnVisibility] =
 		React.useState<VisibilityState>({});
@@ -366,12 +351,12 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 	);
 
 	const dataIds = React.useMemo<UniqueIdentifier[]>(
-		() => data?.map(({ id }) => id) || [],
-		[data],
+		() => filteredData?.map(({ id }) => id) || [],
+		[filteredData],
 	);
 
 	const table = useReactTable({
-		data,
+		data: filteredData,
 		columns,
 		state: {
 			sorting,
@@ -411,6 +396,15 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 			defaultValue="outline"
 			className="w-full flex-col justify-start gap-6"
 		>
+			<div className="px-4 lg:px-6">
+				<div className="inline-flex items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-sm">
+					<div className="text-sm text-muted-foreground">
+						Total Flights Today
+					</div>
+					<div className="text-2xl font-bold">{filteredData.length}</div>
+				</div>
+			</div>
+
 			<div className="flex items-center justify-between px-4 lg:px-6">
 				<Label
 					htmlFor="view-selector"
@@ -419,29 +413,12 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 					View
 				</Label>
 				<Select defaultValue="outline">
-					<SelectTrigger
-						className="flex w-fit @4xl/main:hidden"
-						size="sm"
-						id="view-selector"
-					>
-						<SelectValue placeholder="Select a view" />
-					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="outline">Outline</SelectItem>
-						<SelectItem value="past-performance">Past Flights</SelectItem>
-						<SelectItem value="key-personnel">Todays Flights</SelectItem>
-						<SelectItem value="focus-documents">Focus Documents</SelectItem>
 					</SelectContent>
 				</Select>
 				<TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
 					<TabsTrigger value="outline">Outline</TabsTrigger>
-					<TabsTrigger value="past-performance">
-						Past Performance <Badge variant="secondary">3</Badge>
-					</TabsTrigger>
-					<TabsTrigger value="key-personnel">
-						Key Personnel <Badge variant="secondary">2</Badge>
-					</TabsTrigger>
-					<TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
 				</TabsList>
 				<div className="flex items-center gap-2">
 					<DropdownMenu>
@@ -493,6 +470,22 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 					</Button>
 				</div>
 			</div>
+
+			<div className="px-4 lg:px-6">
+				<div className="relative w-full max-w-sm">
+					<IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder="Search by flight number..."
+						value={searchQuery}
+						onChange={e => {
+							setSearchQuery(e.target.value);
+							setPagination(p => ({ ...p, pageIndex: 0 }));
+						}}
+						className="pl-8"
+					/>
+				</div>
+			</div>
+
 			<TabsContent
 				value="outline"
 				className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
@@ -694,12 +687,12 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
 					variant="link"
 					className="text-foreground w-fit px-0 text-left"
 				>
-					{item.id}
+					{item.flightNumber}
 				</Button>
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader className="gap-1">
-					<DrawerTitle>{item.id}</DrawerTitle>
+					<DrawerTitle>{item.flightNumber}</DrawerTitle>
 					<DrawerDescription>
 						Showing total visitors for the last 6 months
 					</DrawerDescription>
@@ -767,7 +760,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
 							<Label htmlFor="header">Header</Label>
 							<Input
 								id="header"
-								defaultValue={item.id}
+								defaultValue={item.flightNumber}
 							/>
 						</div>
 					</form>
