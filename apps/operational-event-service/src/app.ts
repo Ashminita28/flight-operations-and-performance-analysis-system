@@ -9,7 +9,7 @@ const app: Express = express();
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
-app.use("/api", operationRouter);
+app.use("/api/operations", operationRouter);
 app.use("/api", delayRouter);
 
 export default app;
