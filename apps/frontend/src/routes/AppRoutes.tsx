@@ -11,6 +11,7 @@ import MainDashboard from "@/pages/MainDashboard";
 
 import ProtectedRoute from "./ProtectedRoute";
 import AircraftForm from "@/pages/operations/AircraftRegister";
+import { FlightDetail } from "@/pages/FlightDetail";
 
 function AppRoutes() {
 	return (
@@ -62,6 +63,14 @@ function AppRoutes() {
 					element={
 						<ProtectedRoute>
 							<FlightDashboard />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/flights/:id"
+					element={
+						<ProtectedRoute>
+							<FlightDetail />
 						</ProtectedRoute>
 					}
 				/>
