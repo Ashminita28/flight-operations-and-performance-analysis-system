@@ -1,6 +1,7 @@
 import { OperationalEvent } from "@package/shared-database";
 import * as repo from "../repositories/operation-repository";
 import { ApiError } from "@package/shared-utils";
+import { publishNotification } from "./rabbitmq-publisher";
 
 export const operationService = {
 	async createOperationalEvent(data: {
@@ -38,6 +39,12 @@ export const operationService = {
 		}
 
 		const event = await repo.create(data);
+		await publishNotification({
+			flight_id: flight.id,
+			title: "Operational event occured",
+			message: `Flight ${flight.flight_number} is ${flight.status}`,
+			type: event.event_type,
+		});
 
 		return event;
 	},
