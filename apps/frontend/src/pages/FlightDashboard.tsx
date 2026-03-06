@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { api } from "@/api/api";
 import { DataTable } from "@/components/data-table";
 import FlightRegistration from "./operations/FlightRegistration";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 type FlightRow = {
 	id: string;
@@ -19,6 +21,7 @@ type FlightRow = {
 export default function FlightDashboard() {
 	const [data, setData] = useState<FlightRow[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
+	const navigate = useNavigate();
 
 	const handleOpenModal = () => {
 		setIsOpen(true);
@@ -68,6 +71,9 @@ export default function FlightDashboard() {
 
 	return (
 		<div className="flex flex-1 flex-col">
+			<Button onClick={() => navigate("/main-dashboard")}>
+				Back to Dashboard
+			</Button>
 			<div className="@container/main flex flex-1 flex-col gap-2">
 				<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
 					<DataTable
