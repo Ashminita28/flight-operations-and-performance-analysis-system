@@ -5,7 +5,7 @@ const QUEUE_NAME = "flight_status_notifications";
 
 export async function startConsumer() {
 	const connection = await amqp.connect(
-		process.env.RABBITMQ_URL || "amqp://localhost",
+		process.env.RABBITMQ_URL || "amqp://rabbitmq:5672",
 	);
 	const channel = await connection.createChannel();
 	await channel.assertQueue(QUEUE_NAME, { durable: true });
@@ -22,7 +22,7 @@ export async function startConsumer() {
 					title: data.title,
 					message: data.message,
 					type: data.type,
-					is_read: data.is_read,
+					is_read: true,
 				});
 
 				channel.ack(msg);
