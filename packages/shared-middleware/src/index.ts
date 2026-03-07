@@ -1,3 +1,3 @@
-export * from "./auth";
-export * from "./errorHandler";
-export * from "./role";
+export { authenticate } from "./auth";
+export { errorHandler } from "./errorHandler";
+export { authorizeRole } from "./role";
