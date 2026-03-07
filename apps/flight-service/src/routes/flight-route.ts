@@ -26,7 +26,18 @@ flightRouter.get(
 	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	getAllFlightsController,
 );
-
+flightRouter.get(
+	"/flights/search",
+	authenticate,
+	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
+	searchFlightController,
+);
+flightRouter.get(
+	"/flights/today",
+	authenticate,
+	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
+	getTodaysFlightUpdates,
+);
 flightRouter.get(
 	"/flights/:id",
 	authenticate,
@@ -36,6 +47,7 @@ flightRouter.get(
 
 flightRouter.put(
 	"/flights/:id",
+	authenticate,
 	authorizeRole("Operations"),
 	updateFlightByIdController,
 );
@@ -52,17 +64,6 @@ flightRouter.delete(
 	authenticate,
 	authorizeRole("Operations"),
 	deleteFlightById,
-);
-flightRouter.get(
-	"/flights/today",
-	authenticate,
-	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
-	getTodaysFlightUpdates,
-);
-flightRouter.get(
-	"/flights/search",
-	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
-	searchFlightController,
 );
 
 export default flightRouter;
