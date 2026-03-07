@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ApiError } from "@package/shared-utils";
+import { ZodError } from "zod";
 
 export const errorHandler = (
 	err: any,
@@ -8,17 +9,18 @@ export const errorHandler = (
 	next: NextFunction,
 ) => {
 	console.error(err);
-	let statusCode = 500;
-	let message = "Internal server error";
+	let statusCode = err.statusCode || 500;
+	let message = err.message || "Internal server error";
 
 	if (err instanceof ApiError) {
 		statusCode = err.statusCode;
 		message = err.message;
 	}
-	if (err.name == "ZodError") {
-		res.status(400).json({
+	if (err instanceof ZodError) {
+		const messages = err.issues.map(e => e.message).join(", ");
+		return res.status(400).json({
 			success: false,
-			message: err.errors.map((e: any) => e.message).join(","),
+			message: messages,
 		});
 	}
 	return res.status(statusCode).json({
