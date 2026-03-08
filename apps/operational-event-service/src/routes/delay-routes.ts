@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { DelayCategoryController } from "../controllers/delay-controller";
+import { authenticate } from "@package/shared-middleware";
 
 const delayRouter: Router = Router();
 
-delayRouter.post("/delays", DelayCategoryController.create);
+delayRouter.post("/delays", authenticate, DelayCategoryController.create);
 
-delayRouter.get("/delays", DelayCategoryController.getAll);
+delayRouter.get("/delays", authenticate, DelayCategoryController.getAll);
 
-delayRouter.delete("/delays/:id", DelayCategoryController.delete);
+delayRouter.delete("/delays/:id", authenticate, DelayCategoryController.delete);
 
 export default delayRouter;
