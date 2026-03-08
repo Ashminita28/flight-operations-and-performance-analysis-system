@@ -22,7 +22,7 @@ export async function startConsumer() {
 					title: data.title,
 					message: data.message,
 					type: data.type,
-					is_read: true,
+					is_read: false,
 				});
 
 				channel.ack(msg);

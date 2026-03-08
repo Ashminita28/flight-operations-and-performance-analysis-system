@@ -1,0 +1,36 @@
+{
+	"name": "worker-service",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "tsc",
+		"start": "node dist/server.js",
+		"dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/server.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.29.3",
+	"dependencies": {
+		"amqplib": "^0.10.9",
+		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.6",
+		"dotenv": "^17.3.1",
+		"express": "^5.2.1"
+	},
+	"devDependencies": {
+		"@package/shared-database": "workspace:*",
+		"@package/shared-middleware": "workspace:*",
+		"@types/amqplib": "^0.10.8",
+		"@types/cookie-parser": "^1.4.10",
+		"@types/cors": "^2.8.19",
+		"@types/express": "^5.0.6",
+		"@types/node": "^25.3.3",
+		"@types/typescript": "^2.0.0",
+		"nodemon": "^3.1.11",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.9.3"
+	}
+}

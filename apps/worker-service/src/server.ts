@@ -10,7 +10,7 @@ async function startWorker() {
 		await startConsumer();
 		console.log("Worker consuming notifications...");
 
-		app.listen(process.env.WORKER_PORT, () =>
+		app.listen(process.env.PORT, () =>
 			console.log("worker service running at port 3008"),
 		);
 	} catch (err) {
