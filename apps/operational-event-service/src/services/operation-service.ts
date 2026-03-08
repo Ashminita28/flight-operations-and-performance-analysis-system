@@ -1,9 +1,13 @@
 import { OperationalEvent } from "@package/shared-database";
 import * as repo from "../repositories/operation-repository";
-import { ApiError } from "@package/shared-utils";
+import { ApiError, HTTP_STATUS, MESSAGES } from "@package/shared-utils";
 import { publishNotification } from "./rabbitmq-publisher";
+import { EVENT_TYPES } from "@package/shared-utils";
+import { FlightStatus } from "@package/shared-utils/dist/constants/flight-status-transition";
+import { INVALID_TRANSITIONS } from "@package/shared-utils/dist/constants/flight-status-transition";
 
 export const operationService = {
+	// RECORD AN OPERATIONAL EVENT
 	async createOperationalEvent(data: {
 		flight_id: string;
 		event_type: string | undefined;
@@ -16,51 +20,47 @@ export const operationService = {
 		const flight = await repo.findFlightById(data.flight_id);
 
 		if (!flight) {
-			throw new ApiError(404, "Flight not found");
+			throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.FLIGHT_NOT_FOUND);
 		}
 
-		if (data.event_type === "delay") {
-			if (!data.delay_category_id || !data.delay_minutes) {
-				throw new ApiError(
-					400,
-					"Delay category and delay minutes are required for delay events",
-				);
-			}
+		const currentStatus = data.event_type as FlightStatus;
 
-			await repo.updateFlightStatus(data.flight_id, "delayed");
-		}
-
-		if (data.event_type === "cancellation") {
-			await repo.updateFlightStatus(data.flight_id, "cancelled");
-		}
-
-		if (data.event_type === "diversion") {
-			await repo.updateFlightStatus(data.flight_id, "diverted");
+		if (
+			INVALID_TRANSITIONS[currentStatus].includes(
+				data.event_type as FlightStatus,
+			)
+		) {
+			throw new ApiError(
+				HTTP_STATUS.CONFLICT,
+				`Cannot change flight status from '${currentStatus}' to '${data.event_type}'`,
+			);
 		}
 
 		const event = await repo.create(data);
 		await publishNotification({
 			flight_id: flight.id,
 			title: "Operational event occured",
-			message: `Flight ${flight.flight_number} is ${flight.status}`,
+			message: `Flight ${flight.flight_number} is ${data.event_type}`,
 			type: event.event_type,
 		});
 
 		return event;
 	},
 
+	// UPDATE AN EVENT
 	async updateEvent(flightId: string, eventId: string, data: any) {
 		const event = await repo.findById(eventId);
-		if (!event) throw new Error("Event not found");
+		if (!event) throw new ApiError(HTTP_STATUS.NOT_FOUND, "Event not found");
 
 		return await repo.update(eventId, data);
 	},
 
+	// GET EVENTS BY FLIGHT
 	async getEventsByFlight(flightId: string) {
 		const flight = await repo.findFlightById(flightId);
 
 		if (!flight) {
-			throw new ApiError(404, "Flight not found");
+			throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.FLIGHT_NOT_FOUND);
 		}
 
 		return repo.findEventsByFlight(flightId);
