@@ -8,4 +8,5 @@ export const createFlightPerformanceSchema = z.object({
 
 	passengers_count: z.number().int().min(0),
 	payload_kg: z.number().int().positive(),
+	flight_time_minutes: z.number().positive(),
 });

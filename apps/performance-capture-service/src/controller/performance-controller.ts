@@ -5,19 +5,21 @@ import { createFlightPerformanceSchema } from "../validation/performance-validat
 export const FlightPerformanceController = {
 	async create(req: Request, res: Response, next: NextFunction) {
 		try {
+			const flightId = req.params.flightId;
 			const {
-				flight_id,
 				fuel_used_kg,
 				distance_km,
 				passengers_count,
 				payload_kg,
+				flight_time_minutes,
 			} = req.body;
 			const validated = createFlightPerformanceSchema.parse({
-				flight_id,
+				flight_id: flightId,
 				fuel_used_kg,
 				distance_km,
 				passengers_count,
 				payload_kg,
+				flight_time_minutes,
 			});
 
 			const performance =
@@ -37,6 +39,19 @@ export const FlightPerformanceController = {
 		try {
 			const data = await FlightPerformanceService.getAllPerformance();
 
+			return res.status(200).json({
+				success: true,
+				data,
+			});
+		} catch (error) {
+			next(error);
+		}
+	},
+	async geFlightPerformance(req: Request, res: Response, next: NextFunction) {
+		try {
+			const data = await FlightPerformanceService.getFlightPerformanceById(
+				req.params.flight_id as string,
+			);
 			return res.status(200).json({
 				success: true,
 				data,
