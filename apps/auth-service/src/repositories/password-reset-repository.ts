@@ -6,7 +6,6 @@ export const createOtp = async (
 	expiresAt: Date,
 ) => {
 	const createotp = await PasswordReset.create({ email, otp, expiresAt });
-	console.log("OTP-CREATION", createotp);
 	return createotp?.dataValues;
 };
 

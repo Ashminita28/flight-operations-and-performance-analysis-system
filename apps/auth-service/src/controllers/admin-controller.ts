@@ -1,12 +1,10 @@
 import { Request, Response } from "express";
 import Send from "../validations/response";
-
 import { findAllUsers } from "../repositories/auth-repository";
 
 export const adminController = async (req: Request, res: Response) => {
 	try {
 		const users = await findAllUsers();
-
 		return Send.success(res, users, "All registered users");
 	} catch (error) {
 		console.error(error);

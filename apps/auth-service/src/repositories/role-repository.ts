@@ -12,6 +12,5 @@ export const findUserByEmailWithRoles = async (email: string) => {
 			},
 		],
 	});
-	console.log("hfjdhfd:", user?.dataValues);
 	return user?.dataValues;
 };

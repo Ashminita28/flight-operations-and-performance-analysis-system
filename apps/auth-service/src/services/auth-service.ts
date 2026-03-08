@@ -17,7 +17,7 @@ import {
 	createOtp,
 	findOtp,
 	deleteOtp,
-} from "../repositories/passwordReset-repository";
+} from "../repositories/password-reset-repository";
 
 import { sendEmail } from "./mail";
 
