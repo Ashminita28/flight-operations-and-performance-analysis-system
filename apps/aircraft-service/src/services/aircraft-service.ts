@@ -1,61 +1,56 @@
 import { Aircraft, Flight, Airport } from "@package/shared-database";
+import {
+	createAircraftRepo,
+	getAllAircraftRepo,
+	getAircraftByIdRepo,
+	updateAircraftRepo,
+	changeAircraftStatusRepo,
+	deleteAircraftRepo,
+	getAircraftOnDateRepo,
+} from "../repositories/aircraft-repository";
 import { Op } from "sequelize";
+import { CreateAircraftDTO, PaginationOptions } from "../types/aircraft-types";
+import { ApiError } from "@package/shared-utils";
+import { HTTP_STATUS } from "@package/shared-utils";
+import { MESSAGES } from "@package/shared-utils";
 
-interface CreateAircraftDTO {
-	registration: string;
-	icao_type: string;
-	manufacturer: string;
-	model: string;
-	seat_capacity: number;
-	fuel_capacity_kg: string;
-	max_payload_kg: string;
-	year_of_manufacture: number;
-	status: string;
-	base_airport_code: string;
-	notes: string;
-}
 // Create Aircraft
 export const createAircraft = async (data: CreateAircraftDTO) => {
-	console.log(Aircraft.getAttributes());
-	console.log(data);
-	const aircraft = await Aircraft.create(data);
+	const aircraft = await createAircraftRepo(data);
 	return aircraft;
 };
 
 // Get All Aircraft with Maintenance
-export const getAllAircraft = async () => {
-	return await Aircraft.findAll({
-		order: [["createdAt", "DESC"]],
-	});
+export const getAllAircraft = async (options: PaginationOptions = {}) => {
+	return await getAllAircraftRepo(options);
 };
 
 // Get Single Aircraft
 export const getAircraftById = async (id: string) => {
-	const aircraft = await Aircraft.findByPk(id, {});
-
+	const aircraft = await getAircraftByIdRepo(id);
 	if (!aircraft) {
-		throw new Error("Aircraft not found");
+		throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.AIRCRAFT_NOT_FOUND);
 	}
 
 	return aircraft;
 };
 
 //  Update Aircraft
-export const updateAircraft = async (id: string, data: any) => {
-	const aircraft = await Aircraft.findByPk(id);
+export const updateAircraft = async (id: string, data: CreateAircraftDTO) => {
+	const aircraft = await getAircraftByIdRepo(id);
 
 	if (!aircraft) {
-		throw new Error("Aircraft not found");
+		throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.AIRCRAFT_NOT_FOUND);
 	}
 
-	return aircraft.update(data);
+	return await updateAircraftRepo(id, data);
 };
 
 // change aircraft status
 export const changeAircraftStatus = async (id: string, status: string) => {
 	const aircraft = await Aircraft.findByPk(id);
 	if (!aircraft) {
-		throw new Error("Aircraft not found");
+		throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.AIRCRAFT_NOT_FOUND);
 	}
 	return aircraft.update({ status: status });
 };
@@ -65,7 +60,7 @@ export const deleteAircraft = async (id: string) => {
 	const aircraft = await Aircraft.findByPk(id);
 
 	if (!aircraft) {
-		throw new Error("Aircraft not found");
+		throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.AIRCRAFT_NOT_FOUND);
 	}
 
 	await aircraft.destroy();
