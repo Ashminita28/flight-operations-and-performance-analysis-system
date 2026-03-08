@@ -22,8 +22,11 @@ export const update = async (eventId: string, data: any) => {
 	return flight_event;
 };
 
-export const updateFlightStatus = async (flightId: string, status: string) => {
-	return Flight.update({ status }, { where: { id: flightId } });
+export const updateFlightStatusRepo = async (id: string, status: string) => {
+	const flight = await Flight.findByPk(id);
+	if (!flight) return null;
+	await flight.update({ status });
+	return flight;
 };
 
 export const findEventsByFlight = (flightId: string) => {
