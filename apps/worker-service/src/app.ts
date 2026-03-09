@@ -3,6 +3,8 @@ import express, { Express } from "express";
 import router from "./routes/notification-route";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import analyticsRouter from "./routes/analytics-route";
+import { errorHandler } from "@package/shared-middleware";
 
 const app: Express = express();
 
@@ -15,5 +17,7 @@ app.use(
 	}),
 );
 app.use("/api", router);
+app.use("/api", analyticsRouter);
+app.use(errorHandler);
 
 export default app;
