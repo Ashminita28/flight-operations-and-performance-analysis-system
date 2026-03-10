@@ -11,5 +11,9 @@ analyticsRouter.get(
 	"/reports/on-time-performance",
 	analyticsController.getOnTimeController,
 );
+analyticsRouter.get(
+	"/reports/charts/delays",
+	analyticsController.getDelayAnalytics,
+);
 
 export default analyticsRouter;
