@@ -25,23 +25,20 @@ export const useAircraftStore = create<AircraftState>(set => ({
 	fetchAircraft: async () => {
 		try {
 			set({ loading: true });
-
-			const res = await api<{ success: boolean; data: Aircraft[] }>(
-				"/aircraft/",
-			);
-
-			set({ aircraft: res.data });
+			const res = await api<{
+				success: boolean;
+				data: { count: number; rows: Aircraft[] };
+			}>("/aircraft/");
+			set({ aircraft: res.data.rows });
 		} finally {
 			set({ loading: false });
 		}
 	},
-
 	createAircraft: async data => {
 		await api("/aircraft/", {
 			method: "POST",
 			body: JSON.stringify(data),
 		});
-
 		await useAircraftStore.getState().fetchAircraft();
 	},
 

@@ -5,15 +5,14 @@ export async function api<T = any>(
 	options: RequestInit = {},
 ): Promise<T> {
 	const res = await fetch(`${API_BASE}${endpoint}`, {
+		...options,
+		credentials: "include",
 		headers: {
 			"Content-Type": "application/json",
 			...(options.headers || {}),
 		},
-		credentials: "include",
-		...options,
 	});
 	let data;
-
 	try {
 		data = await res.json();
 	} catch {

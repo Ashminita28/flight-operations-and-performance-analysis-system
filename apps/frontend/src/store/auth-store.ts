@@ -12,6 +12,7 @@ interface AuthState {
 	user: User | null;
 
 	loading: boolean;
+	isFetched: boolean;
 
 	login: (email: string, password: string) => Promise<void>;
 
@@ -27,12 +28,14 @@ interface AuthState {
 	logout: () => Promise<void>;
 
 	fetchUser: () => Promise<void>;
+	fetchtAllUsers: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>(set => ({
 	user: null,
 
 	loading: false,
+	isFetched: false,
 
 	// LOGIN
 	login: async (email, password) => {
@@ -45,8 +48,6 @@ export const useAuthStore = create<AuthState>(set => ({
 				password,
 			}),
 		});
-
-		// Backend returns Send.success format
 		set({
 			user: res.data,
 			loading: false,
@@ -86,18 +87,27 @@ export const useAuthStore = create<AuthState>(set => ({
 	},
 
 	// FETCH USER FROM COOKIE TOKEN
-
 	fetchUser: async () => {
+		set({ loading: true });
 		try {
-			const res = await api("/user/profile");
-
-			set({
-				user: res.data,
-			});
+			const res = await api("/profile");
+			set({ user: res.data });
 		} catch {
-			set({
-				user: null,
-			});
+			set({ user: null });
+		} finally {
+			set({ loading: false, isFetched: true });
+		}
+	},
+
+	fetchtAllUsers: async () => {
+		set({ loading: true });
+		try {
+			const res = await api("/users");
+			set({ user: res.data });
+		} catch {
+			set({ user: null });
+		} finally {
+			set({ loading: false });
 		}
 	},
 }));
