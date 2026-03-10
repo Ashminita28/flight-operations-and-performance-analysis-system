@@ -9,3 +9,6 @@ As the number of flights increases, this approach breaks down. Data arrives late
 Performance analysis—such as fuel efficiency, delay causes, or aircraft utilization—requires someone to manually combine multiple spreadsheets, which can take days and still contain errors.
 
 The goal of the new system is to **centralize flight operations data**, provide **near-real-time visibility**, and generate **reliable performance analytics** without depending on manual consolidation.
+
+
+
