@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useFlightStore } from "@/store/flight-store";
 import { useAircraftStore } from "@/store/aircraft-store";
@@ -16,7 +16,6 @@ import {
 	FormControl,
 	FormMessage,
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,23 +25,39 @@ import {
 	SelectValue,
 	SelectContent,
 } from "@/components/ui/select";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuthStore } from "@/store/auth-store";
 
-interface FlightregistrationProps {
+interface FlightRegistrationProps {
 	onClose?: () => void;
 	refreshFlights?: () => void;
 }
+
 const flightSchema = z.object({
-	flight_number: z.string().min(2),
-	airline_code: z.string().min(2),
-	origin_airport: z.string().min(3),
-	destination_airport: z.string().min(3),
-	aircraft_id: z.string(),
-	scheduled_departure: z.string(),
-	scheduled_arrival: z.string(),
-	status: z.string(),
-	flight_date: z.string(),
+	flight_number: z.string().min(1, "Flight number is required"),
+	airline_code: z.string().min(1, "Airline code is required"),
+	origin_airport: z.string().length(3, "Must be 3 letters e.g. DEL"),
+	destination_airport: z.string().length(3, "Must be 3 letters e.g. BOM"),
+	aircraft_id: z.string().min(1, "Select an aircraft"),
+	status: z.enum([
+		"scheduled",
+		"boarding",
+		"departed",
+		"landed",
+		"diverted",
+		"cancelled",
+		"delayed",
+	]),
+	flight_date: z.string().min(1, "Flight date required"),
+	scheduled_departure: z.string().min(1, "Scheduled departure required"),
+	scheduled_arrival: z.string().min(1, "Scheduled arrival required"),
+	estimated_departure: z.string().optional(),
+	estimated_arrival: z.string().optional(),
+	actual_departure: z.string().optional(),
+	actual_arrival: z.string().optional(),
+	gate_departure: z.string().optional(),
+	gate_arrival: z.string().optional(),
+	is_return_flight: z.boolean().optional(),
 });
 
 type FlightFormValues = z.infer<typeof flightSchema>;
@@ -50,13 +65,13 @@ type FlightFormValues = z.infer<typeof flightSchema>;
 export default function FlightRegistration({
 	onClose,
 	refreshFlights,
-}: FlightregistrationProps) {
+}: FlightRegistrationProps) {
 	const createFlight = useFlightStore(s => s.createFlight);
 	const { aircraft, fetchAircraft } = useAircraftStore();
 
 	useEffect(() => {
 		fetchAircraft();
-	}, []);
+	}, [fetchAircraft]);
 
 	const form = useForm<FlightFormValues>({
 		resolver: zodResolver(flightSchema),
@@ -64,210 +79,446 @@ export default function FlightRegistration({
 
 	async function onSubmit(data: FlightFormValues) {
 		try {
-			await createFlight(data);
+			let user = useAuthStore.getState().user;
+			if (!user) {
+				alert("User not authenticated");
+				return;
+			}
+
+			await createFlight({
+				...data,
+				created_by: user.id,
+			});
 			form.reset();
 			if (refreshFlights) {
 				await refreshFlights();
 			}
 			if (onClose) onClose();
 		} catch (err: any) {
-			alert(err.message);
+			alert(err.message ?? "Failed to register flight");
 		}
 	}
 
+	const aircraftList = Array.isArray(aircraft) ? aircraft : [];
+
 	return (
-		<Card className="bg-[#142B4D] text-white">
-			<div>
-				<Button onClick={onClose}>X</Button>
-			</div>
-			<CardHeader>
-				<CardTitle>Register Flight</CardTitle>
+		<Card className="bg-[#0f2847] border border-slate-600 text-white shadow-2xl">
+			<CardHeader className="flex flex-row justify-between items-center border-b border-slate-600 pb-4">
+				<CardTitle className="text-white text-xl">Register Flight</CardTitle>
+				<Button
+					variant="ghost"
+					onClick={onClose}
+					className="text-slate-300 hover:text-white hover:bg-slate-700 h-8 w-8 p-0 text-lg"
+				>
+					✕
+				</Button>
 			</CardHeader>
-			<CardContent>
-				<div className="px-7 pb-7">
-					<Form {...form}>
-						<form
-							onSubmit={form.handleSubmit(onSubmit)}
-							className="space-y-4"
-						>
-							<div className="grid grid-cols-2 gap-3">
-								<FormField
-									control={form.control}
-									name="flight_number"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Flight Number</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
 
-								<FormField
-									control={form.control}
-									name="airline_code"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Airline Code</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<div className="grid grid-cols-2 gap-3 mt-3">
-								<FormField
-									control={form.control}
-									name="status"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Status</FormLabel>
-											<Select
-												onValueChange={field.onChange}
-												defaultValue={field.value}
-											>
-												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Select status" />
-													</SelectTrigger>
-												</FormControl>
-												<SelectContent>
-													<SelectItem value="scheduled">Scheduled</SelectItem>
-													<SelectItem value="boarding">Boarding</SelectItem>
-													<SelectItem value="departed">Departed</SelectItem>
-													<SelectItem value="landed">Landed</SelectItem>
-													<SelectItem value="cancelled">Cancelled</SelectItem>
-													<SelectItem value="delayed">Delayed</SelectItem>
-												</SelectContent>
-											</Select>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="flight_date"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Flight Date</FormLabel>
-											<FormControl>
-												<Input
-													type="date"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-							<div className="grid grid-cols-2 gap-3 mt-3">
-								<FormField
-									control={form.control}
-									name="origin_airport"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Origin</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<FormField
-									control={form.control}
-									name="destination_airport"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Destination</FormLabel>
-											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-
+			<CardContent className="pt-4 max-h-[75vh] overflow-y-auto">
+				<Form {...form}>
+					<form
+						onSubmit={form.handleSubmit(onSubmit)}
+						className="space-y-4"
+					>
+						<div className="grid grid-cols-2 gap-3">
 							<FormField
 								control={form.control}
-								name="aircraft_id"
+								name="flight_number"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Aircraft</FormLabel>
-										<Select
-											onValueChange={field.onChange}
-											defaultValue={field.value}
-										>
-											<FormControl>
-												<SelectTrigger>
-													<SelectValue placeholder="Select aircraft" />
-												</SelectTrigger>
-											</FormControl>
-											<SelectContent>
-												{aircraft.map(a => (
-													<SelectItem
-														key={a.id}
-														value={a.id}
-													>
-														{a.registration} - {a.model}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FormMessage />
+										<FormLabel className="text-slate-300">
+											Flight Number *
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="AI203"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
 									</FormItem>
 								)}
 							/>
-							<div className="grid grid-cols-2 gap-3 mt-3">
-								<FormField
-									control={form.control}
-									name="scheduled_departure"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Departure</FormLabel>
-											<FormControl>
-												<Input
-													type="datetime-local"
-													{...field}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
+							<FormField
+								control={form.control}
+								name="airline_code"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Airline Code *
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="AI"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+						</div>
 
-								<FormField
-									control={form.control}
-									name="scheduled_arrival"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Arrival</FormLabel>
-											<FormControl>
-												<Input
-													type="datetime-local"
-													{...field}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-							</div>
+						<div className="grid grid-cols-2 gap-3">
+							<FormField
+								control={form.control}
+								name="origin_airport"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Origin Airport *
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="DEL"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="destination_airport"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Destination Airport *
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="BOM"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+						</div>
 
-							<Button
-								type="submit"
-								className="w-full bg-blue-600"
-							>
-								Register Flight
-							</Button>
-						</form>
-					</Form>
-				</div>
+						<FormField
+							control={form.control}
+							name="aircraft_id"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="text-slate-300">Aircraft *</FormLabel>
+									<Select
+										onValueChange={field.onChange}
+										value={field.value}
+									>
+										<FormControl>
+											<SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+												<SelectValue placeholder="Select aircraft" />
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent className="bg-slate-800 border-slate-600">
+											{aircraftList.length === 0 ? (
+												<SelectItem
+													value="loading"
+													disabled
+													className="text-slate-400"
+												>
+													Loading aircraft...
+												</SelectItem>
+											) : (
+												aircraftList.map(a => (
+													<SelectItem
+														key={a.id}
+														value={a.id}
+														className="text-white hover:bg-slate-700"
+													>
+														{a.registration} — {a.model}
+													</SelectItem>
+												))
+											)}
+										</SelectContent>
+									</Select>
+									<FormMessage className="text-red-400" />
+								</FormItem>
+							)}
+						/>
+
+						<div className="grid grid-cols-2 gap-3">
+							<FormField
+								control={form.control}
+								name="status"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">Status *</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											value={field.value}
+										>
+											<FormControl>
+												<SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+													<SelectValue />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent className="bg-slate-800 border-slate-600">
+												<SelectItem
+													value="scheduled"
+													className="text-white"
+												>
+													Scheduled
+												</SelectItem>
+												<SelectItem
+													value="boarding"
+													className="text-white"
+												>
+													Boarding
+												</SelectItem>
+												<SelectItem
+													value="departed"
+													className="text-white"
+												>
+													Departed
+												</SelectItem>
+												<SelectItem
+													value="landed"
+													className="text-white"
+												>
+													Landed
+												</SelectItem>
+												<SelectItem
+													value="delayed"
+													className="text-white"
+												>
+													Delayed
+												</SelectItem>
+												<SelectItem
+													value="diverted"
+													className="text-white"
+												>
+													Diverted
+												</SelectItem>
+												<SelectItem
+													value="cancelled"
+													className="text-white"
+												>
+													Cancelled
+												</SelectItem>
+											</SelectContent>
+										</Select>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="flight_date"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Flight Date *
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="date"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+						</div>
+
+						<div className="grid grid-cols-2 gap-3">
+							<FormField
+								control={form.control}
+								name="scheduled_departure"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Scheduled Departure *
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="datetime-local"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="scheduled_arrival"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Scheduled Arrival *
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="datetime-local"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white"
+											/>
+										</FormControl>
+										<FormMessage className="text-red-400" />
+									</FormItem>
+								)}
+							/>
+						</div>
+
+						<div className="grid grid-cols-2 gap-3">
+							<FormField
+								control={form.control}
+								name="estimated_departure"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Estimated Departure
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="datetime-local"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white"
+											/>
+										</FormControl>
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="estimated_arrival"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Estimated Arrival
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="datetime-local"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white"
+											/>
+										</FormControl>
+									</FormItem>
+								)}
+							/>
+						</div>
+
+						<div className="grid grid-cols-2 gap-3">
+							<FormField
+								control={form.control}
+								name="actual_departure"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Actual Departure
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="datetime-local"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white"
+											/>
+										</FormControl>
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="actual_arrival"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Actual Arrival
+										</FormLabel>
+										<FormControl>
+											<Input
+												type="datetime-local"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white"
+											/>
+										</FormControl>
+									</FormItem>
+								)}
+							/>
+						</div>
+
+						<div className="grid grid-cols-2 gap-3">
+							<FormField
+								control={form.control}
+								name="gate_departure"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Departure Gate
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="A12"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+											/>
+										</FormControl>
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="gate_arrival"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-slate-300">
+											Arrival Gate
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="B4"
+												{...field}
+												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+											/>
+										</FormControl>
+									</FormItem>
+								)}
+							/>
+						</div>
+
+						<FormField
+							control={form.control}
+							name="is_return_flight"
+							render={({ field }) => (
+								<FormItem className="flex items-center gap-3">
+									<FormControl>
+										<input
+											type="checkbox"
+											checked={field.value ?? false}
+											onChange={e => field.onChange(e.target.checked)}
+											className="w-4 h-4 accent-blue-500 cursor-pointer"
+										/>
+									</FormControl>
+									<FormLabel className="text-slate-300 mt-0! cursor-pointer">
+										Return Flight
+									</FormLabel>
+								</FormItem>
+							)}
+						/>
+
+						<Button
+							type="submit"
+							disabled={form.formState.isSubmitting}
+							className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+						>
+							{form.formState.isSubmitting
+								? "Registering..."
+								: "Register Flight"}
+						</Button>
+					</form>
+				</Form>
 			</CardContent>
 		</Card>
 	);
