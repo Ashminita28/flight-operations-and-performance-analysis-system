@@ -24,13 +24,10 @@ import {
 	IconChevronRight,
 	IconChevronsLeft,
 	IconChevronsRight,
-	IconCircleCheckFilled,
 	IconDotsVertical,
 	IconLayoutColumns,
-	IconLoader,
 	IconPlus,
 	IconSearch,
-	IconTrendingUp,
 } from "@tabler/icons-react";
 import {
 	flexRender,
@@ -47,29 +44,10 @@ import {
 	type SortingState,
 	type VisibilityState,
 } from "@tanstack/react-table";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-	type ChartConfig,
-} from "@/components/ui/chart";
-
-import {
-	Drawer,
-	DrawerClose,
-	DrawerContent,
-	DrawerDescription,
-	DrawerFooter,
-	DrawerHeader,
-	DrawerTitle,
-	DrawerTrigger,
-} from "@/components/ui/drawer";
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -87,7 +65,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import {
 	Table,
 	TableBody,
@@ -96,201 +73,196 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useNavigate } from "react-router-dom";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import type { FlightRow, FlightStatus, FlightQueryParams } from "@/types/types";
+
+const STATUS_BADGE: Record<FlightStatus, string> = {
+	scheduled: "bg-blue-100   text-blue-800   border-blue-200",
+	boarding: "bg-amber-100  text-amber-800  border-amber-200",
+	departed: "bg-sky-100    text-sky-800    border-sky-200",
+	landed: "bg-green-100  text-green-800  border-green-200",
+	diverted: "bg-purple-100 text-purple-800 border-purple-200",
+	cancelled: "bg-red-100    text-red-800    border-red-200",
+	delayed: "bg-orange-100 text-orange-800 border-orange-200",
+};
 
 interface DataTableProps {
-	initialData: z.infer<typeof schema>[];
+	data: FlightRow[];
+	loading: boolean;
+
+	totalRows: number;
+	totalPages: number;
+	currentPage: number;
+	pageSize: number;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (size: number) => void;
+
 	onAddClick: () => void;
+	onSearch: (query: string) => void;
+	onStatusFilter: (status: FlightStatus | "") => void;
+	onSort: (params: Pick<FlightQueryParams, "sort_by" | "sort_order">) => void;
+	onDelete: (id: string) => void;
 }
 
-export const schema = z.object({
-	id: z.string(),
-	flightNumber: z.string(),
-	airline: z.string(),
-	route: z.string(),
-	aircraft: z.string(),
-	date: z.string(),
-	departure: z.string(),
-	arrival: z.string(),
-	status: z.string(),
-	return: z.string(),
-});
-
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
-	{
-		accessorKey: "flightNumber",
-		header: "Flight",
-		cell: ({ row }) => {
-			return <TableCellViewer item={row.original} />;
+function buildColumns(onDelete: (id: string) => void): ColumnDef<FlightRow>[] {
+	return [
+		{
+			accessorKey: "flightNumber",
+			header: "Flight",
+			cell: ({ row }) => (
+				<span className="font-semibold text-white tracking-wide">
+					{row.original.flightNumber}
+				</span>
+			),
+			enableHiding: false,
 		},
-		enableHiding: false,
-	},
-	{
-		accessorKey: "airline",
-		header: "Airline",
-		cell: ({ row }) => (
-			<div className="w-32">
-				<Badge
-					variant="outline"
-					className="text-muted-foreground px-1.5"
-				>
-					{row.original.airline}
-				</Badge>
-			</div>
-		),
-	},
-	{
-		accessorKey: "route",
-		header: "Route",
-		cell: ({ row }) => (
-			<div className="w-32">
-				<Badge
-					variant="outline"
-					className="text-muted-foreground px-1.5"
-				>
-					{row.original.route}
-				</Badge>
-			</div>
-		),
-	},
-
-	{
-		accessorKey: "aircraft",
-		header: "Aircraft",
-		cell: ({ row }) => (
-			<div className="w-32">
-				<Badge
-					variant="outline"
-					className="text-muted-foreground px-1.5"
-				>
-					{row.original.aircraft}
-				</Badge>
-			</div>
-		),
-	},
-	{
-		accessorKey: "date",
-		header: "Flight Date",
-		cell: ({ row }) => (
-			<div className="w-32">
-				<Badge
-					variant="outline"
-					className="text-muted-foreground px-1.5"
-				>
-					{row.original.date}
-				</Badge>
-			</div>
-		),
-	},
-	{
-		accessorKey: "departure",
-		header: "Departure",
-		cell: ({ row }) => (
-			<div className="w-32">
-				<Badge
-					variant="outline"
-					className="text-muted-foreground px-1.5"
-				>
-					{row.original.departure}
-				</Badge>
-			</div>
-		),
-	},
-	{
-		accessorKey: "arrival",
-		header: "Arrival",
-		cell: ({ row }) => (
-			<div className="w-32">
-				<Badge
-					variant="outline"
-					className="text-muted-foreground px-1.5"
-				>
-					{row.original.arrival}
-				</Badge>
-			</div>
-		),
-	},
-
-	{
-		accessorKey: "status",
-		header: "Status",
-		cell: ({ row }) => (
-			<Badge
-				variant="outline"
-				className="text-muted-foreground px-1.5"
-			>
-				{row.original.status === "scheduled" ? (
-					<IconCircleCheckFilled className="fill-blue-500 dark:fill-blue-400" />
-				) : (
-					<IconLoader />
-				)}
-				{row.original.status === "boarding" ? (
-					<IconCircleCheckFilled className="fill-amber-500 dark:fill-amber-400" />
-				) : (
-					<IconLoader />
-				)}
-				{row.original.status === "departed" ? (
-					<IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-				) : (
-					<IconLoader />
-				)}
-				{row.original.status === "landed" ? (
-					<IconCircleCheckFilled className="fill-emerald-500 dark:fill-emerald-400" />
-				) : (
-					<IconLoader />
-				)}
-				{row.original.status === "diverted" ? (
-					<IconCircleCheckFilled className="fill-purple-500 dark:fill-purple-400" />
-				) : (
-					<IconLoader />
-				)}
-				{row.original.status === "cancelled" ? (
-					<IconCircleCheckFilled className="fill-red-500 dark:fill-red-400" />
-				) : (
-					<IconLoader />
-				)}
-				{row.original.status === "delayed" ? (
-					<IconCircleCheckFilled className="fill-orange-500 dark:fill-orange-400" />
-				) : (
-					<IconLoader />
-				)}
-
-				{row.original.status}
-			</Badge>
-		),
-	},
-
-	{
-		id: "actions",
-		cell: () => (
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button
-						variant="ghost"
-						className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-						size="icon"
+		{
+			accessorKey: "airline",
+			header: "Airline",
+			cell: ({ row }) => (
+				<div className="w-24">
+					<Badge
+						variant="outline"
+						className="text-white px-1.5"
 					>
-						<IconDotsVertical />
-						<span className="sr-only">Open menu</span>
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent
-					align="end"
-					className="w-32"
-				>
-					<DropdownMenuItem>Edit</DropdownMenuItem>
-					<DropdownMenuItem>Make a copy</DropdownMenuItem>
-					<DropdownMenuItem>Favorite</DropdownMenuItem>
-					<DropdownMenuSeparator />
-					<DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
-		),
-	},
-];
+						{row.original.airline}
+					</Badge>
+				</div>
+			),
+		},
+		{
+			accessorKey: "route",
+			header: "Route",
+			cell: ({ row }) => (
+				<div className="w-36">
+					<Badge
+						variant="outline"
+						className="text-white px-1.5"
+					>
+						{row.original.route}
+					</Badge>
+				</div>
+			),
+		},
+		{
+			accessorKey: "aircraft",
+			header: "Aircraft",
+			cell: ({ row }) => (
+				<div className="w-40">
+					<Badge
+						variant="outline"
+						className="text-white px-1.5 truncate max-w-full block"
+					>
+						{row.original.aircraft}
+					</Badge>
+				</div>
+			),
+		},
+		{
+			accessorKey: "date",
+			header: "Flight Date",
+			cell: ({ row }) => (
+				<div className="w-28">
+					<Badge
+						variant="outline"
+						className="text-white px-1.5"
+					>
+						{row.original.date}
+					</Badge>
+				</div>
+			),
+		},
+		{
+			accessorKey: "departure",
+			header: "Departure",
+			cell: ({ row }) => (
+				<div className="w-32">
+					<Badge
+						variant="outline"
+						className="text-white px-1.5"
+					>
+						{new Date(row.original.departure).toLocaleString("en-IN", {
+							day: "2-digit",
+							month: "short",
+							hour: "2-digit",
+							minute: "2-digit",
+						})}
+					</Badge>
+				</div>
+			),
+		},
+		{
+			accessorKey: "arrival",
+			header: "Arrival",
+			cell: ({ row }) => (
+				<div className="w-32">
+					<Badge
+						variant="outline"
+						className="text-white px-1.5"
+					>
+						{new Date(row.original.arrival).toLocaleString("en-IN", {
+							day: "2-digit",
+							month: "short",
+							hour: "2-digit",
+							minute: "2-digit",
+						})}
+					</Badge>
+				</div>
+			),
+		},
+		{
+			accessorKey: "status",
+			header: "Status",
+			cell: ({ row }) => {
+				const status = row.original.status;
+				const colorClass = STATUS_BADGE[status] ?? "bg-white/10 text-white";
+				return (
+					<Badge
+						variant="outline"
+						className={`px-2 py-0.5 text-xs font-medium capitalize border ${colorClass}`}
+					>
+						{status}
+					</Badge>
+				);
+			},
+		},
+		{
+			id: "actions",
+			cell: ({ row }) => (
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							variant="ghost"
+							className="data-[state=open]:bg-muted text-white flex size-8"
+							size="icon"
+							onClick={e => e.stopPropagation()}
+						>
+							<IconDotsVertical />
+							<span className="sr-only">Open menu</span>
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent
+						align="end"
+						className="w-32"
+					>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem
+							variant="destructive"
+							onClick={e => {
+								e.stopPropagation();
+								onDelete(row.original.id);
+							}}
+						>
+							Delete
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			),
+		},
+	];
+}
 
-function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
+function DraggableRow({ row }: { row: Row<FlightRow> }) {
 	const navigate = useNavigate();
 	const { transform, transition, setNodeRef, isDragging } = useSortable({
 		id: row.original.id,
@@ -301,11 +273,8 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 			data-state={row.getIsSelected() && "selected"}
 			data-dragging={isDragging}
 			ref={setNodeRef}
-			className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-			style={{
-				transform: CSS.Transform.toString(transform),
-				transition: transition,
-			}}
+			className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 cursor-pointer hover:bg-white/5 border-white/10"
+			style={{ transform: CSS.Transform.toString(transform), transition }}
 			onClick={() => navigate(`/flights/${row.original.id}`)}
 		>
 			{row.getVisibleCells().map(cell => (
@@ -317,20 +286,55 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 	);
 }
 
-export function DataTable({ initialData, onAddClick }: DataTableProps) {
-	const [data, setData] = React.useState(() => initialData);
-	const [searchQuery, setSearchQuery] = React.useState("");
+export function DataTable({
+	data,
+	loading,
+	totalRows,
+	totalPages,
+	currentPage,
+	pageSize,
+	onPageChange,
+	onPageSizeChange,
+	onAddClick,
+	onSearch,
+	onStatusFilter,
+	onSort,
+	onDelete,
+}: DataTableProps) {
+	const [rows, setRows] = React.useState<FlightRow[]>(data);
 
 	React.useEffect(() => {
-		setData(initialData);
-	}, [initialData]);
+		setRows(data);
+	}, [data]);
 
-	const filteredData = React.useMemo(() => {
-		if (!searchQuery.trim()) return data;
-		return data.filter(item =>
-			item.flightNumber.toLowerCase().includes(searchQuery.toLowerCase()),
-		);
-	}, [data, searchQuery]);
+	const [searchQuery, setSearchQuery] = React.useState("");
+	React.useEffect(() => {
+		const timer = setTimeout(() => {
+			if (searchQuery.trim().length >= 2 || searchQuery.trim() === "") {
+				onSearch(searchQuery.trim());
+			}
+		}, 400);
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
+
+	const [activeSortBy, setActiveSortBy] = React.useState<
+		"departure" | "date" | "route"
+	>("departure");
+	const [activeSortOrder, setActiveSortOrder] = React.useState<"ASC" | "DESC">(
+		"ASC",
+	);
+
+	const handleSortByChange = (value: string) => {
+		const sortBy = value as "departure" | "date" | "route";
+		setActiveSortBy(sortBy);
+		onSort({ sort_by: sortBy, sort_order: activeSortOrder });
+	};
+
+	const handleSortOrderChange = (value: string) => {
+		const sortOrder = value as "ASC" | "DESC";
+		setActiveSortOrder(sortOrder);
+		onSort({ sort_by: activeSortBy, sort_order: sortOrder });
+	};
 
 	const [rowSelection, setRowSelection] = React.useState({});
 	const [columnVisibility, setColumnVisibility] =
@@ -339,10 +343,7 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 		[],
 	);
 	const [sorting, setSorting] = React.useState<SortingState>([]);
-	const [pagination, setPagination] = React.useState({
-		pageIndex: 0,
-		pageSize: 10,
-	});
+
 	const sortableId = React.useId();
 	const sensors = useSensors(
 		useSensor(MouseSensor, {}),
@@ -350,28 +351,25 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 		useSensor(KeyboardSensor, {}),
 	);
 
+	const columns = React.useMemo(() => buildColumns(onDelete), [onDelete]);
+
 	const dataIds = React.useMemo<UniqueIdentifier[]>(
-		() => filteredData?.map(({ id }) => id) || [],
-		[filteredData],
+		() => rows.map(({ id }) => id),
+		[rows],
 	);
 
 	const table = useReactTable({
-		data: filteredData,
+		data: rows,
 		columns,
-		state: {
-			sorting,
-			columnVisibility,
-			rowSelection,
-			columnFilters,
-			pagination,
-		},
-		getRowId: row => row.id.toString(),
+		manualPagination: true,
+		pageCount: totalPages,
+		state: { sorting, columnVisibility, rowSelection, columnFilters },
+		getRowId: row => row.id,
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
 		onSortingChange: setSorting,
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: setColumnVisibility,
-		onPaginationChange: setPagination,
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
@@ -383,10 +381,10 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 	function handleDragEnd(event: DragEndEvent) {
 		const { active, over } = event;
 		if (active && over && active.id !== over.id) {
-			setData(data => {
+			setRows(prev => {
 				const oldIndex = dataIds.indexOf(active.id);
 				const newIndex = dataIds.indexOf(over.id);
-				return arrayMove(data, oldIndex, newIndex);
+				return arrayMove(prev, oldIndex, newIndex);
 			});
 		}
 	}
@@ -394,38 +392,85 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 	return (
 		<Tabs
 			defaultValue="outline"
-			className="w-full flex-col justify-start gap-6"
+			className="w-full flex-col justify-start gap-6 bg-[#0a1628] rounded-xl p-4"
 		>
-			<div className="px-4 lg:px-6">
-				<div className="inline-flex items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-sm">
-					<div className="text-sm text-muted-foreground">
-						Total Flights Today
-					</div>
-					<div className="text-2xl font-bold">{filteredData.length}</div>
+			<div className="flex items-center justify-between px-4 lg:px-6 gap-3 flex-wrap">
+				<div className="relative w-full max-w-sm">
+					<IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-white/60" />
+					<Input
+						placeholder="Search by flight number..."
+						value={searchQuery}
+						onChange={e => setSearchQuery(e.target.value)}
+						className="pl-8 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+					/>
 				</div>
-			</div>
 
-			<div className="flex items-center justify-between px-4 lg:px-6">
-				<Label
-					htmlFor="view-selector"
-					className="sr-only"
-				>
-					View
-				</Label>
-				<Select defaultValue="outline">
-					<SelectContent>
-						<SelectItem value="outline">Outline</SelectItem>
-					</SelectContent>
-				</Select>
-				<TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-					<TabsTrigger value="outline">Outline</TabsTrigger>
-				</TabsList>
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-2 flex-wrap">
+					<Select
+						onValueChange={val =>
+							onStatusFilter(val === "all" ? "" : (val as FlightStatus))
+						}
+					>
+						<SelectTrigger
+							className="w-36 bg-white/10 border-white/20 text-white"
+							size="sm"
+						>
+							<SelectValue placeholder="All statuses" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All statuses</SelectItem>
+							<SelectItem value="scheduled">Scheduled</SelectItem>
+							<SelectItem value="boarding">Boarding</SelectItem>
+							<SelectItem value="departed">Departed</SelectItem>
+							<SelectItem value="landed">Landed</SelectItem>
+							<SelectItem value="delayed">Delayed</SelectItem>
+							<SelectItem value="diverted">Diverted</SelectItem>
+							<SelectItem value="cancelled">Cancelled</SelectItem>
+						</SelectContent>
+					</Select>
+
+					{/* Sort by field */}
+					<Select
+						defaultValue="departure"
+						onValueChange={handleSortByChange}
+					>
+						<SelectTrigger
+							className="w-36 bg-white/10 border-white/20 text-white"
+							size="sm"
+						>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="departure">Sort: Departure</SelectItem>
+							<SelectItem value="date">Sort: Date</SelectItem>
+							<SelectItem value="route">Sort: Route</SelectItem>
+						</SelectContent>
+					</Select>
+
+					{/* Sort order */}
+					<Select
+						defaultValue="ASC"
+						onValueChange={handleSortOrderChange}
+					>
+						<SelectTrigger
+							className="w-24 bg-white/10 border-white/20 text-white"
+							size="sm"
+						>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="ASC">ASC</SelectItem>
+							<SelectItem value="DESC">DESC</SelectItem>
+						</SelectContent>
+					</Select>
+
+					{/* Column visibility toggle */}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
 								variant="outline"
 								size="sm"
+								className="bg-white/10 border-white/20 text-white hover:bg-white/20"
 							>
 								<IconLayoutColumns />
 								<span className="hidden lg:inline">Customize Columns</span>
@@ -439,58 +484,47 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 						>
 							{table
 								.getAllColumns()
-								.filter(
-									column =>
-										typeof column.accessorFn !== "undefined" &&
-										column.getCanHide(),
-								)
-								.map(column => {
-									return (
-										<DropdownMenuCheckboxItem
-											key={column.id}
-											className="capitalize"
-											checked={column.getIsVisible()}
-											onCheckedChange={value =>
-												column.toggleVisibility(!!value)
-											}
-										>
-											{column.id}
-										</DropdownMenuCheckboxItem>
-									);
-								})}
+								.filter(col => col.getCanHide())
+								.map(col => (
+									<DropdownMenuCheckboxItem
+										key={col.id}
+										className="capitalize"
+										checked={col.getIsVisible()}
+										onCheckedChange={val => col.toggleVisibility(!!val)}
+									>
+										{col.id}
+									</DropdownMenuCheckboxItem>
+								))}
 						</DropdownMenuContent>
 					</DropdownMenu>
+
 					<Button
 						variant="outline"
 						size="sm"
 						onClick={onAddClick}
+						className="bg-blue-600 border-blue-500 text-white hover:bg-blue-700"
 					>
 						<IconPlus />
-						<span className="hidden lg:inline">Add Section</span>
+						<span className="hidden lg:inline">Add Flight</span>
 					</Button>
 				</div>
 			</div>
 
+			{/* Row count */}
 			<div className="px-4 lg:px-6">
-				<div className="relative w-full max-w-sm">
-					<IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-					<Input
-						placeholder="Search by flight number..."
-						value={searchQuery}
-						onChange={e => {
-							setSearchQuery(e.target.value);
-							setPagination(p => ({ ...p, pageIndex: 0 }));
-						}}
-						className="pl-8"
-					/>
-				</div>
+				<p className="text-xs text-white/50">
+					{loading
+						? "Loading..."
+						: `Showing ${rows.length} of ${totalRows} flights`}
+				</p>
 			</div>
 
+			{/* TABLE */}
 			<TabsContent
 				value="outline"
 				className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
 			>
-				<div className="overflow-hidden rounded-lg border">
+				<div className="overflow-hidden rounded-lg border border-white/20">
 					<DndContext
 						collisionDetection={closestCenter}
 						modifiers={[restrictToVerticalAxis]}
@@ -499,29 +533,44 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 						id={sortableId}
 					>
 						<Table>
-							<TableHeader className="bg-muted sticky top-0 z-10">
+							<TableHeader className="bg-white/10 sticky top-0 z-10">
 								{table.getHeaderGroups().map(headerGroup => (
-									<TableRow key={headerGroup.id}>
-										{headerGroup.headers.map(header => {
-											return (
-												<TableHead
-													key={header.id}
-													colSpan={header.colSpan}
-												>
-													{header.isPlaceholder
-														? null
-														: flexRender(
-																header.column.columnDef.header,
-																header.getContext(),
-															)}
-												</TableHead>
-											);
-										})}
+									<TableRow
+										key={headerGroup.id}
+										className="border-white/20 hover:bg-transparent"
+									>
+										{headerGroup.headers.map(header => (
+											<TableHead
+												key={header.id}
+												colSpan={header.colSpan}
+												className="text-white font-semibold"
+											>
+												{header.isPlaceholder
+													? null
+													: flexRender(
+															header.column.columnDef.header,
+															header.getContext(),
+														)}
+											</TableHead>
+										))}
 									</TableRow>
 								))}
 							</TableHeader>
 							<TableBody className="**:data-[slot=table-cell]:first:w-8">
-								{table.getRowModel().rows?.length ? (
+								{loading ? (
+									Array.from({ length: 5 }).map((_, i) => (
+										<TableRow
+											key={i}
+											className="border-white/10"
+										>
+											{columns.map((_, j) => (
+												<TableCell key={j}>
+													<div className="h-4 bg-white/10 rounded animate-pulse w-20" />
+												</TableCell>
+											))}
+										</TableRow>
+									))
+								) : table.getRowModel().rows?.length ? (
 									<SortableContext
 										items={dataIds}
 										strategy={verticalListSortingStrategy}
@@ -537,7 +586,7 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 									<TableRow>
 										<TableCell
 											colSpan={columns.length}
-											className="h-24 text-center"
+											className="h-24 text-center text-white/40"
 										>
 											No results.
 										</TableCell>
@@ -547,86 +596,88 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 						</Table>
 					</DndContext>
 				</div>
+
+				{/* PAGINATION */}
 				<div className="flex items-center justify-between px-4">
-					<div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-						{table.getFilteredSelectedRowModel().rows.length} of{" "}
-						{table.getFilteredRowModel().rows.length} row(s) selected.
+					<div className="text-white/70 hidden flex-1 text-sm lg:flex">
+						{table.getFilteredSelectedRowModel().rows.length} of {totalRows}{" "}
+						row(s) selected.
 					</div>
+
 					<div className="flex w-full items-center gap-8 lg:w-fit">
 						<div className="hidden items-center gap-2 lg:flex">
 							<Label
 								htmlFor="rows-per-page"
-								className="text-sm font-medium"
+								className="text-sm font-medium text-white/70"
 							>
 								Rows per page
 							</Label>
 							<Select
-								value={`${table.getState().pagination.pageSize}`}
-								onValueChange={value => {
-									table.setPageSize(Number(value));
+								value={`${pageSize}`}
+								onValueChange={val => {
+									onPageSizeChange(Number(val));
 								}}
 							>
 								<SelectTrigger
 									size="sm"
-									className="w-20"
+									className="w-20 bg-white/10 border-white/20 text-white"
 									id="rows-per-page"
 								>
-									<SelectValue
-										placeholder={table.getState().pagination.pageSize}
-									/>
+									<SelectValue placeholder={pageSize} />
 								</SelectTrigger>
 								<SelectContent side="top">
-									{[10, 20, 30, 40, 50].map(pageSize => (
+									{[10, 20, 30, 40, 50].map(size => (
 										<SelectItem
-											key={pageSize}
-											value={`${pageSize}`}
+											key={size}
+											value={`${size}`}
 										>
-											{pageSize}
+											{size}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="flex w-fit items-center justify-center text-sm font-medium">
-							Page {table.getState().pagination.pageIndex + 1} of{" "}
-							{table.getPageCount()}
+
+						<div className="flex w-fit items-center justify-center text-sm font-medium text-white/70">
+							Page {currentPage} of {totalPages}
 						</div>
+
 						<div className="ml-auto flex items-center gap-2 lg:ml-0">
 							<Button
 								variant="outline"
-								className="hidden h-8 w-8 p-0 lg:flex"
-								onClick={() => table.setPageIndex(0)}
-								disabled={!table.getCanPreviousPage()}
+								className="hidden h-8 w-8 p-0 lg:flex bg-white/10 border-white/20 text-white hover:bg-white/20"
+								onClick={() => onPageChange(1)}
+								disabled={currentPage <= 1}
 							>
 								<span className="sr-only">Go to first page</span>
 								<IconChevronsLeft />
 							</Button>
 							<Button
 								variant="outline"
-								className="size-8"
+								className="size-8 bg-white/10 border-white/20 text-white hover:bg-white/20"
 								size="icon"
-								onClick={() => table.previousPage()}
-								disabled={!table.getCanPreviousPage()}
+								onClick={() => onPageChange(currentPage - 1)}
+								disabled={currentPage <= 1}
 							>
 								<span className="sr-only">Go to previous page</span>
 								<IconChevronLeft />
 							</Button>
 							<Button
 								variant="outline"
-								className="size-8"
+								className="size-8 bg-white/10 border-white/20 text-white hover:bg-white/20"
 								size="icon"
-								onClick={() => table.nextPage()}
-								disabled={!table.getCanNextPage()}
+								onClick={() => onPageChange(currentPage + 1)}
+								disabled={currentPage >= totalPages}
 							>
 								<span className="sr-only">Go to next page</span>
 								<IconChevronRight />
 							</Button>
 							<Button
 								variant="outline"
-								className="hidden size-8 lg:flex"
+								className="hidden size-8 lg:flex bg-white/10 border-white/20 text-white hover:bg-white/20"
 								size="icon"
-								onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-								disabled={!table.getCanNextPage()}
+								onClick={() => onPageChange(totalPages)}
+								disabled={currentPage >= totalPages}
 							>
 								<span className="sr-only">Go to last page</span>
 								<IconChevronsRight />
@@ -635,143 +686,6 @@ export function DataTable({ initialData, onAddClick }: DataTableProps) {
 					</div>
 				</div>
 			</TabsContent>
-			<TabsContent
-				value="past-performance"
-				className="flex flex-col px-4 lg:px-6"
-			>
-				<div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-			</TabsContent>
-			<TabsContent
-				value="key-personnel"
-				className="flex flex-col px-4 lg:px-6"
-			>
-				<div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-			</TabsContent>
-			<TabsContent
-				value="focus-documents"
-				className="flex flex-col px-4 lg:px-6"
-			>
-				<div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-			</TabsContent>
 		</Tabs>
-	);
-}
-
-const chartData = [
-	{ month: "January", desktop: 186, mobile: 80 },
-	{ month: "February", desktop: 305, mobile: 200 },
-	{ month: "March", desktop: 237, mobile: 120 },
-	{ month: "April", desktop: 73, mobile: 190 },
-	{ month: "May", desktop: 209, mobile: 130 },
-	{ month: "June", desktop: 214, mobile: 140 },
-];
-
-const chartConfig = {
-	desktop: {
-		label: "Desktop",
-		color: "var(--primary)",
-	},
-	mobile: {
-		label: "Mobile",
-		color: "var(--primary)",
-	},
-} satisfies ChartConfig;
-
-function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
-	const isMobile = useIsMobile();
-
-	return (
-		<Drawer direction={isMobile ? "bottom" : "right"}>
-			<DrawerTrigger asChild>
-				<Button
-					variant="link"
-					className="text-foreground w-fit px-0 text-left"
-				>
-					{item.flightNumber}
-				</Button>
-			</DrawerTrigger>
-			<DrawerContent>
-				<DrawerHeader className="gap-1">
-					<DrawerTitle>{item.flightNumber}</DrawerTitle>
-					<DrawerDescription>
-						Showing total visitors for the last 6 months
-					</DrawerDescription>
-				</DrawerHeader>
-				<div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-					{!isMobile && (
-						<>
-							<ChartContainer config={chartConfig}>
-								<AreaChart
-									accessibilityLayer
-									data={chartData}
-									margin={{
-										left: 0,
-										right: 10,
-									}}
-								>
-									<CartesianGrid vertical={false} />
-									<XAxis
-										dataKey="month"
-										tickLine={false}
-										axisLine={false}
-										tickMargin={8}
-										tickFormatter={value => value.slice(0, 3)}
-										hide
-									/>
-									<ChartTooltip
-										cursor={false}
-										content={<ChartTooltipContent indicator="dot" />}
-									/>
-									<Area
-										dataKey="mobile"
-										type="natural"
-										fill="var(--color-mobile)"
-										fillOpacity={0.6}
-										stroke="var(--color-mobile)"
-										stackId="a"
-									/>
-									<Area
-										dataKey="desktop"
-										type="natural"
-										fill="var(--color-desktop)"
-										fillOpacity={0.4}
-										stroke="var(--color-desktop)"
-										stackId="a"
-									/>
-								</AreaChart>
-							</ChartContainer>
-							<Separator />
-							<div className="grid gap-2">
-								<div className="flex gap-2 leading-none font-medium">
-									Trending up by 5.2% this month{" "}
-									<IconTrendingUp className="size-4" />
-								</div>
-								<div className="text-muted-foreground">
-									Showing total visitors for the last 6 months. This is just
-									some random text to test the layout. It spans multiple lines
-									and should wrap around.
-								</div>
-							</div>
-							<Separator />
-						</>
-					)}
-					<form className="flex flex-col gap-4">
-						<div className="flex flex-col gap-3">
-							<Label htmlFor="header">Header</Label>
-							<Input
-								id="header"
-								defaultValue={item.flightNumber}
-							/>
-						</div>
-					</form>
-				</div>
-				<DrawerFooter>
-					<Button>Submit</Button>
-					<DrawerClose asChild>
-						<Button variant="outline">Done</Button>
-					</DrawerClose>
-				</DrawerFooter>
-			</DrawerContent>
-		</Drawer>
 	);
 }
