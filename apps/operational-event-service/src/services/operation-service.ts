@@ -2,7 +2,7 @@ import { OperationalEvent } from "@package/shared-database";
 import * as repo from "../repositories/operation-repository";
 import { ApiError, HTTP_STATUS, MESSAGES } from "@package/shared-utils";
 import { publishNotification } from "./rabbitmq-publisher";
-import { EVENT_TYPES } from "@package/shared-utils";
+
 import { FlightStatus } from "@package/shared-utils/dist/constants/flight-status-transition";
 import { INVALID_TRANSITIONS } from "@package/shared-utils/dist/constants/flight-status-transition";
 

@@ -55,12 +55,11 @@ export const getAllFlightsRepo = async (query: FlightQueryParams) => {
 		limit,
 		offset,
 		order,
-		logging: console.log,
 	});
 
 	return {
 		flights: rows,
-		meta: {
+		pagination: {
 			total: count,
 			page,
 			limit,

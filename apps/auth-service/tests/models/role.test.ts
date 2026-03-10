@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import Role from "../../src/models/role";
+import { Role } from "@package/shared-database";
 
 describe("Role Model", () => {
 	it("should build role", () => {

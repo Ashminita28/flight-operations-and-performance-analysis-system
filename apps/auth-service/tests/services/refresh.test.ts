@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import * as repo from "../../src/repositories/auth-repository";
-import * as jwt from "../../src/utils/jwt";
+import * as jwt from "@package/shared-utils";
 import { refreshTokenService } from "../../src/services/auth-service";
 
 vi.mock("../../src/repositories/auth-repository");

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as userRepo from "../../src/repositories/auth-repository";
-import * as resetRepo from "../../src/repositories/passwordReset-repository";
-import * as mail from "../../src/utils/mail";
-import { forgotPasswordService } from "../../src/services/email-service";
+import * as resetRepo from "../../src/repositories/password-reset-repository";
+import * as mail from "../../src/services/mail";
+import { forgotPasswordService } from "../../src/services/auth-service";
 
 vi.mock("../../src/repositories/auth-repository");
 vi.mock("../../src/repositories/passwordReset-repository");

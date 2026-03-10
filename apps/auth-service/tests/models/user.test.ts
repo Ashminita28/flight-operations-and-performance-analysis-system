@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import User from "../../src/models/user";
+import { User } from "@package/shared-database";
 
 describe("User Model", () => {
 	it("should build user", () => {

@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import bcrypt from "bcrypt";
-import * as repo from "../../src/repositories/auth-repository";
 import * as roleRepo from "../../src/repositories/role-repository";
-import * as jwt from "../../src/utils/jwt";
+import * as jwt from "@package/shared-utils";
 import { loginService } from "../../src/services/auth-service";
 
 vi.mock("bcrypt");

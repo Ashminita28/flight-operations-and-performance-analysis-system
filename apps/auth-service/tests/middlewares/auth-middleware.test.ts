@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { authenticate } from "../../src/middlewares/auth-middleware";
-import * as jwt from "../../src/utils/jwt";
+import * as jwt from "@package/shared-utils";
+import { authenticate } from "@package/shared-middleware";
 
 vi.mock("../../src/utils/jwt");
 

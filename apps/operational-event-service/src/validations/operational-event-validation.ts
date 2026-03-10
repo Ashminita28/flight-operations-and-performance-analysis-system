@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { EVENT_TYPES } from "@package/shared-utils";
 
 export const createOperationalEventSchema = z.object({
 	flight_id: z.uuid("Invalid flight ID"),

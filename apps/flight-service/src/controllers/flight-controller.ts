@@ -37,7 +37,7 @@ export const getAllFlightsController = async (
 		res.status(HTTP_STATUS.OK).json({
 			success: true,
 			data: result.flights,
-			meta: result.meta,
+			pagination: result.pagination,
 		});
 	} catch (error) {
 		next(error);

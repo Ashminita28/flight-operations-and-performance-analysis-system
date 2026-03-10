@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import Permission from "../../src/models/permission";
+import { Permission } from "@package/shared-database";
 
 describe("Permission Model", () => {
 	it("should build permission", () => {

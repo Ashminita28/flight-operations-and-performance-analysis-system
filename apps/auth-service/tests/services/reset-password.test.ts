@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import bcrypt from "bcrypt";
-import * as resetRepo from "../../src/repositories/passwordReset-repository";
-import User from "../../src/models/user";
-import { resetPasswordService } from "../../src/services/email-service";
+import * as resetRepo from "../../src/repositories/password-reset-repository";
+import { User } from "@package/shared-database";
+import { resetPasswordService } from "../../src/services/auth-service";
 
 vi.mock("bcrypt");
-vi.mock("../../src/repositories/passwordReset-repository");
-vi.mock("../../src/models/user");
+vi.mock("../../src/repositories/password-reset-repository");
+vi.mock("@package/shared-database");
 
 describe("Reset Password Service", () => {
 	beforeEach(() => {

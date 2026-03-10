@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import PasswordReset from "../../src/models/passwordReset";
+import { PasswordReset } from "@package/shared-database";
 
 describe("PasswordReset Model", () => {
 	it("should build OTP record", () => {
