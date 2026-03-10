@@ -16,7 +16,7 @@ import {
 	SelectValue,
 } from "../../components/ui/select";
 import { useFlightStore } from "../../store/flight-store";
-import type { FlightStatus } from "../../types/flight-types";
+import type { FlightStatus } from "../../types/types";
 
 const STATUS_OPTIONS: { value: FlightStatus; label: string }[] = [
 	{ value: "scheduled", label: "Scheduled" },

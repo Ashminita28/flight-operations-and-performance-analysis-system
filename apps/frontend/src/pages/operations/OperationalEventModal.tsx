@@ -10,7 +10,7 @@ import { Button } from "../../components/ui/button";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
-import { useOperationStore } from "@/store/operation-state";
+import { useOperationStore } from "@/store/operation-store";
 import { useDelayStore } from "../../store/delay-store";
 
 interface Props {
