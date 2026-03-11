@@ -15,5 +15,10 @@ analyticsRouter.get(
 	"/reports/charts/delays",
 	analyticsController.getDelayAnalytics,
 );
+analyticsRouter.get(
+	"/reports/analytics-table",
+	analyticsController.getSummaryTable,
+);
+analyticsRouter.get("/reports/export", analyticsController.exportAnalytics);
 
 export default analyticsRouter;

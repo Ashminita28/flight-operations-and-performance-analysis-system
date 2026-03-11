@@ -1,40 +1,12 @@
-import { Flight, AnalyticsSummary } from "@package/shared-database";
+import {
+	Flight,
+	FlightPerformance,
+	OperationalEvent,
+	AnalyticsSummary,
+} from "@package/shared-database";
 import { Op, fn, col, WhereOptions } from "sequelize";
 import { AnalyticsFilters } from "../types/analytics-filters";
-const buildWhere = (filters: AnalyticsFilters): WhereOptions => {
-	const where: WhereOptions = {
-		...(filters.startDate &&
-			filters.endDate && {
-				date: {
-					[Op.between]: [filters.startDate, filters.endDate],
-				},
-			}),
 
-		...(filters.origin_airport && {
-			origin_airport: filters.origin_airport,
-		}),
-
-		...(filters.destination_airport && {
-			destination_airport: filters.destination_airport,
-		}),
-
-		...(filters.aircraft_id && {
-			aircraft_id: filters.aircraft_id,
-		}),
-	};
-
-	if (filters.search) {
-		return {
-			...where,
-			[Op.or]: [
-				{ origin_airport: { [Op.iLike]: `%${filters.search}%` } },
-				{ destination_airport: { [Op.iLike]: `%${filters.search}%` } },
-			],
-		};
-	}
-
-	return where;
-};
 export const analyticsRepository = {
 	// COUNTERS
 	async getDashboardCounter(filters: {
@@ -169,23 +141,42 @@ export const analyticsRepository = {
 		});
 	},
 
-	async getSummaryTable(filters: AnalyticsFilters) {
+	async getActiveFlightsInformation(filters: AnalyticsFilters) {
 		const page = filters.page ?? 1;
 		const limit = filters.limit ?? 10;
 		const offset = (page - 1) * limit;
-
-		const result = await AnalyticsSummary.findAndCountAll({
-			where: buildWhere(filters),
+		const sortOrder =
+			(filters.sort_order || "ASC").toUpperCase() === "DESC" ? "DESC" : "ASC";
+		let order: [string, string][];
+		if (filters.sort_by === "route") {
+			order = [
+				["origin_airport", sortOrder],
+				["destination_airport", sortOrder],
+			];
+		} else if (filters.sort_by === "status") {
+			order = [
+				["scheduled", sortOrder],
+				["departed", sortOrder],
+				["boarding", sortOrder],
+			];
+		}
+		const today = new Date().toISOString().split("T")[0];
+		const { rows, count } = await Flight.findAndCountAll({
+			where: {
+				flight_date: today,
+				status: ["scheduled", "boarding", "departed"],
+			},
 			limit,
 			offset,
-			order: [["date", "DESC"]],
 		});
-
 		return {
-			rows: result.rows,
-			count: result.count,
-			page,
-			totalPages: Math.ceil(result.count / limit),
+			flights: rows,
+			pagination: {
+				total: count,
+				page,
+				limit,
+				total_pages: Math.ceil(count / limit),
+			},
 		};
 	},
 };
