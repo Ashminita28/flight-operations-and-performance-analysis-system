@@ -1,26 +1,34 @@
 import { analyticsRepository } from "../repositories/analytics-repository";
+import { AnalyticsFilters } from "../types/analytics-filters";
 
 export const analyticsService = {
-	async getDashboardCounterService() {
-		const { totalFlights, delayFlights } =
-			await analyticsRepository.getDashboardCounter();
+	async getDashboardCounterService(query: AnalyticsFilters) {
+		const counters = await analyticsRepository.getDashboardCounter(query);
 
-		const onTimePerformance =
-			totalFlights === 0
-				? 0
-				: ((totalFlights - delayFlights) / totalFlights) * 100;
 		return {
-			totalFlights,
-			delayFlights,
-			onTimePerformance: Number(onTimePerformance.toFixed(2)),
+			success: true,
+			data: counters,
 		};
 	},
-	async getOnTimePerformanceChart() {
-		const data = await analyticsRepository.getOnTimePerformanceChart();
 
-		return data.map(d => ({
-			date: d.started_at,
-			totalOntimeFlights: d.result_summary,
-		}));
+	async getDelayAnalytics(query: AnalyticsFilters) {
+		const result = await analyticsRepository.getDelayAnalytics(query);
+
+		return {
+			success: true,
+			data: result.map((row: any) => ({
+				category: row.delay_category,
+				value: Number(row.total_delays),
+			})),
+		};
+	},
+
+	async getOnTimePerformance(query: AnalyticsFilters) {
+		const performance = await analyticsRepository.getOnTimePerformance(query);
+
+		return {
+			success: true,
+			data: performance,
+		};
 	},
 };
