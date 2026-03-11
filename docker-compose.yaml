@@ -12,6 +12,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: aviation_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
   auth-service:
     build:
       context: .
@@ -60,6 +73,8 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
+      - rabbitmq
+
   performance-capture-service:
     build:
       context: .
@@ -72,6 +87,21 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
+
+  worker-service:
+    build:
+      context: .
+      dockerfile: apps/worker-service/Dockerfile
+    container_name: worker_service
+    env_file:
+      - .env
+    ports:
+      - "3008:3008"
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - rabbitmq
+
   frontend:
     build:
       context: .
@@ -86,6 +116,8 @@ services:
       - flight-service
       - operational-event-service
       - performance-capture-service
+      - worker-service
 
 volumes:
   postgres_data:
+  rabbitmq_data:
