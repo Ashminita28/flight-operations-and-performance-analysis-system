@@ -1,6 +1,40 @@
 import { Flight, AnalyticsSummary } from "@package/shared-database";
-import { Op, fn, col, literal } from "sequelize";
+import { Op, fn, col, WhereOptions } from "sequelize";
+import { AnalyticsFilters } from "../types/analytics-filters";
+const buildWhere = (filters: AnalyticsFilters): WhereOptions => {
+	const where: WhereOptions = {
+		...(filters.startDate &&
+			filters.endDate && {
+				date: {
+					[Op.between]: [filters.startDate, filters.endDate],
+				},
+			}),
 
+		...(filters.origin_airport && {
+			origin_airport: filters.origin_airport,
+		}),
+
+		...(filters.destination_airport && {
+			destination_airport: filters.destination_airport,
+		}),
+
+		...(filters.aircraft_id && {
+			aircraft_id: filters.aircraft_id,
+		}),
+	};
+
+	if (filters.search) {
+		return {
+			...where,
+			[Op.or]: [
+				{ origin_airport: { [Op.iLike]: `%${filters.search}%` } },
+				{ destination_airport: { [Op.iLike]: `%${filters.search}%` } },
+			],
+		};
+	}
+
+	return where;
+};
 export const analyticsRepository = {
 	// COUNTERS
 	async getDashboardCounter(filters: {
@@ -133,5 +167,25 @@ export const analyticsRepository = {
 				onTimePerformance: Number(performance.toFixed(2)),
 			};
 		});
+	},
+
+	async getSummaryTable(filters: AnalyticsFilters) {
+		const page = filters.page ?? 1;
+		const limit = filters.limit ?? 10;
+		const offset = (page - 1) * limit;
+
+		const result = await AnalyticsSummary.findAndCountAll({
+			where: buildWhere(filters),
+			limit,
+			offset,
+			order: [["date", "DESC"]],
+		});
+
+		return {
+			rows: result.rows,
+			count: result.count,
+			page,
+			totalPages: Math.ceil(result.count / limit),
+		};
 	},
 };
