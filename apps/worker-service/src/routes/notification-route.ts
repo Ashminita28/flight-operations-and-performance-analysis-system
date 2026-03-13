@@ -8,12 +8,50 @@ import { authorizeRole } from "@package/shared-middleware";
 
 const router: Router = Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Notifications
+ *   description: Notification endpoints
+ */
+
+/**
+ * @swagger
+ * /api/notifications:
+ *   get:
+ *     summary: List notifications
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Notifications array
+ */
 router.get(
 	"/notifications",
 	authenticate,
 	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	getNotifications,
 );
+
+/**
+ * @swagger
+ * /api/notifications/{id}/read:
+ *   patch:
+ *     summary: Mark notification as read
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notification marked
+ */
 router.patch(
 	"/notifications/:id/read",
 	authenticate,
