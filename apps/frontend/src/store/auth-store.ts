@@ -29,6 +29,7 @@ interface AuthState {
 
 	fetchUser: () => Promise<void>;
 	fetchtAllUsers: () => Promise<void>;
+	initializeAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>(set => ({
@@ -51,6 +52,7 @@ export const useAuthStore = create<AuthState>(set => ({
 		set({
 			user: res.data,
 			loading: false,
+			isFetched: true,
 		});
 	},
 
@@ -83,6 +85,7 @@ export const useAuthStore = create<AuthState>(set => ({
 
 		set({
 			user: null,
+			isFetched: true,
 		});
 	},
 
@@ -91,11 +94,24 @@ export const useAuthStore = create<AuthState>(set => ({
 		set({ loading: true });
 		try {
 			const res = await api("/profile");
-			set({ user: res.data });
+			set({ user: res.data, isFetched: true });
 		} catch {
-			set({ user: null });
+			set({ user: null, isFetched: true });
 		} finally {
-			set({ loading: false, isFetched: true });
+			set({ loading: false });
+		}
+	},
+
+	initializeAuth: async () => {
+		set({ loading: true });
+		try {
+			const res = await api("/profile");
+			set({ user: res.data, isFetched: true });
+		} catch (error) {
+			// User is not authenticated, that's fine
+			set({ user: null, isFetched: true });
+		} finally {
+			set({ loading: false });
 		}
 	},
 
