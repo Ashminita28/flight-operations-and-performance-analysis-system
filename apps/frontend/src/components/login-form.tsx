@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useAuthStore } from "../store/auth-store";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export function LoginForm({
 	className,
@@ -28,8 +29,10 @@ export function LoginForm({
 			if (user) {
 				navigate("/main-dashboard");
 			} else {
+				toast.error("Login Failed");
 				navigate("/login");
 			}
+			toast("Login Successfull!!");
 		} catch (err: any) {
 			setError(err.message || "Login failed");
 		}
