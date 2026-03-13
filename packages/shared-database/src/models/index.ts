@@ -72,22 +72,22 @@ export function setupAssociations() {
 
 	Flight.hasMany(OperationalEvent, {
 		foreignKey: "flight_id",
+		as: "operationalEvents",
 	});
 
-	OperationalEvent.belongsTo(Flight, {
-		foreignKey: "flight_id",
-	});
-
+	OperationalEvent.belongsTo(Flight, { foreignKey: "flight_id", as: "flight" });
 	DelayCategory.hasMany(OperationalEvent, {
 		foreignKey: "delay_category_id",
+		as: "operationalEvents",
 	});
-
 	OperationalEvent.belongsTo(DelayCategory, {
 		foreignKey: "delay_category_id",
+		as: "delayCategory",
 	});
 
 	Flight.hasOne(FlightPerformance, {
 		foreignKey: "flight_id",
+		as: "flightPerformances",
 	});
 
 	FlightPerformance.belongsTo(Flight, {
