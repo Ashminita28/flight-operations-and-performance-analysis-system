@@ -1,7 +1,13 @@
-import AppRoutes from "./routes/AppRoutes";
+import AuthInitialize from "./routes/AuthInitialize";
+import { Toaster } from "./components/ui/sonner";
 
 const App: React.FC = () => {
-	return <AppRoutes />;
+	return (
+		<>
+			<AuthInitialize />
+			<Toaster />
+		</>
+	);
 };
 
 export default App;
