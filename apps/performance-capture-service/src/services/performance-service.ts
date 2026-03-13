@@ -33,7 +33,7 @@ export const FlightPerformanceService = {
 			throw new ApiError(HTTP_STATUS.CONFLICT, MESSAGES.PERFORMANCE_EXISTS);
 		}
 
-		const fuel_efficiency = data.fuel_used_kg / data.distance_km;
+		const fuel_efficiency_kg_per_km = data.fuel_used_kg / data.distance_km;
 
 		const load_factor_pct = (data.passengers_count / 180) * 100;
 
@@ -43,7 +43,7 @@ export const FlightPerformanceService = {
 
 		return await FlightPerformanceRepository.create({
 			...data,
-			fuel_efficiency: Number(fuel_efficiency.toFixed(2)),
+			fuel_efficiency_kg_per_km: Number(fuel_efficiency_kg_per_km.toFixed(2)),
 			load_factor_pct: Number(load_factor_pct.toFixed(2)),
 			co2_emissions_kg: Number(co2_emissions_kg.toFixed(2)),
 			average_speed: Number(average_speed.toFixed(2)),
