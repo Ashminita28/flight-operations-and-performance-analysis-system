@@ -1,0 +1,27 @@
+import z from "zod";
+export const flightSchema = z.object({
+	flight_number: z.string().min(1, "Flight number is required"),
+	airline_code: z.string().min(1, "Airline code is required"),
+	origin_airport: z.string().length(3, "Must be 3 letters e.g. DEL"),
+	destination_airport: z.string().length(3, "Must be 3 letters e.g. BOM"),
+	aircraft_id: z.string().min(1, "Select an aircraft"),
+	status: z.enum([
+		"scheduled",
+		"boarding",
+		"departed",
+		"landed",
+		"diverted",
+		"cancelled",
+		"delayed",
+	]),
+	flight_date: z.string().min(1, "Flight date required"),
+	scheduled_departure: z.string().min(1, "Scheduled departure required"),
+	scheduled_arrival: z.string().min(1, "Scheduled arrival required"),
+	estimated_departure: z.string().optional(),
+	estimated_arrival: z.string().optional(),
+	actual_departure: z.string().optional(),
+	actual_arrival: z.string().optional(),
+	gate_departure: z.string().optional(),
+	gate_arrival: z.string().optional(),
+	is_return_flight: z.boolean().optional(),
+});

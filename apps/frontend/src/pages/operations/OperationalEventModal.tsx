@@ -12,6 +12,8 @@ import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
 import { useOperationStore } from "@/store/operation-store";
 import { useDelayStore } from "../../store/delay-store";
+import { operationSchema } from "@/schemas/operation-schema";
+import { toast } from "sonner";
 
 interface Props {
 	open: boolean;
@@ -37,17 +39,24 @@ export function AddEventModal({ open, onClose, flightId }: Props) {
 	}, [open, fetchCategories]);
 
 	const handleSubmit = async () => {
-		console.log("Flight ID:", flightId);
 		if (!flightId) return;
 
-		console.log("Submitting event:", {
-			eventType,
-			delayCategoryId,
-			delayMinutes,
+		const formData = {
+			event_type: eventType,
+			delay_category_id: delayCategoryId,
+			delay_minutes: delayMinutes,
 			severity,
 			description,
-			eventTime,
-		});
+			event_time: eventTime,
+		};
+
+		const result = operationSchema.safeParse(formData);
+
+		if (!result.success) {
+			toast.error(result.error.message);
+			return;
+		}
+
 		if (
 			!description ||
 			!eventTime ||
@@ -67,6 +76,7 @@ export function AddEventModal({ open, onClose, flightId }: Props) {
 			description,
 			event_time: new Date(eventTime).toISOString(),
 		});
+		toast("Operation Event Submitted Successfully");
 
 		setSaving(false);
 		setEventType("");
@@ -93,14 +103,14 @@ export function AddEventModal({ open, onClose, flightId }: Props) {
 					<div className="flex flex-col gap-2">
 						<Label>Event Type</Label>
 						<Input
-							placeholder="Enter event type"
+							placeholder="Enter event type (cancelled,delayed,diverted) only"
 							value={eventType}
 							onChange={e => setEventType(e.target.value)}
 						/>
 					</div>
 
 					<div className="flex flex-col gap-2">
-						<Label>Delay Category</Label>
+						<Label>Event Category</Label>
 						<select
 							value={delayCategoryId}
 							onChange={e => setDelayCategoryId(e.target.value)}
@@ -121,6 +131,7 @@ export function AddEventModal({ open, onClose, flightId }: Props) {
 					<div className="flex flex-col gap-2">
 						<Label>Delay Minutes</Label>
 						<Input
+							placeholder="Add minutes if delayed"
 							type="number"
 							value={delayMinutes}
 							onChange={e => setDelayMinutes(e.target.value)}
@@ -146,7 +157,7 @@ export function AddEventModal({ open, onClose, flightId }: Props) {
 					</div>
 
 					<div className="flex flex-col gap-2">
-						<Label>Description</Label>
+						<Label>Description(Reason)</Label>
 						<Textarea
 							rows={3}
 							value={description}
@@ -163,6 +174,7 @@ export function AddEventModal({ open, onClose, flightId }: Props) {
 					>
 						Cancel
 					</Button>
+
 					<Button
 						onClick={handleSubmit}
 						disabled={
