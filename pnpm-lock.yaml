@@ -554,6 +554,9 @@ importers:
       sequelize:
         specifier: ^6.37.7
         version: 6.37.7(pg-hstore@2.3.4)(pg@8.18.0)
+      uuid:
+        specifier: ^9.0.1
+        version: 9.0.1
     devDependencies:
       "@package/shared-database":
         specifier: workspace:*
@@ -561,6 +564,9 @@ importers:
       "@package/shared-middleware":
         specifier: workspace:*
         version: link:../../packages/shared-middleware
+      "@package/shared-utils":
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
       "@types/amqplib":
         specifier: ^0.10.8
         version: 0.10.8
@@ -585,24 +591,15 @@ importers:
       "@types/typescript":
         specifier: ^2.0.0
         version: 2.0.0
+      "@types/uuid":
+        specifier: 9.0.1
+        version: 9.0.1
       nodemon:
         specifier: ^3.1.11
         version: 3.1.11
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@25.3.3)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
-  packages/shared-constants:
-    devDependencies:
-      "@types/node":
-        specifier: ^25.3.5
-        version: 25.3.5
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@types/node@25.3.5)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -662,18 +659,6 @@ importers:
       "@types/node":
         specifier: ^25.3.0
         version: 25.3.0
-
-  packages/shared-types:
-    devDependencies:
-      "@types/node":
-        specifier: ^25.3.5
-        version: 25.3.5
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@types/node@25.3.5)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
 
   packages/shared-utils:
     dependencies:
@@ -3523,6 +3508,12 @@ packages:
         integrity: sha512-WMEWfMISiJ2QKyk5/dSdgL0ZwP//PZj0jmDU0hMh51FmLq4WIYzjlngsUQZXejQL+QtkXJUOGjb3G3UCvgZuSQ==,
       }
     deprecated: This is a stub types definition for TypeScript (https://github.com/Microsoft/TypeScript). TypeScript provides its own type definitions, so you don't need @types/typescript installed!
+
+  "@types/uuid@9.0.1":
+    resolution:
+      {
+        integrity: sha512-rFT3ak0/2trgvp4yYZo5iKFEPsET7vKydKF+VRCxlQ9bpheehyAJH89dAkaLEq/j/RZXJIqcgsmPJKUP1Z28HA==,
+      }
 
   "@types/validate-npm-package-name@4.0.2":
     resolution:
@@ -8280,6 +8271,13 @@ packages:
       }
     hasBin: true
 
+  uuid@9.0.1:
+    resolution:
+      {
+        integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==,
+      }
+    hasBin: true
+
   v8-compile-cache-lib@3.0.1:
     resolution:
       {
@@ -10617,6 +10615,8 @@ snapshots:
   "@types/typescript@2.0.0":
     dependencies:
       typescript: 5.9.3
+
+  "@types/uuid@9.0.1": {}
 
   "@types/validate-npm-package-name@4.0.2": {}
 
@@ -13378,24 +13378,6 @@ snapshots:
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
-  ts-node@10.9.2(@types/node@25.3.5)(typescript@5.9.3):
-    dependencies:
-      "@cspotcode/source-map-support": 0.8.1
-      "@tsconfig/node10": 1.0.12
-      "@tsconfig/node12": 1.0.11
-      "@tsconfig/node14": 1.0.3
-      "@tsconfig/node16": 1.0.4
-      "@types/node": 25.3.5
-      acorn: 8.15.0
-      acorn-walk: 8.3.4
-      arg: 4.1.3
-      create-require: 1.1.1
-      diff: 4.0.4
-      make-error: 1.3.6
-      typescript: 5.9.3
-      v8-compile-cache-lib: 3.0.1
-      yn: 3.1.1
-
   tsconfig-paths@4.2.0:
     dependencies:
       json5: 2.2.3
@@ -13490,6 +13472,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   uuid@8.3.2: {}
+
+  uuid@9.0.1: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
