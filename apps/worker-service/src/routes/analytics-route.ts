@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { analyticsController } from "../controller/analytics-controller";
+import { authenticate, authorizeRole } from "@package/shared-middleware";
 
 const analyticsRouter: Router = Router();
 
@@ -41,6 +42,8 @@ const analyticsRouter: Router = Router();
  */
 analyticsRouter.get(
 	"/analytics/counters",
+	authenticate,
+	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	analyticsController.getCounterController,
 );
 
@@ -75,6 +78,8 @@ analyticsRouter.get(
  */
 analyticsRouter.get(
 	"/analytics/on-time-performance",
+	authenticate,
+	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	analyticsController.getOnTimeController,
 );
 
@@ -101,11 +106,15 @@ analyticsRouter.get(
  */
 analyticsRouter.get(
 	"/analytics/delay-analysis",
+	authenticate,
+	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	analyticsController.getDelayAnalytics,
 );
 
 analyticsRouter.get(
 	"/analytics/active-flights",
+	authenticate,
+	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	analyticsController.getActiveFlightsController,
 );
 
@@ -126,6 +135,8 @@ analyticsRouter.get(
  */
 analyticsRouter.post(
 	"/analytics/export-report",
+	authenticate,
+	authorizeRole("Admin", "Analyst"),
 	analyticsController.exportAnalyticsController,
 );
 
