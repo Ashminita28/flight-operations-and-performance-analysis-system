@@ -4,7 +4,7 @@ import {
 	CreateFlightBody,
 	createFlightSchema,
 } from "../validation/flight-validation";
-import { HTTP_STATUS } from "@package/shared-utils";
+import { HTTP_STATUS, MESSAGES, sendResponse } from "@package/shared-utils";
 
 // 1.CREATE FLIGHT
 export const createFlightController = async (
@@ -15,9 +15,11 @@ export const createFlightController = async (
 	try {
 		const validatedData: CreateFlightBody = createFlightSchema.parse(req.body);
 		const flight = await service.createFlightService(validatedData);
-
-		res.status(HTTP_STATUS.CREATED).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.CREATED,
 			success: true,
+			message: MESSAGES.FLIGHT_CREATED,
 			data: flight,
 		});
 	} catch (error) {
@@ -33,9 +35,11 @@ export const getAllFlightsController = async (
 ) => {
 	try {
 		const result = await service.getAllFlights(req.query as never);
-
-		res.status(HTTP_STATUS.OK).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
 			success: true,
+			message: MESSAGES.ALL_FLIGHTS,
 			data: result.flights,
 			pagination: result.pagination,
 		});
@@ -53,9 +57,11 @@ export const getFlightByIdController = async (
 	try {
 		const id = req.params.id as string;
 		const flight = await service.getFlightById(id);
-
-		res.status(HTTP_STATUS.OK).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
 			success: true,
+			message: MESSAGES.ALL_FLIGHTS,
 			data: flight,
 		});
 	} catch (error) {
@@ -72,9 +78,11 @@ export const updateFlightByIdController = async (
 	try {
 		const id = req.params.id as string;
 		const flight = await service.updateFlight(id, req.body);
-
-		res.status(HTTP_STATUS.CREATED).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.CREATED,
 			success: true,
+			message: MESSAGES.FLIGHT_UPDATED,
 			data: flight,
 		});
 	} catch (error) {
@@ -90,19 +98,20 @@ export const deleteFlightById = async (
 ) => {
 	try {
 		const id = req.params.id as string;
-
 		if (!id) {
-			return res.status(400).json({
-				success: false,
-				message: "Flight ID is required",
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.BAD_REQUEST,
+				success: true,
+				message: MESSAGES.FLIGHT_ID_REQUIRED,
 			});
 		}
-
 		await service.deleteFlight(id);
-
-		res.status(HTTP_STATUS.OK).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
 			success: true,
-			message: "Flight deleted successfully",
+			message: MESSAGES.FLIGHT_DELETED,
 		});
 	} catch (error) {
 		next(error);
@@ -117,9 +126,11 @@ export const getTodaysFlightUpdates = async (
 ) => {
 	try {
 		const flights = await service.getTodaysFlights();
-
-		res.status(HTTP_STATUS.OK).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
 			success: true,
+			message: MESSAGES.TODAYS_FLIGHT,
 			data: flights,
 		});
 	} catch (error) {
@@ -141,6 +152,12 @@ export const changeFlightStatusByIdController = async (
 			success: true,
 			data: flight,
 		});
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.CREATED,
+			success: true,
+			message: MESSAGES.FLIGHT_STATUS_UPDATED,
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -156,16 +173,19 @@ export const searchFlightController = async (
 		const flightNumber = req.query.flight_number as string;
 
 		if (!flightNumber) {
-			return res.status(HTTP_STATUS.BAD_REQUEST).json({
-				success: false,
-				message: "Flight number query parameter is required",
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.BAD_REQUEST,
+				success: true,
+				message: MESSAGES.FLIGHT_SEARCH,
 			});
 		}
-
 		const flights = await service.searchFlight(flightNumber);
-
-		res.status(HTTP_STATUS.OK).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
 			success: true,
+			message: MESSAGES.FLIGHT_SEARCH,
 			data: flights,
 		});
 	} catch (error) {
