@@ -1,47 +1,47 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import * as service from "../services/auth-service";
-import Send from "../validations/response";
-import z from "zod";
-import authSchema from "../validations/auth-schema";
+import {
+	LoginBody,
+	loginSchema,
+	RegisterBody,
+	registerSchema,
+	ResetBody,
+	resetSchema,
+} from "../validations/auth-schema";
+import { HTTP_STATUS, MESSAGES, sendResponse } from "@package/shared-utils";
 
 // register user
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
 	try {
-		const { first_name, last_name, email, phone, password, roleName } =
-			req.body;
-		if (!first_name || !last_name || !email || !password) {
-			return Send.badRequest(res, null, "Required fields missing");
-		}
-
-		const result = await service.registerService(
-			first_name,
-			last_name,
-			email,
-			phone,
-			password,
-			roleName,
-		);
-		return Send.success(res, result, "User successfully registered.");
-	} catch (error: any) {
-		console.error("REGISTER ERROR:", error);
-		return Send.error(res, null, "Registration Failed");
+		const validateData: RegisterBody = registerSchema.parse(req.body);
+		const register = await service.registerService(validateData);
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
+			success: true,
+			message: MESSAGES.USER_CREATED,
+			data: register,
+		});
+	} catch (error) {
+		next(error);
 	}
 };
 
 // login user
-export const loginUser = async (req: Request, res: Response) => {
+export const loginUser = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
 	try {
-		const { email, password } = req.body as z.infer<typeof authSchema.login>;
+		const validateData: LoginBody = loginSchema.parse(req.body);
+		const { accessToken, refreshToken, user } =
+			await service.loginService(validateData);
 
-		if (!email || !password) {
-			return Send.badRequest(res, null, "Email and password required");
-		}
-		const { accessToken, refreshToken, user } = await service.loginService(
-			email,
-			password,
-		);
-
-		// set cookies
 		res.cookie("accessToken", accessToken, {
 			httpOnly: true,
 			secure: false,
@@ -52,28 +52,46 @@ export const loginUser = async (req: Request, res: Response) => {
 			secure: false,
 			maxAge: 7 * 24 * 60 * 60 * 1000,
 		});
-		return Send.success(res, user, "User logged in successfully");
+
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
+			success: true,
+			message: MESSAGES.USER_LOGGED,
+			data: user,
+		});
 	} catch (error) {
-		console.error("Login Failed:", error);
-		return Send.error(res, null, "Login Failed");
+		next(error);
 	}
 };
 
 // logout user
-export const logoutUser = async (req: any, res: Response) => {
+export const logoutUser = async (
+	req: any,
+	res: Response,
+	next: NextFunction,
+) => {
 	try {
 		await service.logoutService(req.user.userId);
 		res.clearCookie("accessToken");
 		res.clearCookie("refreshToken");
-		return Send.success(res, "User logged out successfully");
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
+			success: true,
+			message: MESSAGES.USER_LOGGED_OUT,
+		});
 	} catch (error) {
-		console.error("error in logging out:", error);
-		return Send.error(res, null, "couldn't logout");
+		next(error);
 	}
 };
 
 // refresh token
-export const refreshToken = async (req: any, res: Response) => {
+export const refreshToken = async (
+	req: any,
+	res: Response,
+	next: NextFunction,
+) => {
 	try {
 		const token = req.cookies.refreshToken;
 		const newAccess = await service.refreshTokenService(token);
@@ -83,35 +101,54 @@ export const refreshToken = async (req: any, res: Response) => {
 			secure: false,
 			maxAge: 15 * 60 * 1000,
 		});
-		return Send.success(res, " success refresh token ");
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
+			success: true,
+			message: MESSAGES.REFRESH_TOKEN,
+		});
 	} catch (error) {
-		console.error("Invalid refresh token:", error);
-		return Send.error(res, null, "Invalid refresh token");
+		next(error);
 	}
 };
 
 // password forgot
-export const forgotPassword = async (req: Request, res: Response) => {
+export const forgotPassword = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
 	try {
 		const result = await service.forgotPasswordService(req.body.email);
-		res.json(result);
-
-		// return Send.success(res, result, "ok let me reset");
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
+			success: true,
+			message: MESSAGES.FORGET_PASSWORD,
+			data: result,
+		});
 	} catch (error: any) {
-		console.error("forgot password failed:", error);
-		return Send.error(res, null, "forgot password failed");
+		next(error);
 	}
 };
 
 // password reset
-export const resetPassword = async (req: Request, res: Response) => {
+export const resetPassword = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
 	try {
-		const { email, password, otp } = req.body;
-		const result = await service.resetPasswordService(email, otp, password);
-		res.json(result);
-		// return Send.success(res, result, "password reset successfully");
-	} catch (error: any) {
-		console.error(" password reset failed:", error);
-		return Send.error(res, null, " password reset failed");
+		const validateData: ResetBody = resetSchema.parse(req.body);
+		const result = await service.resetPasswordService(validateData);
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
+			success: true,
+			message: MESSAGES.PASSWORD_RESET_SUCCESSFULL,
+			data: result,
+		});
+	} catch (error) {
+		next(error);
 	}
 };

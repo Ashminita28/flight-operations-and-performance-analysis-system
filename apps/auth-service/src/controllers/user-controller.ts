@@ -1,12 +1,22 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import * as service from "../services/user-service";
-import Send from "../validations/response";
+import { HTTP_STATUS, MESSAGES, sendResponse } from "@package/shared-utils";
 
-export const getUserProfile = async (req: any, res: Response) => {
+export const getUserProfile = async (
+	req: any,
+	res: Response,
+	next: NextFunction,
+) => {
 	try {
 		const user = await service.userService(req.user.userId);
-		return Send.success(res, user, "Your profile is here");
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
+			success: true,
+			message: MESSAGES.USER_PROFILE,
+			data: user,
+		});
 	} catch (error) {
-		return Send.error(res, null, "No profile found");
+		next(error);
 	}
 };
