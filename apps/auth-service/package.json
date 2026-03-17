@@ -6,8 +6,8 @@
 	"scripts": {
 		"test": "vitest",
 		"build": "tsc",
-		"start": "node dist/server.js",
-		"dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/server.ts"
+		"dev": "ts-node src/server.ts",
+		"start": "node dist/server.js"
 	},
 	"keywords": [],
 	"author": "",
@@ -17,6 +17,7 @@
 		"@package/shared-database": "workspace:*",
 		"@package/shared-middleware": "workspace:*",
 		"@package/shared-utils": "workspace:*",
+		"@package/shared-config": "workspace:*",
 		"@types/cookie-parser": "^1.4.10",
 		"bcrypt": "^6.0.0",
 		"body-parser": "^2.2.2",
