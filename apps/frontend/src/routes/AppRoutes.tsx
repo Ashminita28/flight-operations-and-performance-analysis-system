@@ -1,99 +1,168 @@
-import HomePage from "@/pages/common/HomePage";
-import Login from "@/pages/common/Login";
-import Profile from "@/pages/common/Profile";
+import React, { Suspense, lazy, memo } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ForgotPassword from "@/pages/common/ForgotPassword";
-import ResetPassword from "@/pages/common/ResetPassword";
-import FlightRegistration from "@/pages/operations/FlightRegistration";
-import UserMangement from "@/pages/admin/UserMangement";
-import FlightDashboard from "@/pages/FlightDashboard";
-import MainDashboard from "@/pages/MainDashboard";
-
+import { Skeleton } from "@/components/ui/skeleton";
 import ProtectedRoute from "./ProtectedRoute";
-import AircraftForm from "@/pages/operations/AircraftRegister";
-import { FlightDetail } from "@/pages/FlightDetail";
+import { DashboardLayout } from "@/layouts/DashboardLayout";
+import { PublicLayout } from "@/layouts/PublicLayout";
 
-function AppRoutes() {
+const HomePage = lazy(() => import("@/pages/common/HomePage"));
+const Login = lazy(() => import("@/pages/common/Login"));
+const ForgotPassword = lazy(() => import("@/pages/common/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/common/ResetPassword"));
+
+const UserManagement = lazy(() => import("@/pages/admin/UserMangement"));
+
+const Profile = lazy(() => import("@/pages/common/Profile"));
+const MainDashboard = lazy(() => import("@/pages/MainDashboard"));
+const AircraftForm = lazy(() => import("@/pages/operations/AircraftRegister"));
+
+const AnalyticsDashboard = lazy(() =>
+	import("@/pages/MainDashboard").catch(() => import("@/pages/MainDashboard")),
+);
+
+const FlightDashboard = lazy(() => import("@/pages/FlightDashboard"));
+const FlightDetail = lazy(() =>
+	import("@/pages/FlightDetail").then(m => ({ default: m.FlightDetail })),
+);
+
+const PageFallback = memo(function PageFallback() {
 	return (
-		<BrowserRouter>
-			<Routes>
-				<Route
-					path="/"
-					element={<HomePage />}
-				/>
-				<Route
-					path="/login"
-					element={<Login />}
-				/>
-				<Route
-					path="/forget-password"
-					element={<ForgotPassword />}
-				/>
-				<Route
-					path="/reset-password"
-					element={<ResetPassword />}
-				/>
+		<div
+			className="flex flex-col gap-4 items-center justify-center min-h-screen bg-background p-8"
+			role="status"
+			aria-live="polite"
+			aria-label="Loading page"
+		>
+			<Skeleton className="h-8 w-56 rounded" />
+			<Skeleton className="h-4 w-40 rounded" />
+			<span className="sr-only">Loading…</span>
+		</div>
+	);
+});
 
-				<Route
-					path="/register"
-					element={
-						<ProtectedRoute allowedRoles={["Admin"]}>
-							<UserMangement />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/aircraft"
-					element={
-						<ProtectedRoute allowedRoles={["Operations"]}>
-							<AircraftForm />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/flight-registration"
-					element={
-						<ProtectedRoute allowedRoles={["Operations"]}>
-							<FlightRegistration />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/flight-dashboard"
-					element={
-						<ProtectedRoute>
-							<FlightDashboard />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/flights/:id"
-					element={
-						<ProtectedRoute>
-							<FlightDetail />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/profile"
-					element={
-						<ProtectedRoute>
-							<Profile />
-						</ProtectedRoute>
-					}
-				/>
-
-				<Route
-					path="/main-dashboard"
-					element={
-						<ProtectedRoute>
-							<MainDashboard />
-						</ProtectedRoute>
-					}
-				/>
-			</Routes>
-		</BrowserRouter>
+function ProtectedDashboard({
+	children,
+	allowedRoles,
+}: {
+	children: React.ReactNode;
+	allowedRoles?: string[];
+}) {
+	return (
+		<ProtectedRoute allowedRoles={allowedRoles}>
+			<DashboardLayout>{children}</DashboardLayout>
+		</ProtectedRoute>
 	);
 }
 
-export default AppRoutes;
+function ProtectedPublic({
+	children,
+	allowedRoles,
+}: {
+	children: React.ReactNode;
+	allowedRoles?: string[];
+}) {
+	return (
+		<ProtectedRoute allowedRoles={allowedRoles}>
+			<PublicLayout>{children}</PublicLayout>
+		</ProtectedRoute>
+	);
+}
+
+export default function AppRoutes() {
+	return (
+		<BrowserRouter>
+			<Suspense fallback={<PageFallback />}>
+				<Routes>
+					<Route
+						path="/"
+						element={
+							<PublicLayout showBrand={false}>
+								<HomePage />
+							</PublicLayout>
+						}
+					/>
+					<Route
+						path="/login"
+						element={
+							<PublicLayout>
+								<Login />
+							</PublicLayout>
+						}
+					/>
+					<Route
+						path="/forget-password"
+						element={
+							<PublicLayout>
+								<ForgotPassword />
+							</PublicLayout>
+						}
+					/>
+					<Route
+						path="/reset-password"
+						element={
+							<PublicLayout>
+								<ResetPassword />
+							</PublicLayout>
+						}
+					/>
+					<Route
+						path="/register"
+						element={
+							<ProtectedPublic allowedRoles={["Admin"]}>
+								<UserManagement />
+							</ProtectedPublic>
+						}
+					/>
+					<Route
+						path="/profile"
+						element={
+							<ProtectedDashboard>
+								<Profile />
+							</ProtectedDashboard>
+						}
+					/>
+					<Route
+						path="/main-dashboard"
+						element={
+							<ProtectedDashboard>
+								<MainDashboard />
+							</ProtectedDashboard>
+						}
+					/>
+					<Route
+						path="/aircraft"
+						element={
+							<ProtectedDashboard allowedRoles={["Admin", "Operations"]}>
+								<AircraftForm />
+							</ProtectedDashboard>
+						}
+					/>
+					<Route
+						path="/analytics"
+						element={
+							<ProtectedDashboard allowedRoles={["Admin", "Analyst"]}>
+								<AnalyticsDashboard />
+							</ProtectedDashboard>
+						}
+					/>
+					<Route
+						path="/flight-dashboard"
+						element={
+							<ProtectedRoute>
+								<FlightDashboard />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/flights/:id"
+						element={
+							<ProtectedRoute>
+								<FlightDetail />
+							</ProtectedRoute>
+						}
+					/>
+				</Routes>
+			</Suspense>
+		</BrowserRouter>
+	);
+}
