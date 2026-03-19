@@ -4,75 +4,35 @@ import cookieParser from "cookie-parser";
 import passwordRouter from "./routes/password-routes";
 import adminRouter from "./routes/admin-routes";
 import userRouter from "./routes/user-routes";
-import morgan from "morgan";
+import { authHealth } from "./routes/auth-health-check";
 import cors from "cors";
-
-const swaggerJSDoc = require("swagger-jsdoc");
-const swaggerUi = require("swagger-ui-express");
-import path from "path";
-
-// SWAGGER API
-const swaggerDefinition = {
-	openapi: "3.0.0",
-	info: {
-		title: "LMS API",
-		version: "1.0.0",
-		description: "This is a REST API application made with Express.",
-		license: {
-			name: "Licensed Under MIT",
-			url: "https://spdx.org/licenses/MIT.html",
-		},
-		contact: {
-			name: "JSONPlaceholder",
-			url: "https://jsonplaceholder.typicode.com",
-		},
-	},
-	components: {
-		securitySchemes: {
-			bearerAuth: {
-				type: "http",
-				scheme: "bearer",
-				bearerFormat: "JWT",
-			},
-		},
-	},
-	security: [
-		{
-			beareAuth: [],
-		},
-	],
-	servers: [
-		{
-			url: "http://localhost:3000",
-			description: "Development server",
-		},
-	],
-};
-
-const options = {
-	swaggerDefinition,
-	// Paths to files containing OpenAPI definitions
-	apis: [path.join(__dirname, "routes", "*.ts")],
-};
-const swaggerSpec = swaggerJSDoc(options);
+import { errorHandler, httpLogger, limiter } from "@package/shared-middleware";
+import swaggerUi from "swagger-ui-express";
+import { createSwaggerSpec } from "@package/shared-config";
+import helmet from "helmet";
 
 const app: Express = express();
+app.use(helmet());
+app.use(limiter);
 app.use(
 	cors({
-		origin: "http://localhost:5173",
+		origin: process.env.ORIGIN?.split(","),
 		credentials: true,
 	}),
 );
-
 app.use(express.json());
 app.use(cookieParser());
-app.use(morgan("dev"));
 
-app.use("/api", authRouter);
-app.use("/api", passwordRouter);
-app.use("/api", adminRouter);
-app.use("/api", userRouter);
-
-// DISPLAY THE SWAGGER UI
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(httpLogger);
+app.use("/api/auth/health", authHealth);
+app.use("/api/auth", authRouter);
+app.use("/api/auth", passwordRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/user", userRouter);
+app.use(
+	"/api/auth/api-docs",
+	swaggerUi.serve,
+	swaggerUi.setup(createSwaggerSpec("Auth Service", 3000)),
+);
+app.use(errorHandler);
 export default app;
