@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "./jwt";
+import { HTTP_STATUS, MESSAGES, sendResponse } from "@package/shared-utils";
 
 export interface AuthRequest extends Request {
 	user?: {
@@ -16,7 +17,10 @@ export const authenticate = (
 	const token = req.cookies.accessToken;
 
 	if (!token) {
-		return res.status(401).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.UNAUTHORIZED,
+			success: false,
 			message: "Not logged in",
 		});
 	}
@@ -28,7 +32,10 @@ export const authenticate = (
 
 		next();
 	} catch (err) {
-		return res.status(401).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.UNAUTHORIZED,
+			success: false,
 			message: "Invalid token",
 		});
 	}

@@ -28,5 +28,11 @@ UserRole.init(
 		sequelize,
 		tableName: "user_roles",
 		timestamps: true,
+		indexes: [
+			{
+				unique: true,
+				fields: ["user_id", "role_id"],
+			},
+		],
 	},
 );

@@ -1,10 +1,14 @@
 import { Response, NextFunction } from "express";
-import { AuthRequest } from "./auth";
+import { AuthRequest } from "./auth-middleware";
+import { HTTP_STATUS, MESSAGES, sendResponse } from "@package/shared-utils";
 
 export const authorizeRole = (...roles: string[]) => {
 	return (req: AuthRequest, res: Response, next: NextFunction) => {
 		if (!req.user) {
-			return res.status(401).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.UNAUTHORIZED,
+				success: false,
 				message: "Unauthorized",
 			});
 		}
@@ -12,7 +16,10 @@ export const authorizeRole = (...roles: string[]) => {
 		const hasAccess = userRoles.some(r => roles.includes(r));
 
 		if (!hasAccess) {
-			return res.status(403).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.FORBIDDEN,
+				success: false,
 				message: "Forbidden",
 			});
 		}

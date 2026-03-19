@@ -1,3 +1,5 @@
+export { sendResponse } from "./utils/response";
+
 export * from "./constants/permissions";
 export * from "./constants/roles";
 export * from "./utils/jwt";

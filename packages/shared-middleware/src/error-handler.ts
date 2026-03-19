@@ -1,31 +1,41 @@
 import { Request, Response, NextFunction } from "express";
-import { ApiError } from "@package/shared-utils";
+import { ApiError, HTTP_STATUS } from "@package/shared-utils";
+import { sendResponse } from "@package/shared-utils";
 import { ZodError } from "zod";
 
 export const errorHandler = (
-	err: any,
+	err: unknown,
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
-	console.error(err);
-	let statusCode = err.statusCode || 500;
-	let message = err.message || "Internal server error";
+	let statusCode = 500;
+	let message = "Internal server error";
 
 	if (err instanceof ApiError) {
 		statusCode = err.statusCode;
 		message = err.message;
 	}
+
 	if (err instanceof ZodError) {
 		const messages = err.issues.map(e => e.message).join(", ");
-		return res.status(400).json({
+
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.BAD_REQUEST,
 			success: false,
 			message: messages,
 		});
 	}
-	return res.status(statusCode).json({
-		success: false,
+
+	if (err instanceof Error) {
+		message = err.message;
+	}
+
+	sendResponse({
+		res,
 		statusCode,
+		success: false,
 		message,
 	});
 };

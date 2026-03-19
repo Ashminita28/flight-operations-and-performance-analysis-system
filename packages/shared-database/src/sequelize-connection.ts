@@ -1,16 +1,21 @@
 import { Sequelize } from "sequelize";
+import { validateEnv } from "@package/shared-config";
 
-const sequelize = new Sequelize(
-	process.env.DB_NAME || "aviation_db",
-	process.env.DB_USER || "aviation_user",
-	process.env.DB_PASSWORD || "aviation_pass",
-	{
-		host: process.env.DB_HOST || "localhost",
-		port: Number(process.env.DB_PORT) || 5432,
-		dialect: "postgres",
+const env = validateEnv();
+
+const sequelize = new Sequelize(env.DB_NAME, env.DB_USER, env.DB_PASSWORD, {
+	host: env.DB_HOST,
+	port: env.DB_PORT,
+	dialect: "postgres",
+
+	logging: false,
+
+	pool: {
+		max: 10,
+		min: 0,
+		acquire: 30000,
+		idle: 10000,
 	},
-);
-console.log("DB HOST:", process.env.DB_HOST);
-console.log("DB USER:", process.env.DB_USER);
+});
 
 export default sequelize;
