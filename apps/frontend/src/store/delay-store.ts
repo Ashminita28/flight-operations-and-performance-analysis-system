@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { api } from "../api/api";
+import { delayService } from "@/services/delay-service";
 import type { DelayCategory } from "@/types/types";
 
-interface DelayState {
+interface State {
 	categories: DelayCategory[];
 	loading: boolean;
 	error: string | null;
@@ -12,22 +12,28 @@ interface DelayState {
 	deleteCategory: (id: string) => Promise<void>;
 }
 
-export const useDelayStore = create<DelayState>(set => ({
+let controller: AbortController | null = null;
+
+export const useDelayStore = create<State>((set, get) => ({
 	categories: [],
 	loading: false,
 	error: null,
 
 	fetchCategories: async () => {
+		controller?.abort();
+		controller = new AbortController();
+
 		set({ loading: true, error: null });
 
 		try {
-			const res = await api<{ success: boolean; data: DelayCategory[] }>(
-				"/delays",
-			);
-
-			set({ categories: res.data, loading: false });
-		} catch (err: any) {
-			set({ error: err.message, loading: false });
+			const data = await delayService.getAll(controller.signal);
+			set({ categories: data });
+		} catch (err) {
+			if (err instanceof Error && err.name !== "AbortError") {
+				set({ error: err.message });
+			}
+		} finally {
+			set({ loading: false });
 		}
 	},
 
@@ -35,17 +41,12 @@ export const useDelayStore = create<DelayState>(set => ({
 		set({ loading: true, error: null });
 
 		try {
-			const data = await api("/delays", {
-				method: "POST",
-				body: JSON.stringify(payload),
-			});
-
-			set(state => ({
-				categories: [...state.categories, data],
-				loading: false,
-			}));
-		} catch (err: any) {
-			set({ error: err.message, loading: false });
+			const created = await delayService.create(payload);
+			set({ categories: [...get().categories, created] });
+		} catch (err) {
+			if (err instanceof Error) set({ error: err.message });
+		} finally {
+			set({ loading: false });
 		}
 	},
 
@@ -53,16 +54,14 @@ export const useDelayStore = create<DelayState>(set => ({
 		set({ loading: true, error: null });
 
 		try {
-			await api(`/delays/${id}`, {
-				method: "DELETE",
+			await delayService.delete(id);
+			set({
+				categories: get().categories.filter(c => c.id !== id),
 			});
-
-			set(state => ({
-				categories: state.categories.filter(c => c.id !== id),
-				loading: false,
-			}));
-		} catch (err: any) {
-			set({ error: err.message, loading: false });
+		} catch (err) {
+			if (err instanceof Error) set({ error: err.message });
+		} finally {
+			set({ loading: false });
 		}
 	},
 }));

@@ -1,46 +1,54 @@
 import { create } from "zustand";
-import { api } from "../api/api";
+import { operationService } from "@/services/operation-service";
 import type { OperationalEvent } from "@/types/types";
 
-interface OperationStore {
+interface State {
 	events: OperationalEvent[];
 	loading: boolean;
 	error: string | null;
 
-	fetchEvents: (flight_id: string) => Promise<void>;
-	addEvent: (flightId: string, eventData: any) => Promise<void>;
+	fetchEvents: (flightId: string) => Promise<void>;
+	addEvent: (flightId: string, payload: unknown) => Promise<void>;
 }
 
-export const useOperationStore = create<OperationStore>(set => ({
+let controller: AbortController | null = null;
+
+export const useOperationStore = create<State>((set, get) => ({
 	events: [],
 	loading: false,
 	error: null,
 
-	fetchEvents: async (flight_id: string) => {
+	fetchEvents: async flightId => {
+		controller?.abort();
+		controller = new AbortController();
+
 		set({ loading: true, error: null });
 
 		try {
-			const res = await api<{ success: boolean; data: OperationalEvent[] }>(
-				`/operations/${flight_id}/events`,
+			const data = await operationService.getEvents(
+				flightId,
+				controller.signal,
 			);
-			set({ events: res.data, loading: false });
-		} catch (err: any) {
-			set({ error: err.message, loading: false });
+			set({ events: data });
+		} catch (err) {
+			if (err instanceof Error && err.name !== "AbortError") {
+				set({ error: err.message });
+			}
+		} finally {
+			set({ loading: false });
 		}
 	},
 
-	addEvent: async (flightId, eventData) => {
+	addEvent: async (flightId, payload) => {
 		set({ loading: true, error: null });
 
 		try {
-			await api(`/operations/${flightId}/events`, {
-				method: "POST",
-				body: JSON.stringify(eventData),
-			});
-
-			await useOperationStore.getState().fetchEvents(flightId);
-		} catch (err: any) {
-			set({ error: err.message, loading: false });
+			await operationService.createEvent(flightId, payload);
+			await get().fetchEvents(flightId);
+		} catch (err) {
+			if (err instanceof Error) set({ error: err.message });
+		} finally {
+			set({ loading: false });
 		}
 	},
 }));

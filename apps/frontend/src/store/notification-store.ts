@@ -1,32 +1,39 @@
-import { api } from "@/api/api";
 import { create } from "zustand";
+import {
+	notificationService,
+	type Notification,
+} from "@/services/notification-service";
 
-type Notification = {
-	id: string;
-	flight_id: string;
-	title: string;
-	message: string;
-	type: string;
-	is_read: boolean;
-};
-
-type NotificationStore = {
+interface State {
 	notifications: Notification[];
-	fetchNotifications: () => Promise<void>;
-};
+	loading: boolean;
+	error: string | null;
 
-export const useNotificationStore = create<NotificationStore>(set => ({
+	fetchNotifications: () => Promise<void>;
+}
+
+let controller: AbortController | null = null;
+
+export const useNotificationStore = create<State>(set => ({
 	notifications: [],
+	loading: false,
+	error: null,
 
 	fetchNotifications: async () => {
-		try {
-			const res = await api<{ success: boolean; data: Notification[] }>(
-				"/notifications",
-			);
+		controller?.abort();
+		controller = new AbortController();
 
-			set({ notifications: res.data });
-		} catch (error) {
-			console.error("Notification fetch failed", error);
+		set({ loading: true, error: null });
+
+		try {
+			const data = await notificationService.getAll(controller.signal);
+			set({ notifications: data });
+		} catch (err) {
+			if (err instanceof Error && err.name !== "AbortError") {
+				set({ error: err.message });
+			}
+		} finally {
+			set({ loading: false });
 		}
 	},
 }));

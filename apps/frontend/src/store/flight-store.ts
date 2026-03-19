@@ -1,50 +1,12 @@
 import { create } from "zustand";
-import { api } from "@/api/api";
+import { flightService } from "@/services/flight-service";
 import type {
 	Flight,
-	FlightsApiResponse,
-	FlightListApiResponse,
-	SingleFlightApiResponse,
-	AircraftApiResponse,
 	FlightQueryParams,
 	Paginationpagination,
 } from "@/types/types";
 
-export interface UpdateFlight {
-	flight_number: string;
-	airline_code: string;
-	origin_airport: string;
-	destination_airport: string;
-	aircraft_id: string;
-	scheduled_departure: string;
-	scheduled_arrival: string;
-	status: string;
-	flight_date: string;
-}
-
-export interface CreateFlightBody {
-	flight_number: string;
-	airline_code: string;
-	origin_airport: string;
-	destination_airport: string;
-	aircraft_id: string;
-	scheduled_departure: string;
-	scheduled_arrival: string;
-	status: string;
-	flight_date: string;
-	estimated_departure?: string | null;
-	estimated_arrival?: string | null;
-	actual_departure?: string | null;
-	actual_arrival?: string | null;
-	gate_departure?: string | null;
-	gate_arrival?: string | null;
-	is_return_flight?: boolean;
-	created_by: string | null;
-}
-
-export type UpdateFlightBody = Partial<UpdateFlight>;
-
-interface FlightStore {
+interface State {
 	flights: Flight[];
 	selectedFlight: Flight | null;
 	aircraftMap: Record<string, string>;
@@ -54,93 +16,78 @@ interface FlightStore {
 	error: string | null;
 
 	fetchFlights: (params?: FlightQueryParams) => Promise<void>;
-
 	fetchFlightById: (id: string) => Promise<void>;
-
 	fetchTodayFlights: () => Promise<void>;
-
 	searchFlights: (flightNumber: string) => Promise<void>;
-
 	fetchAircraftMap: () => Promise<void>;
-
-	createFlight: (data: CreateFlightBody) => Promise<void>;
-
-	updateFlight: (id: string, data: UpdateFlightBody) => Promise<void>;
-
+	createFlight: (data: unknown) => Promise<void>;
+	updateFlight: (id: string, data: unknown) => Promise<void>;
 	deleteFlight: (id: string) => Promise<void>;
-
 	changeStatus: (id: string, status: string) => Promise<void>;
-
 	setFilters: (filters: FlightQueryParams) => void;
-
 	clearError: () => void;
 }
 
-const DEFAULT_pagination: Paginationpagination = {
+const DEFAULT_PAGINATION: Paginationpagination = {
 	total: 0,
 	page: 1,
 	limit: 10,
 	total_pages: 1,
 };
 
-const DEFAULT_FILTERS: FlightQueryParams = {
-	page: 1,
-	limit: 10,
-	sort_by: "departure",
-	sort_order: "ASC",
-};
+let fetchController: AbortController | null = null;
+let detailController: AbortController | null = null;
 
-function buildQueryString(params: FlightQueryParams): string {
-	const query = new URLSearchParams();
-	if (params.page !== undefined) query.set("page", String(params.page));
-	if (params.limit !== undefined) query.set("limit", String(params.limit));
-	if (params.status) query.set("status", params.status);
-	if (params.origin_airport) query.set("origin_airport", params.origin_airport);
-	if (params.destination_airport)
-		query.set("destination_airport", params.destination_airport);
-	if (params.date) query.set("date", params.date);
-	if (params.sort_by) query.set("sort_by", params.sort_by);
-	if (params.sort_order) query.set("sort_order", params.sort_order);
-	return query.toString();
-}
-
-export const useFlightStore = create<FlightStore>((set, get) => ({
+export const useFlightStore = create<State>((set, get) => ({
 	flights: [],
 	selectedFlight: null,
 	aircraftMap: {},
-	pagination: DEFAULT_pagination,
-	filters: DEFAULT_FILTERS,
+	pagination: DEFAULT_PAGINATION,
+	filters: { page: 1, limit: 10 },
 	loading: false,
 	error: null,
 
-	fetchFlights: async (params?: FlightQueryParams) => {
+	fetchFlights: async params => {
+		fetchController?.abort();
+		fetchController = new AbortController();
+
+		const activeFilters = params ?? get().filters;
+
 		set({ loading: true, error: null });
+
 		try {
-			const activeParams = params ?? get().filters;
-			const qs = buildQueryString(activeParams);
-			const res = await api<FlightsApiResponse>(`/flights?${qs}`);
+			const res = await flightService.getAll(
+				activeFilters,
+				fetchController.signal,
+			);
+
 			set({
 				flights: res.data,
-				pagination: res.pagination ?? DEFAULT_pagination,
-				filters: activeParams,
+				pagination: res.pagination ?? DEFAULT_PAGINATION,
+				filters: activeFilters,
 			});
-		} catch (err: unknown) {
-			const message =
-				err instanceof Error ? err.message : "Failed to load flights";
-			set({ error: message });
+		} catch (err) {
+			if (err instanceof Error && err.name !== "AbortError") {
+				set({ error: err.message });
+			}
 		} finally {
 			set({ loading: false });
 		}
 	},
 
-	fetchFlightById: async (id: string) => {
+	fetchFlightById: async id => {
+		detailController?.abort();
+		detailController = new AbortController();
+
 		set({ loading: true, error: null });
+
 		try {
-			const res = await api<SingleFlightApiResponse>(`/flights/${id}`);
-			set({ selectedFlight: res.data });
-		} catch (err: unknown) {
-			const message = err instanceof Error ? err.message : "Flight not found";
-			set({ error: message });
+			const data = await flightService.getById(id, detailController.signal);
+			set({ selectedFlight: data });
+		} catch (err) {
+			if (err instanceof Error && err.name !== "AbortError") {
+				set({ error: err.message });
+			}
 		} finally {
 			set({ loading: false });
 		}
@@ -149,28 +96,26 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
 	fetchTodayFlights: async () => {
 		set({ loading: true, error: null });
 		try {
-			const res = await api<FlightListApiResponse>("/flights/today");
-			set({ flights: res.data, pagination: DEFAULT_pagination });
-		} catch (err: unknown) {
-			const message =
-				err instanceof Error ? err.message : "Failed to load today's flights";
-			set({ error: message });
+			const data = await flightService.getToday();
+			set({ flights: data, pagination: DEFAULT_PAGINATION });
+		} catch (err) {
+			if (err instanceof Error) {
+				set({ error: err.message });
+			}
 		} finally {
 			set({ loading: false });
 		}
 	},
 
-	searchFlights: async (flightNumber: string) => {
+	searchFlights: async flightNumber => {
 		set({ loading: true, error: null });
 		try {
-			const encoded = encodeURIComponent(flightNumber);
-			const res = await api<FlightListApiResponse>(
-				`/flights/search?flight_number=${encoded}`,
-			);
-			set({ flights: res.data, pagination: DEFAULT_pagination });
-		} catch (err: unknown) {
-			const message = err instanceof Error ? err.message : "Search failed";
-			set({ error: message });
+			const data = await flightService.search(flightNumber);
+			set({ flights: data, pagination: DEFAULT_PAGINATION });
+		} catch (err) {
+			if (err instanceof Error) {
+				set({ error: err.message });
+			}
 		} finally {
 			set({ loading: false });
 		}
@@ -178,47 +123,70 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
 
 	fetchAircraftMap: async () => {
 		try {
-			const res = await api<AircraftApiResponse>("/aircraft/");
-			const map: Record<string, string> = {};
-			res.data.forEach(a => {
-				map[a.id] = `${a.registration} – ${a.model}`;
-			});
+			const map = await flightService.getAircraftMap();
 			set({ aircraftMap: map });
 		} catch (err) {
-			console.error("Failed to fetch aircraft map", err);
+			console.error("Aircraft map fetch failed", err);
 		}
 	},
 
-	createFlight: async (data: CreateFlightBody) => {
-		await api<SingleFlightApiResponse>("/flights/", {
-			method: "POST",
-			body: JSON.stringify(data),
-		});
-
-		await get().fetchFlights(get().filters);
+	createFlight: async data => {
+		set({ loading: true, error: null });
+		try {
+			await flightService.create(data);
+			await get().fetchFlights();
+		} catch (err) {
+			if (err instanceof Error) {
+				set({ error: err.message });
+			}
+		} finally {
+			set({ loading: false });
+		}
 	},
 
-	updateFlight: async (id: string, data: UpdateFlightBody) => {
-		await api<SingleFlightApiResponse>(`/flights/${id}`, {
-			method: "PUT",
-			body: JSON.stringify(data),
-		});
-		await get().fetchFlights(get().filters);
+	updateFlight: async (id, data) => {
+		set({ loading: true, error: null });
+		try {
+			await flightService.update(id, data);
+			await get().fetchFlights();
+		} catch (err) {
+			if (err instanceof Error) {
+				set({ error: err.message });
+			}
+		} finally {
+			set({ loading: false });
+		}
 	},
 
-	deleteFlight: async (id: string) => {
-		await api<{ success: boolean }>(`/flights/${id}`, { method: "DELETE" });
-		await get().fetchFlights(get().filters);
+	deleteFlight: async id => {
+		set({ loading: true, error: null });
+		try {
+			await flightService.delete(id);
+			await get().fetchFlights();
+		} catch (err) {
+			if (err instanceof Error) {
+				set({ error: err.message });
+			}
+		} finally {
+			set({ loading: false });
+		}
 	},
 
-	changeStatus: async (id: string, status: string) => {
-		await api<SingleFlightApiResponse>(`/flights/${id}/status`, {
-			method: "PATCH",
-			body: JSON.stringify({ status }),
-		});
-		await get().fetchFlights(get().filters);
+	changeStatus: async (id, status) => {
+		set({ loading: true, error: null });
+		try {
+			await flightService.changeStatus(id, status);
+			await get().fetchFlights();
+		} catch (err) {
+			if (err instanceof Error) {
+				set({ error: err.message });
+			}
+		} finally {
+			set({ loading: false });
+		}
 	},
 
-	setFilters: (filters: FlightQueryParams) => set({ filters }),
+	setFilters: filters => set({ filters }),
+
 	clearError: () => set({ error: null }),
 }));

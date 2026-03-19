@@ -1,46 +1,51 @@
 import { create } from "zustand";
-import { api } from "../api/api";
+import { performanceService } from "@/services/performance-service";
 import type { Performance } from "@/types/types";
 
-interface PerformanceStore {
+interface State {
 	performance: Performance | null;
 	loading: boolean;
 	error: string | null;
 
-	fetchPerformance: (flight_id: string) => Promise<void>;
-	createPerformance: (flight_id: string, performanceData: any) => Promise<void>;
+	fetchPerformance: (flightId: string) => Promise<void>;
+	createPerformance: (flightId: string, payload: unknown) => Promise<void>;
 }
 
-export const usePerformanceStore = create<PerformanceStore>(set => ({
+let controller: AbortController | null = null;
+
+export const usePerformanceStore = create<State>((set, get) => ({
 	performance: null,
 	loading: false,
 	error: null,
 
-	fetchPerformance: async (flight_id: string) => {
+	fetchPerformance: async flightId => {
+		controller?.abort();
+		controller = new AbortController();
+
 		set({ loading: true, error: null });
 
 		try {
-			const res = await api<{ success: boolean; data: Performance }>(
-				`/performance/${flight_id}`,
-			);
-			set({ performance: res.data, loading: false });
-		} catch (err: any) {
-			set({ error: err.message, loading: false });
+			const data = await performanceService.get(flightId, controller.signal);
+			set({ performance: data });
+		} catch (err) {
+			if (err instanceof Error && err.name !== "AbortError") {
+				set({ error: err.message });
+			}
+		} finally {
+			set({ loading: false });
 		}
 	},
 
-	createPerformance: async (flight_id, performanceData) => {
+	createPerformance: async (flightId, payload) => {
 		set({ loading: true, error: null });
 
 		try {
-			await api(`/performance/${flight_id}`, {
-				method: "POST",
-				body: JSON.stringify(performanceData),
-			});
-
-			await usePerformanceStore.getState().fetchPerformance(flight_id);
-		} catch (err: any) {
-			set({ error: err.message, loading: false });
+			await performanceService.create(flightId, payload);
+			await get().fetchPerformance(flightId);
+		} catch (err) {
+			if (err instanceof Error) set({ error: err.message });
+		} finally {
+			set({ loading: false });
 		}
 	},
 }));

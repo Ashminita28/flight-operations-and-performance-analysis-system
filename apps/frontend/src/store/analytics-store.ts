@@ -1,20 +1,17 @@
 import { create } from "zustand";
-import { api } from "@/api/api";
+import { analyticsService } from "@/services/analytics-service";
 import type {
 	DashboardCounters,
 	OnTimePerformanceDataPoint,
 	DelayAnalysisDataPoint,
 	ActiveFlightData,
 	AnalyticsFilters,
-	AnalyticsCountersResponse,
-	AnalyticsChartResponse,
-	ActiveFlightsResponse,
-	ExportReportPayload,
 	ChartTimeFilter,
+	ExportReportPayload,
 } from "@/types/analytics-types";
 import type { Paginationpagination } from "@/types/types";
 
-interface AnalyticsStore {
+interface State {
 	counters: DashboardCounters | null;
 	onTimePerformanceData: OnTimePerformanceDataPoint[];
 	delayAnalysisData: DelayAnalysisDataPoint[];
@@ -26,10 +23,11 @@ interface AnalyticsStore {
 	error: string | null;
 	exporting: boolean;
 	exportError: string | null;
+
 	fetchCounters: (filters?: AnalyticsFilters) => Promise<void>;
-	fetchOnTimePerformance: (timeFilter?: ChartTimeFilter) => Promise<void>;
-	fetchDelayAnalysis: (timeFilter?: ChartTimeFilter) => Promise<void>;
-	fetchActiveFlights: (filters?: AnalyticsFilters) => Promise<void>;
+	fetchOnTimePerformance: (filter?: ChartTimeFilter) => Promise<void>;
+	fetchDelayAnalysis: (filter?: ChartTimeFilter) => Promise<void>;
+	fetchActiveFlights: () => Promise<void>;
 	initiateExport: (payload: ExportReportPayload) => Promise<{ job_id: string }>;
 	setFilters: (filters: Partial<AnalyticsFilters>) => void;
 	setChartTimeFilter: (filter: ChartTimeFilter) => void;
@@ -43,172 +41,140 @@ const DEFAULT_PAGINATION: Paginationpagination = {
 	total_pages: 0,
 };
 
-const DEFAULT_FILTERS: AnalyticsFilters = {
-	page: 1,
-	limit: 20,
-	time_filter: "daily",
-};
+export const useAnalyticsStore = create<State>((set, get) => {
+	let controller: AbortController | null = null;
 
-function buildQueryString(params: Record<string, any>): string {
-	const query = new URLSearchParams();
-	Object.entries(params).forEach(([key, value]) => {
-		if (value !== undefined && value !== null) {
-			query.set(key, String(value));
-		}
-	});
-	return query.toString();
-}
+	const createController = () => {
+		controller?.abort();
+		controller = new AbortController();
+		return controller;
+	};
 
-export const useAnalyticsStore = create<AnalyticsStore>((set, get) => ({
-	counters: null,
-	onTimePerformanceData: [],
-	delayAnalysisData: [],
-	activeFlights: [],
-	pagination: DEFAULT_PAGINATION,
-	filters: DEFAULT_FILTERS,
-	chartTimeFilter: "monthly",
-	loading: false,
-	error: null,
-	exporting: false,
-	exportError: null,
+	return {
+		counters: null,
+		onTimePerformanceData: [],
+		delayAnalysisData: [],
+		activeFlights: [],
+		pagination: DEFAULT_PAGINATION,
+		filters: { page: 1, limit: 20, time_filter: "daily" },
+		chartTimeFilter: "monthly",
+		loading: false,
+		error: null,
+		exporting: false,
+		exportError: null,
 
-	// Fetch dashboard counters for current date or specified time period
-	fetchCounters: async (filters?: AnalyticsFilters) => {
-		set({ loading: true, error: null });
-		try {
-			const params = filters ?? get().filters;
-			const qs = buildQueryString({
-				time_filter: params.time_filter,
-				origin_airport: params.origin_airport,
-				destination_airport: params.destination_airport,
-			});
-			const res = await api<AnalyticsCountersResponse>(
-				`/analytics/counters?${qs}`,
-			);
-			set({ counters: res.data });
-		} catch (err: unknown) {
-			const message =
-				err instanceof Error ? err.message : "Failed to load counters";
-			set({ error: message });
-		} finally {
-			set({ loading: false });
-		}
-	},
+		fetchCounters: async overrideFilters => {
+			const ctrl = createController();
 
-	// Fetch on-time performance data for bar chart
-	fetchOnTimePerformance: async (timeFilter?: ChartTimeFilter) => {
-		set({ loading: true, error: null });
-		try {
-			const filter = timeFilter ?? get().chartTimeFilter;
-			const qs = buildQueryString({
-				time_filter: filter,
-				origin_airport: get().filters.origin_airport,
-				destination_airport: get().filters.destination_airport,
-			});
-			const res = await api<AnalyticsChartResponse>(
-				`/analytics/on-time-performance?${qs}`,
-			);
-			set({
-				onTimePerformanceData: res.data as OnTimePerformanceDataPoint[],
-			});
-		} catch (err: unknown) {
-			const message =
-				err instanceof Error ? err.message : "Failed to load performance data";
-			set({ error: message });
-		} finally {
-			set({ loading: false });
-		}
-	},
+			set({ loading: true, error: null });
 
-	// Fetch delay analysis data for pie chart
-	fetchDelayAnalysis: async (timeFilter?: ChartTimeFilter) => {
-		set({ loading: true, error: null });
-		try {
-			const filter = timeFilter ?? get().chartTimeFilter;
-			const qs = buildQueryString({
-				time_filter: filter,
-				origin_airport: get().filters.origin_airport,
-				destination_airport: get().filters.destination_airport,
-			});
-			const res = await api<AnalyticsChartResponse>(
-				`/analytics/delay-analysis?${qs}`,
-			);
-			set({ delayAnalysisData: res.data as DelayAnalysisDataPoint[] });
-		} catch (err: unknown) {
-			const message =
-				err instanceof Error ? err.message : "Failed to load delay analysis";
-			set({ error: message });
-		} finally {
-			set({ loading: false });
-		}
-	},
+			try {
+				const filters = overrideFilters ?? get().filters;
 
-	// Fetch active flights for current date with pagination
-	fetchActiveFlights: async (filters?: AnalyticsFilters) => {
-		set({ loading: true, error: null });
-		try {
-			const params = filters ?? get().filters;
-			const qs = buildQueryString({
-				page: params.page || 1,
-				limit: params.limit || 20,
-				origin_airport: params.origin_airport,
-				destination_airport: params.destination_airport,
-				sort_by: params.sort_by,
-				sort_order: params.sort_order,
-			});
-			const res = await api<ActiveFlightsResponse>(
-				`/analytics/active-flights?${qs}`,
-			);
-			set({
-				activeFlights: res.data,
-				pagination: res.pagination ?? DEFAULT_PAGINATION,
-				filters: params,
-			});
-		} catch (err: unknown) {
-			const message =
-				err instanceof Error ? err.message : "Failed to load active flights";
-			set({ error: message });
-		} finally {
-			set({ loading: false });
-		}
-	},
+				const data = await analyticsService.getCounters(filters, ctrl.signal);
 
-	// Initiate CSV export report
-	initiateExport: async (payload: ExportReportPayload) => {
-		set({ exporting: true, exportError: null });
-		try {
-			const response = await api<{ data: { job_id: string } }>(
-				"/analytics/export-report",
-				{
-					method: "POST",
-					body: JSON.stringify(payload),
-				},
-			);
-			return { job_id: response.data.job_id };
-		} catch (err: unknown) {
-			const message =
-				err instanceof Error ? err.message : "Failed to initiate export report";
-			set({ exportError: message });
-			throw new Error(message);
-		} finally {
-			set({ exporting: false });
-		}
-	},
+				set({ counters: data });
+			} catch (err) {
+				if (err instanceof Error && err.name !== "AbortError") {
+					set({ error: err.message });
+				}
+			} finally {
+				set({ loading: false });
+			}
+		},
 
-	// Update filter
-	setFilters: (newFilters: Partial<AnalyticsFilters>) => {
-		set(state => ({
-			filters: { ...state.filters, ...newFilters },
-		}));
-	},
+		fetchOnTimePerformance: async filter => {
+			const ctrl = createController();
 
-	// Set chart time filter
-	setChartTimeFilter: (filter: ChartTimeFilter) => {
-		set({ chartTimeFilter: filter });
-	},
+			set({ loading: true, error: null });
 
-	// Clear error message
-	clearError: () => {
-		set({ error: null, exportError: null });
-	},
-}));
+			try {
+				const data = await analyticsService.getOnTimePerformance(
+					filter ?? get().chartTimeFilter,
+					get().filters,
+					ctrl.signal,
+				);
+
+				set({ onTimePerformanceData: data });
+			} catch (err) {
+				if (err instanceof Error && err.name !== "AbortError") {
+					set({ error: err.message });
+				}
+			} finally {
+				set({ loading: false });
+			}
+		},
+
+		fetchDelayAnalysis: async filter => {
+			const ctrl = createController();
+
+			set({ loading: true, error: null });
+
+			try {
+				const data = await analyticsService.getDelayAnalysis(
+					filter ?? get().chartTimeFilter,
+					get().filters,
+					ctrl.signal,
+				);
+
+				set({ delayAnalysisData: data });
+			} catch (err) {
+				if (err instanceof Error && err.name !== "AbortError") {
+					set({ error: err.message });
+				}
+			} finally {
+				set({ loading: false });
+			}
+		},
+
+		fetchActiveFlights: async () => {
+			const ctrl = createController();
+
+			set({ loading: true, error: null });
+
+			try {
+				const res = await analyticsService.getActiveFlights(
+					get().filters,
+					ctrl.signal,
+				);
+
+				set({
+					activeFlights: res.data ?? [],
+					pagination: res.pagination ?? DEFAULT_PAGINATION,
+				});
+			} catch (err) {
+				if (err instanceof Error && err.name !== "AbortError") {
+					set({ error: err.message });
+				}
+			} finally {
+				set({ loading: false });
+			}
+		},
+
+		initiateExport: async payload => {
+			set({ exporting: true, exportError: null });
+
+			try {
+				const data = await analyticsService.exportReport(payload);
+				return data;
+			} catch (err) {
+				if (err instanceof Error) {
+					set({ exportError: err.message });
+					throw err;
+				}
+				throw new Error("Export failed");
+			} finally {
+				set({ exporting: false });
+			}
+		},
+
+		setFilters: filters =>
+			set(state => ({
+				filters: { ...state.filters, ...filters },
+			})),
+
+		setChartTimeFilter: filter => set({ chartTimeFilter: filter }),
+
+		clearError: () => set({ error: null, exportError: null }),
+	};
+});
