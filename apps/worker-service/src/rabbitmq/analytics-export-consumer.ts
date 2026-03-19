@@ -1,4 +1,3 @@
-import amqp from "amqplib";
 import fs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
@@ -10,62 +9,47 @@ import {
 import { Parser } from "json2csv";
 import { ExportMessage } from "../types/export-message";
 import { getDateRangeByFilter } from "../utils/date-range-filter";
+import { logger } from "@package/shared-config";
+import { getChannel } from "@package/shared-config";
 
-// Consuming analytics export messages
 export async function startAnalyticsExportConsumer() {
 	try {
-		const connection = await amqp.connect(
-			process.env.RABBITMQ_URL || "amqp://rabbitmq:5672",
-		);
-		const channel = await connection.createChannel();
+		const channel = getChannel();
 
-		// Assert to queue
 		await channel.assertQueue(RABBITMQ_CONFIG.reporting_queue, {
 			durable: RABBITMQ_CONFIG.durable,
 		});
 
-		// Set prefetch count
 		await channel.prefetch(RABBITMQ_CONFIG.prefetch_count);
-		// Consume messages
+
 		channel.consume(
 			RABBITMQ_CONFIG.reporting_queue,
 			async msg => {
-				if (msg) {
-					try {
-						const messageContent: ExportMessage = JSON.parse(
-							msg.content.toString(),
-						);
+				if (!msg) return;
 
-						// Process the export
-						await processAnalyticsExport(messageContent);
-						// Acknowledge message
-						channel.ack(msg);
-					} catch (error) {
-						// Reject and requeue on error
-						channel.nack(msg, false, true);
-					}
+				try {
+					const messageContent: ExportMessage = JSON.parse(
+						msg.content.toString(),
+					);
+
+					await processAnalyticsExport(messageContent);
+
+					channel.ack(msg);
+				} catch (error) {
+					channel.nack(msg, false, true);
 				}
 			},
 			{ noAck: false },
 		);
 
-		// Handle connection close
-		connection.on("close", () => {
-			console.log("Analytics Export Consumer RabbitMQ connection closed");
-		});
+		logger.info("Analytics Export Consumer started");
+	} catch (error: any) {
+		logger.error("Consumer failed:", error);
 
-		connection.on("error", err => {
-			console.error(
-				"Analytics Export Consumer RabbitMQ connection error:",
-				err,
-			);
-		});
-	} catch (error) {
-		console.error("Analytics Export Consumer Failed to start consumer:", error);
-		// Retry connection after delay
 		setTimeout(startAnalyticsExportConsumer, 5000);
 	}
 }
+
 // Process analytics export job- Generates CSV file and sends email
 async function processAnalyticsExport(message: ExportMessage): Promise<void> {
 	try {

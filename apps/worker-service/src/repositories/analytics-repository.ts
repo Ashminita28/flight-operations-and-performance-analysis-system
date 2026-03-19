@@ -304,7 +304,7 @@ export const analyticsRepository = {
 				total: count,
 				page,
 				limit,
-				total_pages: Math.ceil(count / limit),
+				totalPages: Math.ceil(count / limit),
 			},
 		};
 	},

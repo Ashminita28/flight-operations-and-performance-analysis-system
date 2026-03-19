@@ -9,6 +9,7 @@ import {
 	resetSchema,
 } from "../validations/auth-schema";
 import { HTTP_STATUS, MESSAGES, sendResponse } from "@package/shared-utils";
+import { cookieOptions } from "../utils/cookie-options";
 
 // register user
 export const registerUser = async (
@@ -41,15 +42,13 @@ export const loginUser = async (
 		const validateData: LoginBody = loginSchema.parse(req.body);
 		const { accessToken, refreshToken, user } =
 			await service.loginService(validateData);
-
 		res.cookie("accessToken", accessToken, {
-			httpOnly: true,
-			secure: false,
+			...cookieOptions,
 			maxAge: 15 * 60 * 1000,
 		});
+
 		res.cookie("refreshToken", refreshToken, {
-			httpOnly: true,
-			secure: false,
+			...cookieOptions,
 			maxAge: 7 * 24 * 60 * 60 * 1000,
 		});
 

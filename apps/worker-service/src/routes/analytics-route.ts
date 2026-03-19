@@ -41,7 +41,7 @@ const analyticsRouter: Router = Router();
  *         description: Dashboard counters
  */
 analyticsRouter.get(
-	"/analytics/counters",
+	"/counters",
 	authenticate,
 	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	analyticsController.getCounterController,
@@ -77,7 +77,7 @@ analyticsRouter.get(
  *         description: On-time performance data
  */
 analyticsRouter.get(
-	"/analytics/on-time-performance",
+	"/on-time-performance",
 	authenticate,
 	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	analyticsController.getOnTimeController,
@@ -105,7 +105,7 @@ analyticsRouter.get(
  *         description: Summary table data
  */
 analyticsRouter.get(
-	"/analytics/delay-analysis",
+	"/delay-analysis",
 	authenticate,
 	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	analyticsController.getDelayAnalytics,
@@ -134,7 +134,7 @@ analyticsRouter.get(
  *         description: Export request submitted
  */
 analyticsRouter.post(
-	"/analytics/export-report",
+	"/export-report",
 	authenticate,
 	authorizeRole("Admin", "Analyst"),
 	analyticsController.exportAnalyticsController,

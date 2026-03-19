@@ -26,27 +26,27 @@ const usernameSchema = z
 	});
 
 // validation rules for login
-const login = z.object({
-	email: z
-		.string()
-		.trim()
-		.min(1, "Email is required")
-		.email("Invalid email format"),
+export const loginSchema = z.object({
+	email: z.email("Invalid email format"),
 	password: z.string().min(1, "Password is required"),
 });
 
 // validation rules for register
-const register = z.object({
-	name: usernameSchema,
-	email: z.string().email("Invalid email format"),
-	password_hash: passwordSchema,
-	roleName: z.string(),
+export const registerSchema = z.object({
+	first_name: usernameSchema,
+	last_name: usernameSchema,
+	email: z.email("Invalid email format"),
 	phone: z.string(),
+	password: passwordSchema,
+	roleName: z.string(),
 });
 
-const authSchema = {
-	login,
-	register,
-};
+export const resetSchema = z.object({
+	email: z.email("Invalid email format"),
+	otp: z.string(),
+	newPassword: passwordSchema,
+});
 
-export default authSchema;
+export type RegisterBody = z.infer<typeof registerSchema>;
+export type LoginBody = z.infer<typeof loginSchema>;
+export type ResetBody = z.infer<typeof resetSchema>;

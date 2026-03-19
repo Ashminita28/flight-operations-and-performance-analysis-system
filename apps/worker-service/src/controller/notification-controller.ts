@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { notificationService } from "../services/notification-service";
+import { HTTP_STATUS, MESSAGES, sendResponse } from "@package/shared-utils";
 
 export async function getNotifications(
 	req: Request,
@@ -8,8 +9,9 @@ export async function getNotifications(
 ) {
 	try {
 		const notifications = await notificationService.getAllNotifications();
-
-		return res.status(200).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
 			success: true,
 			data: notifications,
 		});
@@ -28,9 +30,11 @@ export async function markNotificationRead(
 
 		await notificationService.markAsRead(id as string);
 
-		return res.status(200).json({
+		return sendResponse({
+			res,
+			statusCode: HTTP_STATUS.OK,
 			success: true,
-			message: "Notification marked as read",
+			message: MESSAGES.NOTIFICATION_MARKED_READ,
 		});
 	} catch (error) {
 		next(error);

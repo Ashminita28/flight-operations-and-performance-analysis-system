@@ -34,7 +34,7 @@ COPY --from=installer /app .
 EXPOSE 3001
  
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s \
-CMD curl -f http://localhost:3001/api/flight/health || exit 1
+CMD curl -f http://localhost:3001/api/flights/health || exit 1
  
 CMD ["node","apps/flight-service/dist/server.js"]
  

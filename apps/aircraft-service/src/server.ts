@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
+import { validateEnv } from "@package/shared-config";
+validateEnv();
 import { initializeModels } from "@package/shared-database";
 import app from "./app";
 import { logger } from "@package/shared-config";

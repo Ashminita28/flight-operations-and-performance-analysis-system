@@ -1,13 +1,11 @@
-import amqp from "amqplib";
 import { Notification } from "@package/shared-database";
+import { getChannel } from "@package/shared-config";
+import { logger } from "@package/shared-config";
 
 const QUEUE_NAME = "flight_status_notifications";
 
 export async function startConsumer() {
-	const connection = await amqp.connect(
-		process.env.RABBITMQ_URL || "amqp://rabbitmq:5672",
-	);
-	const channel = await connection.createChannel();
+	const channel = getChannel();
 	await channel.assertQueue(QUEUE_NAME, { durable: true });
 
 	channel.consume(
@@ -30,4 +28,5 @@ export async function startConsumer() {
 		},
 		{ noAck: false },
 	);
+	logger.info("Notification consumer started");
 }

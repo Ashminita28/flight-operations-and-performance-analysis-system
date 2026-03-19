@@ -34,7 +34,7 @@ COPY --from=installer /app .
 EXPOSE 3004
  
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s \
-CMD curl -f http://localhost:3004/api/operational-event/health || exit 1
+CMD curl -f http://localhost:3004/api/operations/health || exit 1
  
 CMD ["node","apps/operational-event-service/dist/server.js"]
  

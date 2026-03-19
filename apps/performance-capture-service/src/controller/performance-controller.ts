@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { FlightPerformanceService } from "../services/performance-service";
 import { createFlightPerformanceSchema } from "../validation/performance-validation";
+import { HTTP_STATUS, MESSAGES } from "@package/shared-utils";
+import { sendResponse } from "@package/shared-utils";
 
 export const FlightPerformanceController = {
 	async create(req: Request, res: Response, next: NextFunction) {
@@ -25,9 +27,11 @@ export const FlightPerformanceController = {
 			const performance =
 				await FlightPerformanceService.createPerformance(validated);
 
-			return res.status(201).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.CREATED,
 				success: true,
-				message: "Flight performance recorded successfully",
+				message: MESSAGES.PERFORMANCE_CREATED,
 				data: performance,
 			});
 		} catch (error) {
@@ -37,11 +41,12 @@ export const FlightPerformanceController = {
 
 	async getAll(req: Request, res: Response, next: NextFunction) {
 		try {
-			const data = await FlightPerformanceService.getAllPerformance();
-
-			return res.status(200).json({
+			const performance = await FlightPerformanceService.getAllPerformance();
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.OK,
 				success: true,
-				data,
+				data: performance,
 			});
 		} catch (error) {
 			next(error);
@@ -49,12 +54,15 @@ export const FlightPerformanceController = {
 	},
 	async geFlightPerformance(req: Request, res: Response, next: NextFunction) {
 		try {
-			const data = await FlightPerformanceService.getFlightPerformanceById(
-				req.params.flight_id as string,
-			);
-			return res.status(200).json({
+			const performance =
+				await FlightPerformanceService.getFlightPerformanceById(
+					req.params.flight_id as string,
+				);
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.OK,
 				success: true,
-				data,
+				data: performance,
 			});
 		} catch (error) {
 			next(error);

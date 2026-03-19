@@ -34,7 +34,7 @@ COPY --from=installer /app .
 EXPOSE 3005
  
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s \
-CMD curl -f http://localhost:3005/api/performance-capture/health || exit 1
+CMD curl -f http://localhost:3005/api/performance/health || exit 1
  
 CMD ["node","apps/performance-capture-service/dist/server.js"]
  

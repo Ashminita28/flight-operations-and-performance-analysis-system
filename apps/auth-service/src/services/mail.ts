@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { logger } from "@package/shared-config";
 
 export const sendEmail = async (to: string, subject: string, text: string) => {
 	const transporter = nodemailer.createTransport({
@@ -20,8 +21,8 @@ export const sendEmail = async (to: string, subject: string, text: string) => {
 
 	try {
 		const info = await transporter.sendMail(mailOptions);
-		console.log("Email sent:", info.response);
+		logger.info(info);
 	} catch (error) {
-		console.log("Error:", error);
+		logger.error(error);
 	}
 };

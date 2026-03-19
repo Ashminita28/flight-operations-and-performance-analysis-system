@@ -34,7 +34,7 @@ COPY --from=installer /app .
 EXPOSE 3008
  
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s \
-CMD curl -f http://localhost:3008/api/worker/health || exit 1
+CMD curl -f http://localhost:3008/api/analytics/health || exit 1
  
 CMD ["node","apps/worker-service/dist/server.js"]
  

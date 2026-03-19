@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { operationService } from "../services/operation-service";
 import { createOperationalEventSchema } from "../validations/operational-event-validation";
+import { HTTP_STATUS, MESSAGES, sendResponse } from "@package/shared-utils";
 export const OperationController = {
 	async recordFlightEvent(req: Request, res: Response, next: NextFunction) {
 		try {
@@ -13,7 +14,6 @@ export const OperationController = {
 				event_time,
 				severity,
 			} = req.body;
-			console.log("valid:-", req.body);
 			const validate = createOperationalEventSchema.parse({
 				flight_id: flightId,
 				event_type,
@@ -24,9 +24,11 @@ export const OperationController = {
 				severity,
 			});
 			const event = await operationService.createOperationalEvent(validate);
-			res.status(200).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.CREATED,
 				success: true,
-				message: "Operational event recorded successfully",
+				message: MESSAGES.OPERATION_CREATED,
 				data: event,
 			});
 		} catch (error) {
@@ -41,7 +43,9 @@ export const OperationController = {
 				req.params.id as string,
 				req.body,
 			);
-			res.status(200).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.OK,
 				success: true,
 				data: event,
 			});
@@ -56,8 +60,9 @@ export const OperationController = {
 			const events = await operationService.getEventsByFlight(
 				req.params.flight_id as string,
 			);
-
-			return res.status(200).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.OK,
 				success: true,
 				data: events,
 			});
@@ -69,7 +74,9 @@ export const OperationController = {
 	async getAllEvents(req: Request, res: Response, next: NextFunction) {
 		try {
 			const events = await operationService.getAllFlightEvents();
-			return res.status(200).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.OK,
 				success: true,
 				data: events,
 			});

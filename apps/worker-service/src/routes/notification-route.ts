@@ -6,7 +6,7 @@ import {
 import { authenticate } from "@package/shared-middleware";
 import { authorizeRole } from "@package/shared-middleware";
 
-const router: Router = Router();
+const notificationRouter: Router = Router();
 
 /**
  * @swagger
@@ -27,7 +27,7 @@ const router: Router = Router();
  *       200:
  *         description: Notifications array
  */
-router.get(
+notificationRouter.get(
 	"/notifications",
 	authenticate,
 	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
@@ -52,11 +52,11 @@ router.get(
  *       200:
  *         description: Notification marked
  */
-router.patch(
+notificationRouter.patch(
 	"/notifications/:id/read",
 	authenticate,
 	authorizeRole("Manager", "Operations", "Analyst", "Admin"),
 	markNotificationRead,
 );
 
-export default router;
+export default notificationRouter;

@@ -6,7 +6,6 @@ export const create = async (data: any) => {
 };
 export const findFlightById = async (id: string) => {
 	const flight = await Flight.findByPk(id);
-	console.log("flightttt:-", flight);
 	return flight;
 };
 

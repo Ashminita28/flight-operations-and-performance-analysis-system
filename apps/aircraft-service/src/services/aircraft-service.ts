@@ -7,6 +7,7 @@ import {
 	changeAircraftStatusRepo,
 	deleteAircraftRepo,
 	getAircraftOnDateRepo,
+	updateAircraftStatus,
 } from "../repositories/aircraft-repository";
 import { Op } from "sequelize";
 import { CreateAircraftDTO, PaginationOptions } from "../types/aircraft-types";
@@ -48,41 +49,30 @@ export const updateAircraft = async (id: string, data: CreateAircraftDTO) => {
 
 // change aircraft status
 export const changeAircraftStatus = async (id: string, status: string) => {
-	const aircraft = await Aircraft.findByPk(id);
+	const aircraft = await getAircraftByIdRepo(id);
 	if (!aircraft) {
 		throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.AIRCRAFT_NOT_FOUND);
 	}
-	return aircraft.update({ status: status });
+	return await changeAircraftStatusRepo(id, status);
 };
 
 //  Delete Aircraft
 export const deleteAircraft = async (id: string) => {
-	const aircraft = await Aircraft.findByPk(id);
-
+	const aircraft = await getAircraftByIdRepo(id);
 	if (!aircraft) {
 		throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.AIRCRAFT_NOT_FOUND);
 	}
-
-	await aircraft.destroy();
+	await deleteAircraftRepo(id);
 	return true;
 };
 
 //  List aircraft available for assignment on a date
 export const getAircraftOnDate = async (date: string) => {
-	const busyAircraft = await Flight.findAll({
-		where: {
-			flight_date: date,
-		},
-		attributes: ["aircraft_id"],
-	});
-
-	const busyIds = busyAircraft.map((f: any) => f.aircraft_id);
-	return await Aircraft.findAll({
-		where: { id: { [Op.notIn]: busyIds } },
-	});
+	const busyAircraft = await getAircraftOnDateRepo(date);
+	return busyAircraft;
 };
 
 // Get all airports
 export const getAllAirports = async () => {
-	return await Airport.findAll();
+	return await getAllAircraftRepo();
 };

@@ -1,4 +1,4 @@
-import { Aircraft, Flight } from "@package/shared-database";
+import { Aircraft, Flight, Airport } from "@package/shared-database";
 import { Op } from "sequelize";
 import { CreateAircraftDTO, PaginationOptions } from "../types/aircraft-types";
 
@@ -66,4 +66,15 @@ export const getAircraftOnDateRepo = async (date: string) => {
 	return await Aircraft.findAll({
 		where: { id: { [Op.notIn]: busyIds } },
 	});
+};
+
+export const updateAircraftStatus = async (id: string, status: string) => {
+	const aircraft = await Aircraft.findByPk(id);
+	if (!aircraft) return false;
+	await aircraft.update({ status: status });
+	return true;
+};
+
+export const getAllAirportRepo = async () => {
+	return await Airport.findAll();
 };

@@ -1,19 +1,20 @@
 import { Request, Response, NextFunction } from "express";
 import { analyticsService } from "../services/analytics-service";
 import { publishReports } from "../rabbitmq/report-publisher";
-import { HTTP_STATUS } from "@package/shared-utils";
+import { HTTP_STATUS, MESSAGES } from "@package/shared-utils";
 import { ExportReportParams } from "../types/analytics-filters";
-
+import { sendResponse } from "@package/shared-utils";
 export const analyticsController = {
 	async getCounterController(req: Request, res: Response, next: NextFunction) {
 		try {
 			const counters = await analyticsService.getDashboardCounterService(
 				req.query as never,
 			);
-
-			res.status(HTTP_STATUS.OK).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.OK,
 				success: true,
-				message: "Dashboard counters retrieved successfully",
+				message: MESSAGES.DASHBOARD_COUNTER,
 				data: counters,
 			});
 		} catch (error) {
@@ -27,10 +28,11 @@ export const analyticsController = {
 			const onTimeData = await analyticsService.getOnTimePerformance(
 				req.query as never,
 			);
-
-			res.status(HTTP_STATUS.OK).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.OK,
 				success: true,
-				message: "On-time performance data retrieved successfully",
+				message: MESSAGES.ON_TIME_PERFORMANCE,
 				data: onTimeData,
 			});
 		} catch (error) {
@@ -44,10 +46,11 @@ export const analyticsController = {
 			const delayData = await analyticsService.getDelayAnalytics(
 				req.query as never,
 			);
-
-			res.status(HTTP_STATUS.OK).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.OK,
 				success: true,
-				message: "Delay analysis data retrieved successfully",
+				message: MESSAGES.DELAY_ANALYTICS,
 				data: delayData,
 			});
 		} catch (error) {
@@ -65,9 +68,11 @@ export const analyticsController = {
 				req.query as never,
 			);
 
-			res.status(HTTP_STATUS.OK).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.OK,
 				success: true,
-				message: "Active flights retrieved successfully",
+				message: MESSAGES.ACTIVE_FLIGHTS_TABLE,
 				data: result.data,
 				pagination: result.pagination,
 			});
@@ -92,19 +97,21 @@ export const analyticsController = {
 
 			// Validate required fields
 			if (!exportParams.time_filter) {
-				res.status(HTTP_STATUS.BAD_REQUEST).json({
+				return sendResponse({
+					res,
+					statusCode: HTTP_STATUS.BAD_REQUEST,
 					success: false,
-					message: "time_filter is required",
+					message: MESSAGES.TIME_FILTER,
 				});
-				return;
 			}
 
 			if (!exportParams.email) {
-				res.status(HTTP_STATUS.BAD_REQUEST).json({
+				return sendResponse({
+					res,
+					statusCode: HTTP_STATUS.BAD_REQUEST,
 					success: false,
-					message: "email is required",
+					message: MESSAGES.EMAIL_REQUIRED,
 				});
-				return;
 			}
 
 			// Initiate export
@@ -118,12 +125,12 @@ export const analyticsController = {
 				timestamp: new Date(),
 			});
 
-			res.status(HTTP_STATUS.CREATED).json({
+			return sendResponse({
+				res,
+				statusCode: HTTP_STATUS.CREATED,
 				success: true,
-				message: exportResult.message,
-				data: {
-					job_id: exportResult.job_id,
-				},
+				message: exportResult.job_id,
+				data: { job_id: exportResult.job_id },
 			});
 		} catch (error) {
 			next(error);

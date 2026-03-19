@@ -4,8 +4,11 @@ import crypto from "crypto";
 import * as repo from "../repositories/auth-repository";
 
 import {
+	ApiError,
 	generateAccessToken,
 	generateRefreshToken,
+	HTTP_STATUS,
+	MESSAGES,
 	verifyRefreshToken,
 } from "@package/shared-utils";
 
@@ -20,30 +23,28 @@ import {
 } from "../repositories/password-reset-repository";
 
 import { sendEmail } from "./mail";
+import { LoginDTO, RegisterDTO, ResetDTO } from "../types/auth-type";
+import { logger } from "@package/shared-config";
+import { accountCreatedTemplate } from "../utils/email-templae";
 
+const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
+const MAX_ATTEMPTS = 5;
+const LOCK_TIME = 15 * 60 * 1000;
 /* REGISTER */
 
-export const registerService = async (
-	first_name: string,
-	last_name: string,
-	email: string,
-	phone: string,
-	password: string,
-	roleName: string,
-) => {
-	const existing = await repo.findUserByEmail(email);
+export const registerService = async (data: RegisterDTO) => {
+	const existing = await repo.findUserByEmail(data.email);
 
 	if (existing) {
-		throw new Error("User already exists");
+		throw new ApiError(HTTP_STATUS.BAD_REQUEST, MESSAGES.USER_ALREADY_EXISTS);
 	}
 
-	const hashed = await bcrypt.hash(password, 10);
+	const hashed = await bcrypt.hash(data.password, 10);
+
+	const { roleName, ...userData } = data;
 
 	const user: any = await repo.createUser({
-		first_name,
-		last_name,
-		email,
-		phone,
+		...userData,
 		password: hashed,
 		status: "active",
 	});
@@ -54,11 +55,11 @@ export const registerService = async (
 
 	// FIND ROLE
 	const role = await Role.findOne({
-		where: { name: roleName },
+		where: { name: data.roleName },
 	});
 
 	if (!role) {
-		throw new Error("Role not found");
+		throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.ROLE_NOT_FOUND);
 	}
 
 	// ASSIGN ROLE
@@ -68,48 +69,57 @@ export const registerService = async (
 		role_id: role.id,
 	});
 
-	// SEND EMAIL (SAFE VERSION)
+	// SEND EMAIL
 	try {
 		await sendEmail(
-			email,
-			"Flight System Credentials",
-
-			`Hello ${first_name},
-
-Your account has been created.
-
-Email: ${email}
-Password: ${password}
-Role: ${roleName}
-
-Login:
-http://localhost:5173/login
-
-Thank you.
-Flight System`,
+			data.email,
+			"Account Created",
+			accountCreatedTemplate(
+				data.first_name,
+				process.env.FRONTEND_URL + "/login",
+			),
 		);
 	} catch (err) {
-		console.log("Email failed but user created", err);
+		logger.error("Email failed but user created");
 	}
 
 	return user;
 };
 
 /* LOGIN */
+export const loginService = async (data: LoginDTO) => {
+	const attempt = loginAttempts.get(data.email);
 
-export const loginService = async (email: string, password: string) => {
-	const user = await findUserByEmailWithRoles(email);
+	if (attempt) {
+		if (
+			attempt.count >= MAX_ATTEMPTS &&
+			Date.now() - attempt.lastAttempt < LOCK_TIME
+		) {
+			throw new ApiError(
+				HTTP_STATUS.TOO_MANY_REQUESTS,
+				"Account locked. Try again later",
+			);
+		}
+	}
+	const user = await findUserByEmailWithRoles(data.email);
 
 	if (!user) {
-		throw new Error("User not found");
+		throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.USER_NOT_FOUND);
 	}
 
-	const valid = await bcrypt.compare(password, user.password);
+	const valid = await bcrypt.compare(data.password, user.password);
 
 	if (!valid) {
-		throw new Error("Wrong password");
+		loginAttempts.set(data.email, {
+			count: (attempt?.count || 0) + 1,
+			lastAttempt: Date.now(),
+		});
+
+		throw new ApiError(HTTP_STATUS.BAD_REQUEST, MESSAGES.WRONG_PASSWORD);
 	}
 
+	// reset attempts on success
+	loginAttempts.delete(data.email);
 	const roles = user.Roles.map((r: any) => r.name);
 
 	const accessToken = generateAccessToken({
@@ -150,12 +160,12 @@ export const logoutService = async (userId: string) => {
 /* REFRESH TOKEN */
 
 export const refreshTokenService = async (token: string) => {
-	const decode: any = verifyRefreshToken(token);
+	const decode = verifyRefreshToken(token);
 
-	const user = await findUserByEmailWithRoles(decode.userId);
+	const user = await repo.findUserById(decode.userId);
 
 	if (!user) {
-		throw new Error("Invalid token");
+		throw new ApiError(HTTP_STATUS.BAD_REQUEST, MESSAGES.INVALID_TOKEN);
 	}
 
 	const roles = user.Roles.map((r: any) => r.name);
@@ -173,56 +183,44 @@ export const forgotPasswordService = async (email: string) => {
 	const user = await repo.findUserByEmail(email);
 
 	if (!user) {
-		throw new Error("User not found");
+		throw new ApiError(HTTP_STATUS.NOT_FOUND, MESSAGES.USER_NOT_FOUND);
 	}
 
 	const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
 	const expires = new Date(Date.now() + 10 * 60 * 1000);
-
 	await createOtp(email, otp, expires);
-
 	await sendEmail(
 		email,
 
-		"Password Reset OTP",
+		MESSAGES.PASSWORD_RESET_OTP,
 
 		otp,
 	);
 
 	return {
-		message: "OTP sent",
+		message: MESSAGES.OTP_SENT,
 	};
 };
 
 /* RESET PASSWORD */
 
-export const resetPasswordService = async (
-	email: string,
-	otp: string,
-	newPassword: string,
-) => {
-	const record: any = await findOtp(email, otp);
+export const resetPasswordService = async (data: ResetDTO) => {
+	const record = await findOtp(data.email, data.otp);
 
 	if (!record) {
-		throw new Error("Invalid OTP");
+		throw new ApiError(HTTP_STATUS.BAD_REQUEST, MESSAGES.INVALID_OTP);
 	}
 
 	if (new Date() > record.expires_at) {
-		throw new Error("OTP expired");
+		throw new ApiError(HTTP_STATUS.CONFLICT, MESSAGES.OTP_EXPIRED);
 	}
 
-	const hashed = await bcrypt.hash(newPassword, 10);
+	const hashed = await bcrypt.hash(data.newPassword, 12);
 
-	await User.update(
-		{ password: hashed },
-
-		{ where: { email } },
-	);
-
-	await deleteOtp(email);
+	await repo.updatePassword(data.email, hashed);
+	await deleteOtp(data.email);
 
 	return {
-		message: "Password reset successful",
+		message: MESSAGES.PASSWORD_RESET_SUCCESSFULL,
 	};
 };
