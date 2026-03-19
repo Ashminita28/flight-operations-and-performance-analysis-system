@@ -4,7 +4,7 @@ type EnvConfig = {
 	DB_PASSWORD: string;
 	DB_HOST: string;
 	DB_PORT: number;
-	JWT_SECRET: string;
+	AUTH_SECRET: string;
 	ORIGIN: string;
 };
 
@@ -15,7 +15,7 @@ export const validateEnv = (): EnvConfig => {
 		"DB_PASSWORD",
 		"DB_HOST",
 		"DB_PORT",
-		"JWT_SECRET",
+		"AUTH_SECRET",
 		"ORIGIN",
 	];
 
@@ -31,7 +31,7 @@ export const validateEnv = (): EnvConfig => {
 		DB_PASSWORD: process.env.DB_PASSWORD!,
 		DB_HOST: process.env.DB_HOST!,
 		DB_PORT: Number(process.env.DB_PORT!),
-		JWT_SECRET: process.env.JWT_SECRET!,
+		AUTH_SECRET: process.env.AUTH_SECRET!,
 		ORIGIN: process.env.ORIGIN!,
 	};
 };

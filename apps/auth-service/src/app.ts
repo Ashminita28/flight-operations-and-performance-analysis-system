@@ -16,7 +16,7 @@ app.use(helmet());
 app.use(limiter);
 app.use(
 	cors({
-		origin: process.env.ORIGIN?.split(","),
+		origin: process.env.ORIGIN,
 		credentials: true,
 	}),
 );

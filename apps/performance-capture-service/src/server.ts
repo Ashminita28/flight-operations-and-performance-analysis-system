@@ -1,5 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+	require("dotenv").config();
+}
 import { validateEnv } from "@package/shared-config";
 validateEnv();
 import app from "./app";
