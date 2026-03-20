@@ -107,8 +107,8 @@ export function AddPerformanceModal({ open, onClose, flightId }: Props) {
 			setFlightTime("");
 			setFieldErrors({});
 			onClose();
-		} catch (error: any) {
-			setSubmitError(error.message ?? "Failed to save performance data");
+		} catch (error: unknown) {
+			setSubmitError(error instanceof Error ? error.message :"Failed to save performance data");
 		} finally {
 			setSaving(false);
 		}

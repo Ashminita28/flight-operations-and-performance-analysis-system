@@ -44,7 +44,7 @@ export function UpdateStatusModal({
 	const [status, setStatus] = useState<FlightStatus>(currentStatus);
 	const [saving, setSaving] = useState(false);
 	const updateFlightStatus = useFlightStore(
-		(s: { changeStatus: any }) => s.changeStatus,
+		s=>s.changeStatus
 	);
 
 	const handleSubmit = async () => {
@@ -68,7 +68,7 @@ export function UpdateStatusModal({
 						<Label htmlFor="status-select">Status</Label>
 						<Select
 							value={status}
-							onValueChange={(val: any) => setStatus(val as FlightStatus)}
+							onValueChange={(val: unknown) => setStatus(val as FlightStatus)}
 						>
 							<SelectTrigger id="status-select">
 								<SelectValue placeholder="Select status" />
