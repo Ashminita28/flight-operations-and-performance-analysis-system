@@ -1,7 +1,4 @@
 "use client";
-
-import { useEffect } from "react";
-import { useAnalyticsStore } from "@/store/analytics-store";
 import {
 	Card,
 	CardFooter,
@@ -12,20 +9,9 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
+import type { AnalyticsCountersProps } from "@/props/analytics-counter-props";
 
-interface AnalyticsCountersProps {
-	onTimeFilter?: string;
-}
-
-export function AnalyticsCounters({
-	onTimeFilter = "daily",
-}: AnalyticsCountersProps) {
-	const { counters, loading, fetchCounters, filters } = useAnalyticsStore();
-
-	useEffect(() => {
-		fetchCounters({ ...filters, time_filter: onTimeFilter as any });
-	}, [onTimeFilter]);
-
+export function AnalyticsCounters({ data, loading }: AnalyticsCountersProps) {
 	if (loading) {
 		return (
 			<div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -44,7 +30,7 @@ export function AnalyticsCounters({
 		);
 	}
 
-	if (!counters) {
+	if (!data) {
 		return (
 			<div className="px-4 lg:px-6 text-center text-muted-foreground">
 				No analytics data available
@@ -59,7 +45,7 @@ export function AnalyticsCounters({
 				<CardHeader>
 					<CardDescription>Total Flights</CardDescription>
 					<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-						{counters.total_flights || 0}
+						{data.total_flights || 0}
 					</CardTitle>
 					<CardAction>
 						<Badge
@@ -84,7 +70,7 @@ export function AnalyticsCounters({
 				<CardHeader>
 					<CardDescription>Active Flights</CardDescription>
 					<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-						{counters.active_flights || 0}
+						{data.active_flights || 0}
 					</CardTitle>
 					<CardAction>
 						<Badge
@@ -110,7 +96,7 @@ export function AnalyticsCounters({
 				<CardHeader>
 					<CardDescription>On-Time Flights</CardDescription>
 					<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-						{counters.on_time_flights || 0}
+						{data.on_time_flights || 0}
 					</CardTitle>
 					<CardAction>
 						<Badge
@@ -118,7 +104,7 @@ export function AnalyticsCounters({
 							className="text-emerald-700 border-emerald-200"
 						>
 							<IconTrendingUp className="w-4 h-4 mr-1" />
-							{counters.on_time_performance_pct?.toFixed(1) || 0}%
+							{data.on_time_performance_pct?.toFixed(1) || 0}%
 						</Badge>
 					</CardAction>
 				</CardHeader>
@@ -135,7 +121,7 @@ export function AnalyticsCounters({
 				<CardHeader>
 					<CardDescription>Delayed Flights</CardDescription>
 					<CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-						{counters.delayed_flights || 0}
+						{data.delayed_flights || 0}
 					</CardTitle>
 					<CardAction>
 						<Badge
