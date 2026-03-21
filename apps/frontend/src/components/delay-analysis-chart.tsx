@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
 import { Pie, PieChart, Cell, Legend } from "recharts";
-import { useAnalyticsStore } from "@/store/analytics-store";
 import {
 	Card,
 	CardContent,
@@ -16,7 +14,6 @@ import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
-	type ChartConfig,
 } from "@/components/ui/chart";
 import {
 	Select,
@@ -26,106 +23,23 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { TrendingUp } from "lucide-react";
+import type { DelayAnalysisChartProps } from "@/props/delay-analysis-props";
+import type { EnrichedDelayAnalysisItem } from "@/types/delay-analysis-types";
+import {
+	renderCustomLabel,
+	legendFormatter,
+} from "@/utils/charts/chart-formatter";
 
-const CHART_COLORS = [
-	"hsl(221, 83%, 53%)",
-	"hsl(142, 71%, 45%)",
-	"hsl(346, 87%, 57%)",
-	"hsl(38,  92%, 50%)",
-	"hsl(262, 83%, 58%)",
-	"hsl(199, 89%, 48%)",
-	"hsl(24,  95%, 53%)",
-	"hsl(316, 73%, 52%)",
-];
-
-export function DelayAnalysisChart() {
-	const {
-		delayAnalysisData,
-		chartTimeFilter,
-		loading,
-		fetchDelayAnalysis,
-		setChartTimeFilter,
-	} = useAnalyticsStore();
-
-	useEffect(() => {
-		fetchDelayAnalysis(chartTimeFilter);
-	}, [chartTimeFilter, fetchDelayAnalysis]);
-
-	const enrichedData = (delayAnalysisData || []).map((item, index) => ({
-		...item,
-		fill: CHART_COLORS[index % CHART_COLORS.length],
-
-		percentage: Number(item.percentage),
-		count: Number(item.count),
-	}));
-
-	//chartConfig so ChartTooltip can display the label + color swatch
-	const chartConfig: ChartConfig = {
-		count: { label: "Incidents" },
-		...Object.fromEntries(
-			enrichedData.map(item => [
-				item.category,
-				{
-					label: item.category,
-					color: item.fill,
-				},
-			]),
-		),
-	};
-
-	// Find the top delay category for the footer callout
-	const topCategory = enrichedData.reduce(
-		(max, item) => (item.percentage > (max?.percentage ?? 0) ? item : max),
-		enrichedData[0],
-	);
-
-	const handleFilterChange = (value: string) => {
-		setChartTimeFilter(value as any);
-	};
-
-	const renderCustomLabel = ({
-		cx,
-		cy,
-		midAngle,
-		innerRadius,
-		outerRadius,
-		percentage,
-		category,
-	}: any) => {
-		// Skipping tiny slices — label would overlap
-		if (percentage < 5) return null;
-
-		const RADIAN = Math.PI / 180;
-		const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-		const x = cx + radius * Math.cos(-midAngle * RADIAN);
-		const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-		return (
-			<text
-				x={x}
-				y={y}
-				fill="white"
-				textAnchor="middle"
-				dominantBaseline="central"
-				fontSize={11}
-				fontWeight={600}
-			>
-				<tspan
-					x={x}
-					dy="-0.4em"
-				>
-					{category}
-				</tspan>
-				<tspan
-					x={x}
-					dy="1.2em"
-				>
-					{Number(percentage).toFixed(1)}%
-				</tspan>
-			</text>
-		);
-	};
-
+export function DelayAnalysisChart({
+	data,
+	chartConfig,
+	loading,
+	topCategory,
+	timeFilter,
+	timeLabels,
+	onFilterChange,
+	tooltipFormatter,
+}: DelayAnalysisChartProps) {
 	return (
 		<Card className="flex flex-col">
 			<CardHeader className="items-center pb-0">
@@ -134,26 +48,15 @@ export function DelayAnalysisChart() {
 						<CardTitle>Delay Analysis</CardTitle>
 						<CardDescription>
 							<span className="hidden @[540px]:block">
-								Breakdown of delays by category for{" "}
-								{chartTimeFilter === "weekly"
-									? "this week"
-									: chartTimeFilter === "monthly"
-										? "this month"
-										: "this year"}
+								Breakdown of delays by category for {timeLabels.long}
 							</span>
-							<span className="@[540px]:hidden">
-								{chartTimeFilter === "weekly"
-									? "This week"
-									: chartTimeFilter === "monthly"
-										? "This month"
-										: "This year"}
-							</span>
+							<span className="@[540px]:hidden">{timeLabels.short}</span>
 						</CardDescription>
 					</div>
 					<CardAction>
 						<Select
-							value={chartTimeFilter}
-							onValueChange={handleFilterChange}
+							value={timeFilter}
+							onValueChange={onFilterChange}
 						>
 							<SelectTrigger className="w-32">
 								<SelectValue />
@@ -188,7 +91,7 @@ export function DelayAnalysisChart() {
 					<div className="flex items-center justify-center h-64 text-muted-foreground">
 						Loading chart data...
 					</div>
-				) : enrichedData.length === 0 ? (
+				) : data.length === 0 ? (
 					<div className="flex items-center justify-center h-64 text-muted-foreground">
 						No delay data available
 					</div>
@@ -202,25 +105,13 @@ export function DelayAnalysisChart() {
 								cursor={false}
 								content={
 									<ChartTooltipContent
-										// Display both count and percentage in tooltip
-										formatter={(value, name) => (
-											<div className="flex flex-col gap-0.5">
-												<span className="font-medium">{name}</span>
-												<span>
-													{value} incidents&nbsp;·&nbsp;
-													{enrichedData
-														.find(d => d.category === name)
-														?.percentage.toFixed(1)}
-													%
-												</span>
-											</div>
-										)}
+										formatter={tooltipFormatter}
 										hideLabel
 									/>
 								}
 							/>
 							<Pie
-								data={enrichedData}
+								data={data}
 								dataKey="count"
 								nameKey="category"
 								cx="50%"
@@ -229,8 +120,7 @@ export function DelayAnalysisChart() {
 								labelLine={false}
 								label={renderCustomLabel}
 							>
-								{/* Cell gives each slice its own fill color */}
-								{enrichedData.map((entry, index) => (
+								{data.map((entry: EnrichedDelayAnalysisItem, index) => (
 									<Cell
 										key={`cell-${index}`}
 										fill={entry.fill}
@@ -246,9 +136,7 @@ export function DelayAnalysisChart() {
 								align="center"
 								iconType="circle"
 								iconSize={8}
-								formatter={value => (
-									<span className="text-xs text-foreground">{value}</span>
-								)}
+								formatter={legendFormatter}
 							/>
 						</PieChart>
 					</ChartContainer>
