@@ -8,3 +8,8 @@ export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 	isAdmin: boolean;
 	onLogout: () => void;
 }
+
+export type AppSidebarContainerProps = Omit<
+	AppSidebarProps,
+	"user" | "navItems" | "isAdmin" | "onLogout"
+>;
