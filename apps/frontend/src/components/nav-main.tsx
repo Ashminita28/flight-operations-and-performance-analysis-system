@@ -1,5 +1,4 @@
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react";
-
+import { IconCirclePlusFilled, IconMail } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import {
 	SidebarGroup,
@@ -9,56 +8,70 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/store/auth-store";
+import type { NavItem, NavMainProps } from "./props/nav-props";
 
-export function NavMain({
-	items,
-}: {
-	items: {
-		title: string;
-		url: string;
-		icon?: Icon;
-	}[];
-}) {
+/*NAV ITEM*/
+function NavMenuItem({ title, url, icon: Icon }: NavItem) {
 	const navigate = useNavigate();
-	const user = useAuthStore(s => s.user);
+
+	return (
+		<SidebarMenuItem>
+			<SidebarMenuButton
+				tooltip={title}
+				onClick={() => navigate(url)}
+			>
+				{Icon && <Icon />}
+				<span>{title}</span>
+			</SidebarMenuButton>
+		</SidebarMenuItem>
+	);
+}
+
+/*ADMIN ITEM*/
+function AdminMenuItem() {
+	const navigate = useNavigate();
+	return (
+		<SidebarMenuItem className="flex items-center gap-2">
+			<SidebarMenuButton
+				onClick={() => navigate("/register")}
+				tooltip="Quick Create"
+				className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+			>
+				<IconCirclePlusFilled />
+				<span>Register User</span>
+			</SidebarMenuButton>
+
+			<Button
+				size="icon"
+				className="size-8 group-data-[collapsible=icon]:opacity-0"
+				variant="outline"
+			>
+				<IconMail />
+				<span className="sr-only">Inbox</span>
+			</Button>
+		</SidebarMenuItem>
+	);
+}
+
+/*MAIN*/
+export function NavMain({ items, isAdmin }: NavMainProps) {
 	return (
 		<SidebarGroup>
 			<SidebarGroupContent className="flex flex-col gap-2">
-				<SidebarMenu>
-					{user?.roles?.includes("Admin") && (
-						<SidebarMenuItem className="flex items-center gap-2">
-							<SidebarMenuButton
-								onClick={() => navigate("/register")}
-								tooltip="Quick Create"
-								className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
-							>
-								<IconCirclePlusFilled />
-								<span>Register User</span>
-							</SidebarMenuButton>
+				{isAdmin && (
+					<SidebarMenu>
+						<AdminMenuItem />
+					</SidebarMenu>
+				)}
 
-							<Button
-								size="icon"
-								className="size-8 group-data-[collapsible=icon]:opacity-0"
-								variant="outline"
-							>
-								<IconMail />
-								<span className="sr-only">Inbox</span>
-							</Button>
-						</SidebarMenuItem>
-					)}
-				</SidebarMenu>
 				<SidebarMenu>
 					{items.map(item => (
-						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton
-								tooltip={item.title}
-								onClick={() => navigate(item.url)}
-							>
-								{item.icon && <item.icon />}
-								<span>{item.title}</span>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
+						<NavMenuItem
+							key={item.title}
+							title={item.title}
+							url={item.url}
+							icon={item.icon}
+						/>
 					))}
 				</SidebarMenu>
 			</SidebarGroupContent>
