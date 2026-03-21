@@ -13,24 +13,10 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/store/auth-store";
+import type { NavUserProps } from "./props/nav-props";
 
-export function NavUser({
-	user,
-}: {
-	user: { name: string; email: string } | null;
-}) {
-	const navigate = useNavigate();
-	const logout = useAuthStore(s => s.logout);
-
+export function NavUser({ user, onLogout }: NavUserProps) {
 	if (!user) return null;
-
-	const handleLogout = async () => {
-		await logout();
-		navigate("/login");
-	};
-
 	return (
 		<SidebarMenu>
 			<SidebarMenuItem>
@@ -52,7 +38,6 @@ export function NavUser({
 							<IconDotsVertical className="ml-auto size-4" />
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
-
 					<DropdownMenuContent
 						className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
 						side="right"
@@ -73,7 +58,7 @@ export function NavUser({
 							</div>
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem onClick={handleLogout}>
+						<DropdownMenuItem onClick={onLogout}>
 							<IconLogout />
 							Log out
 						</DropdownMenuItem>
