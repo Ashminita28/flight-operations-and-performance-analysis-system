@@ -8,7 +8,7 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
-import type { NavItem, NavMainProps } from "./props/nav-props";
+import type { NavItem, NavMainProps } from "../props/nav-props";
 
 /*NAV ITEM*/
 function NavMenuItem({ title, url, icon: Icon }: NavItem) {

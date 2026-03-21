@@ -13,7 +13,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import type { NavUserProps } from "./props/nav-props";
+import type { NavUserProps } from "../props/nav-props";
 
 export function NavUser({ user, onLogout }: NavUserProps) {
 	if (!user) return null;

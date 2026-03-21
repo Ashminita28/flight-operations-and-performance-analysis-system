@@ -10,7 +10,7 @@ import {
 import { Plane } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
-import type { AppSidebarProps } from "./props/sidebar-props";
+import type { AppSidebarProps } from "../props/sidebar-props";
 
 export function AppSidebar({
 	user,
