@@ -21,8 +21,6 @@ const notificationRouter: Router = Router();
  *   get:
  *     summary: List notifications
  *     tags: [Notifications]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Notifications array
@@ -40,8 +38,7 @@ notificationRouter.get(
  *   patch:
  *     summary: Mark notification as read
  *     tags: [Notifications]
- *     security:
- *       - bearerAuth: []
+ 
  *     parameters:
  *       - in: path
  *         name: id
