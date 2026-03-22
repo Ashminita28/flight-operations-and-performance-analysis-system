@@ -1,0 +1,118 @@
+openapi: 3.0.0
+info:
+  title: Auth Service
+  version: 1.0.0
+
+servers:
+  - url: http://localhost
+
+paths:
+  /api/auth/login:
+    post:
+      summary: Login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginDTO"
+      responses:
+        "200":
+          description: Login successful
+
+  /api/auth/register:
+    post:
+      summary: Register
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterDTO"
+      responses:
+        "201":
+          description: User registered
+
+  /api/auth/logout:
+    post:
+      summary: Logout
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoutDTO"
+      responses:
+        "200":
+          description: Logout successful
+
+  /api/auth/reset-password:
+    post:
+      summary: Reset password
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetDTO"
+      responses:
+        "200":
+          description: Password reset successful
+
+components:
+  schemas:
+    LoginDTO:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          example: user@example.com
+        password:
+          type: string
+          example: password123
+
+    RegisterDTO:
+      type: object
+      required: [first_name, last_name, email, password, roleName]
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+        roleName:
+          type: string
+
+    LogoutDTO:
+      type: object
+      properties:
+        userId:
+          type: string
+
+    ResetDTO:
+      type: object
+      required: [email, otp, newPassword]
+      properties:
+        email:
+          type: string
+        otp:
+          type: string
+        newPassword:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

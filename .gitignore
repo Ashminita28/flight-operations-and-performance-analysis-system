@@ -4,4 +4,4 @@ dist
 .env
 build
 coverage
-
+out

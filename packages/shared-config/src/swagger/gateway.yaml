@@ -1,0 +1,14 @@
+openapi: 3.0.0
+info:
+  title: Aviation System API Gateway
+  version: 1.0.0
+  description: |
+    This documentation aggregates all microservices.
+
+paths: {}
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

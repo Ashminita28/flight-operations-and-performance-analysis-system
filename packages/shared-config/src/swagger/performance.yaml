@@ -1,0 +1,122 @@
+openapi: 3.0.0
+info:
+  title: Performance Service
+  version: 1.0.0
+
+servers:
+  - url: http://localhost
+
+paths:
+  /api/performance:
+    get:
+      summary: Get all flight performance records
+      tags: [Performance]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Performance list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FlightPerformance"
+
+  /api/performance/{flight_id}:
+    get:
+      summary: Get performance by flight ID
+      tags: [Performance]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: flight_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Flight performance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlightPerformance"
+
+  /api/performance/{flightId}:
+    post:
+      summary: Create flight performance
+      tags: [Performance]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: flightId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePerformanceDTO"
+      responses:
+        "201":
+          description: Performance created
+
+components:
+  schemas:
+    CreatePerformanceDTO:
+      type: object
+      required:
+        - flight_id
+        - fuel_used_kg
+        - distance_km
+        - passengers_count
+        - payload_kg
+        - flight_time_minutes
+      properties:
+        flight_id:
+          type: string
+        fuel_used_kg:
+          type: number
+        distance_km:
+          type: number
+        passengers_count:
+          type: integer
+        payload_kg:
+          type: number
+        flight_time_minutes:
+          type: integer
+
+    FlightPerformance:
+      type: object
+      properties:
+        id:
+          type: string
+        flight_id:
+          type: string
+        fuel_used_kg:
+          type: number
+        distance_km:
+          type: number
+        passengers_count:
+          type: integer
+        payload_kg:
+          type: number
+        flight_time_minutes:
+          type: integer
+        fuel_efficiency_kg_per_km:
+          type: number
+        load_factor_pct:
+          type: number
+        co2_emissions_kg:
+          type: number
+        average_speed:
+          type: number
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

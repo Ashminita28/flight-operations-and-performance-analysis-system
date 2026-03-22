@@ -1,0 +1,270 @@
+openapi: 3.0.0
+info:
+  title: Aircraft Service
+  version: 1.0.0
+
+servers:
+  - url: http://localhost
+
+paths:
+  /api/aircraft:
+    post:
+      summary: Create aircraft
+      tags: [Aircraft]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAircraftDTO"
+      responses:
+        "201":
+          description: Aircraft created
+
+    get:
+      summary: Get all aircraft
+      tags: [Aircraft]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Aircraft list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AircraftListResponse"
+
+  /api/aircraft/{id}:
+    get:
+      summary: Get aircraft by ID
+      tags: [Aircraft]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Aircraft details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Aircraft"
+
+    put:
+      summary: Update aircraft
+      tags: [Aircraft]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAircraftDTO"
+      responses:
+        "200":
+          description: Aircraft updated
+
+    delete:
+      summary: Delete aircraft
+      tags: [Aircraft]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Aircraft deleted
+
+  /api/aircraft/{id}/status:
+    patch:
+      summary: Change aircraft status
+      tags: [Aircraft]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+      responses:
+        "200":
+          description: Status updated
+
+  /api/airports:
+    get:
+      summary: Get all airports
+      tags: [Aircraft]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Airport list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Airport"
+
+components:
+  schemas:
+    CreateAircraftDTO:
+      type: object
+      required:
+        - registration
+        - icao_type
+        - manufacturer
+        - model
+        - seat_capacity
+        - fuel_capacity_kg
+        - max_payload_kg
+        - year_of_manufacture
+        - status
+        - base_airport_code
+      properties:
+        registration:
+          type: string
+        icao_type:
+          type: string
+        manufacturer:
+          type: string
+        model:
+          type: string
+        seat_capacity:
+          type: integer
+        fuel_capacity_kg:
+          type: string
+        max_payload_kg:
+          type: string
+        year_of_manufacture:
+          type: integer
+        status:
+          type: string
+        base_airport_code:
+          type: string
+        notes:
+          type: string
+
+    UpdateAircraftDTO:
+      type: object
+      properties:
+        registration:
+          type: string
+        icao_type:
+          type: string
+        manufacturer:
+          type: string
+        model:
+          type: string
+        seat_capacity:
+          type: integer
+        fuel_capacity_kg:
+          type: string
+        max_payload_kg:
+          type: string
+        year_of_manufacture:
+          type: integer
+        status:
+          type: string
+        base_airport_code:
+          type: string
+        notes:
+          type: string
+
+    Aircraft:
+      type: object
+      properties:
+        id:
+          type: string
+        registration:
+          type: string
+        icao_type:
+          type: string
+        manufacturer:
+          type: string
+        model:
+          type: string
+        seat_capacity:
+          type: integer
+        status:
+          type: string
+        base_airport_code:
+          type: string
+
+    AircraftListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Aircraft"
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            total_pages:
+              type: integer
+
+    Airport:
+      type: object
+      properties:
+        iata_code:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

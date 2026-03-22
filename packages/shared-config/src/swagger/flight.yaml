@@ -1,0 +1,313 @@
+openapi: 3.0.0
+info:
+  title: Flight Service
+  version: 1.0.0
+
+servers:
+  - url: http://localhost
+
+paths:
+  /api/flights:
+    get:
+      summary: Get all flights
+      tags: [Flights]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+        - in: query
+          name: flight_number
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { $ref: "#/components/schemas/FlightStatus" }
+        - in: query
+          name: origin_airport
+          schema: { type: string }
+        - in: query
+          name: destination_airport
+          schema: { type: string }
+        - in: query
+          name: date
+          schema: { type: string, format: date }
+        - in: query
+          name: sort_by
+          schema:
+            type: string
+            enum: [date, route, departure]
+        - in: query
+          name: sort_order
+          schema:
+            type: string
+            enum: [ASC, DESC]
+      responses:
+        "200":
+          description: Flight list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlightListResponse"
+
+    post:
+      summary: Create flight
+      tags: [Flights]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFlightBody"
+      responses:
+        "201":
+          description: Flight created
+
+  /api/flights/search:
+    get:
+      summary: Search flights
+      tags: [Flights]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: flight_number
+          schema: { type: string }
+      responses:
+        "200":
+          description: Search results
+
+  /api/flights/today:
+    get:
+      summary: Get today's flights
+      tags: [Flights]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Today's flights
+
+  /api/flights/{id}:
+    get:
+      summary: Get flight by ID
+      tags: [Flights]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Flight details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Flight"
+
+    put:
+      summary: Update flight
+      tags: [Flights]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFlightBody"
+      responses:
+        "200":
+          description: Flight updated
+
+    delete:
+      summary: Delete flight
+      tags: [Flights]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Flight deleted
+
+  /api/flights/{id}/status:
+    patch:
+      summary: Change flight status
+      tags: [Flights]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: "#/components/schemas/FlightStatus"
+      responses:
+        "200":
+          description: Status updated
+
+components:
+  schemas:
+    Flight:
+      type: object
+      properties:
+        id: { type: string }
+        flight_number: { type: string }
+        airline_code: { type: string }
+        origin_airport: { type: string }
+        destination_airport: { type: string }
+        aircraft_id: { type: string }
+        status:
+          $ref: "#/components/schemas/FlightStatus"
+        scheduled_departure:
+          type: string
+          format: date-time
+        scheduled_arrival:
+          type: string
+          format: date-time
+        estimated_departure:
+          type: string
+          format: date-time
+        estimated_arrival:
+          type: string
+          format: date-time
+        actual_departure:
+          type: string
+          format: date-time
+        actual_arrival:
+          type: string
+          format: date-time
+        gate_departure: { type: string }
+        gate_arrival: { type: string }
+        is_return_flight: { type: boolean }
+        flight_date:
+          type: string
+          format: date
+        created_by: { type: string }
+
+    CreateFlightBody:
+      type: object
+      required:
+        - flight_number
+        - airline_code
+        - origin_airport
+        - destination_airport
+        - aircraft_id
+        - status
+        - scheduled_departure
+        - scheduled_arrival
+        - flight_date
+      properties:
+        flight_number: { type: string }
+        airline_code: { type: string }
+        origin_airport: { type: string }
+        destination_airport: { type: string }
+        aircraft_id: { type: string }
+        status:
+          $ref: "#/components/schemas/FlightStatus"
+        scheduled_departure:
+          type: string
+          format: date-time
+        scheduled_arrival:
+          type: string
+          format: date-time
+        estimated_departure:
+          type: string
+          format: date-time
+        estimated_arrival:
+          type: string
+          format: date-time
+        actual_departure:
+          type: string
+          format: date-time
+        actual_arrival:
+          type: string
+          format: date-time
+        gate_departure: { type: string }
+        gate_arrival: { type: string }
+        is_return_flight: { type: boolean }
+        flight_date:
+          type: string
+          format: date
+        created_by: { type: string }
+
+    UpdateFlightBody:
+      type: object
+      properties:
+        flight_number: { type: string }
+        aircraft_id: { type: string }
+        scheduled_departure:
+          type: string
+          format: date-time
+        scheduled_arrival:
+          type: string
+          format: date-time
+        estimated_departure:
+          type: string
+          format: date-time
+        estimated_arrival:
+          type: string
+          format: date-time
+        actual_departure:
+          type: string
+          format: date-time
+        actual_arrival:
+          type: string
+          format: date-time
+        gate_departure: { type: string }
+        gate_arrival: { type: string }
+
+    FlightListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Flight"
+        pagination:
+          type: object
+          properties:
+            page: { type: integer }
+            limit: { type: integer }
+            total: { type: integer }
+            total_pages: { type: integer }
+
+    FlightStatus:
+      type: string
+      enum:
+        - scheduled
+        - boarding
+        - departed
+        - landed
+        - diverted
+        - cancelled
+        - delayed
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
