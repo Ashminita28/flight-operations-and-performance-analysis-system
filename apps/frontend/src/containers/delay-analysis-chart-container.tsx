@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { useAnalyticsStore } from "@/store/analytics-store";
 import { DelayAnalysisChart } from "../components/delay-analysis-chart";
 
@@ -7,21 +7,16 @@ import {
 	getTopCategory,
 } from "../utils/charts/chart-transform";
 import { createTooltipFormatter } from "../utils/charts/chart-formatter";
-import { TIME_FILTER_LABELS } from "../constants/delay-analysis-constans";
+import { TIME_FILTER_LABELS } from "../constants/delay-analysis-constant";
 import type { ChartTimeFilter } from "@/types/analytics-types";
 
-export function DelayAnalysisChartContainer() {
+export default function DelayAnalysisChartContainer() {
 	const {
 		delayAnalysisData,
 		chartTimeFilter,
-		loading,
-		fetchDelayAnalysis,
+		delayLoading,
 		setChartTimeFilter,
 	} = useAnalyticsStore();
-
-	useEffect(() => {
-		fetchDelayAnalysis(chartTimeFilter);
-	}, [chartTimeFilter, fetchDelayAnalysis]);
 
 	const enrichedData = useMemo(
 		() => enrichDelayData(delayAnalysisData ?? []),
@@ -63,7 +58,7 @@ export function DelayAnalysisChartContainer() {
 		<DelayAnalysisChart
 			data={enrichedData}
 			chartConfig={chartConfig}
-			loading={loading}
+			loading={delayLoading}
 			topCategory={topCategory}
 			timeFilter={chartTimeFilter}
 			timeLabels={timeLabels}
