@@ -20,7 +20,7 @@ export default function ProtectedRoute({ children, allowedRoles }: Props) {
 	if (allowedRoles && !allowedRoles.some(role => user.roles?.includes(role))) {
 		return (
 			<Navigate
-				to="/"
+				to="/unauthorized"
 				replace
 			/>
 		);
