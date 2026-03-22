@@ -1,9 +1,14 @@
-export const accountCreatedTemplate = (name: string, loginUrl: string) => {
+export const accountCreatedTemplate = (
+	name: string,
+	password: string,
+	loginUrl: string,
+) => {
 	return `
-    <h2>Welcome ${name}</h2>
-    <p>Your account has been created successfully.</p>
-    <p>You can login here:</p>
-    <a href="${loginUrl}">${loginUrl}</a>
+    Welcome ${name}
+    Your account has been created successfully
+    You can login here:
+    Your password${password}
+    login url${loginUrl}
   `;
 };
 

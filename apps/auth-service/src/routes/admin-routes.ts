@@ -5,17 +5,6 @@ import { authorizeRole } from "@package/shared-middleware";
 
 const adminRouter: Router = Router();
 
-/**
- * @swagger
- * /admin/users:
- *   get:
- *     summary: Get all users (Admin only)
- *     tags: [Admin]
- *     responses:
- *       200:
- *         description: List of users
- */
-
 adminRouter.get(
 	"/users",
 	authenticate,

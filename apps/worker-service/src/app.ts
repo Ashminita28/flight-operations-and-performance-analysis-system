@@ -28,7 +28,7 @@ app.use("/api/analytics", analyticsRouter);
 app.use(
 	"/api/analytics/api-docs",
 	swaggerUi.serve,
-	swaggerUi.setup(createSwaggerSpec("Worker service", 3008)),
+	swaggerUi.setup(createSwaggerSpec("Analytics Service", "/api/analytics")),
 );
 app.use(errorHandler);
 

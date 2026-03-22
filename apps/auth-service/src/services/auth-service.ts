@@ -76,7 +76,8 @@ export const registerService = async (data: RegisterDTO) => {
 			"Account Created",
 			accountCreatedTemplate(
 				data.first_name,
-				process.env.FRONTEND_URL + "/login",
+				data.password,
+				process.env.ORIGIN + "/login",
 			),
 		);
 	} catch (err) {

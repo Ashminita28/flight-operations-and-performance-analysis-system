@@ -9,5 +9,4 @@ export async function publishNotification(message: any) {
 		persistent: true,
 	});
 	logger.info("Published message:", message);
-	await channel.close();
 }

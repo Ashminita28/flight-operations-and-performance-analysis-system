@@ -15,7 +15,7 @@ WORKDIR /app
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
  
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile 
  
 COPY --from=builder /app/out/full/ .
  
@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y curl
 ENV NODE_ENV=production
  
 COPY --from=installer /app .
+
+COPY --from=installer /app/packages/shared-config/src/swagger ./swagger
  
 EXPOSE 3000
  

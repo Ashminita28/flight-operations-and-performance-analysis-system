@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config;
+dotenv.config();
 import { logger, validateEnv } from "@package/shared-config";
 validateEnv();
 import app from "./app";

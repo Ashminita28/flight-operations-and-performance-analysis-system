@@ -14,7 +14,7 @@ export const operationService = {
 		delay_category_id?: string | undefined;
 		delay_minutes?: number | undefined;
 		description?: string | undefined;
-		event_time?: string | undefined;
+		event_time?: Date | undefined;
 		severity: string;
 	}) {
 		const flight = await repo.findFlightById(data.flight_id);

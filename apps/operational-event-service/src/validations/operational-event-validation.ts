@@ -15,7 +15,7 @@ export const createOperationalEventSchema = z.object({
 
 	description: z.string().optional(),
 
-	event_time: z.iso.datetime(),
+	event_time: z.coerce.date(),
 
 	severity: z.string(),
 });

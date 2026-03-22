@@ -56,7 +56,6 @@ export const OperationController = {
 
 	async getByFlight(req: Request, res: Response, next: NextFunction) {
 		try {
-			console.log("cannot get_=", req.params.flight_id);
 			const events = await operationService.getEventsByFlight(
 				req.params.flight_id as string,
 			);

@@ -8,23 +8,6 @@ import { authorizeRole } from "@package/shared-middleware";
 
 const notificationRouter: Router = Router();
 
-/**
- * @swagger
- * tags:
- *   name: Notifications
- *   description: Notification endpoints
- */
-
-/**
- * @swagger
- * /api/notifications:
- *   get:
- *     summary: List notifications
- *     tags: [Notifications]
- *     responses:
- *       200:
- *         description: Notifications array
- */
 notificationRouter.get(
 	"/notifications",
 	authenticate,
@@ -32,23 +15,6 @@ notificationRouter.get(
 	getNotifications,
 );
 
-/**
- * @swagger
- * /api/notifications/{id}/read:
- *   patch:
- *     summary: Mark notification as read
- *     tags: [Notifications]
- 
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Notification marked
- */
 notificationRouter.patch(
 	"/notifications/:id/read",
 	authenticate,

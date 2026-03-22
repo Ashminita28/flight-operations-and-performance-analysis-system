@@ -1,9 +1,10 @@
 import cron from "node-cron";
 import { analyticsRepository } from "../repositories/analytics-repository";
+import { logger } from "@package/shared-config";
 
 export const startAnalyticsCron = (): void => {
 	cron.schedule("* * * * *", async () => {
-		console.log("Cron running.....");
+		logger.info("Cron running.....");
 		await analyticsRepository.getSummaryTable();
 	});
 };

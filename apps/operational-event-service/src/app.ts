@@ -6,8 +6,6 @@ import operationRouter from "./routes/operation-route";
 import delayRouter from "./routes/delay-routes";
 import { errorHandler, httpLogger, limiter } from "@package/shared-middleware";
 import { operationHealth } from "./routes/operation-health-check";
-import swaggerUi from "swagger-ui-express";
-import { createSwaggerSpec } from "@package/shared-config";
 
 const app: Express = express();
 
@@ -27,10 +25,6 @@ app.use(httpLogger);
 app.use("/api/operations/health", operationHealth);
 app.use("/api/operations", operationRouter);
 app.use("/api", delayRouter);
-app.use(
-	"/api/operations/api-docs",
-	swaggerUi.serve,
-	swaggerUi.setup(createSwaggerSpec("Operational service", 3004)),
-);
+
 app.use(errorHandler);
 export default app;

@@ -13,7 +13,6 @@ export async function startConsumer() {
 		async msg => {
 			if (msg) {
 				const data = JSON.parse(msg.content.toString());
-				console.log("Received message:", data);
 
 				await Notification.create({
 					flight_id: data.flight_id,
