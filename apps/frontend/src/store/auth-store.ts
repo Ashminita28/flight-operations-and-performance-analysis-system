@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authService, type User } from "@/services/auth-service";
-import type { RegisterPayload } from "@/types/auth-types";
+import type { RegisterPayload } from "../types/auth-types";
 import { ApiException } from "@/api/error-handler";
 
 interface State {

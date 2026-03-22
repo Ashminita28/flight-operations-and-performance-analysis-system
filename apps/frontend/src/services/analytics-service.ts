@@ -5,9 +5,9 @@ import type {
 	DelayAnalysisDataPoint,
 	AnalyticsFilters,
 	ActiveFlightsResponse,
-	ExportReportPayload,
 	ChartTimeFilter,
 } from "@/types/analytics-types";
+import type { ExportReportPayload } from "@/types/export-report-types";
 
 function buildQuery(params: AnalyticsFilters): string {
 	const query = new URLSearchParams();

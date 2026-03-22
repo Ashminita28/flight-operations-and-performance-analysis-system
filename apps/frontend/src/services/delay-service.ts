@@ -1,5 +1,5 @@
 import { api, type ApiResponse } from "@/api/api";
-import type { DelayCategory } from "@/types/types";
+import type { DelayCategory } from "@/types/flight-types";
 
 export const delayService = {
 	getAll: async (signal?: AbortSignal): Promise<DelayCategory[]> => {

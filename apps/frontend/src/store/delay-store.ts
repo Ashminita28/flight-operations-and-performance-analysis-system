@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { delayService } from "@/services/delay-service";
-import type { DelayCategory } from "@/types/types";
+import type { DelayCategory } from "@/types/flight-types";
 
 interface State {
 	categories: DelayCategory[];

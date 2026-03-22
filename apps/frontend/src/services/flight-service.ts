@@ -1,11 +1,12 @@
 import { api } from "@/api/api";
+import type { ApiResponse } from "@/api/api";
 import type {
 	FlightsApiResponse,
 	FlightListApiResponse,
 	SingleFlightApiResponse,
-	AircraftApiResponse,
 	FlightQueryParams,
-} from "@/types/types";
+} from "@/types/flight-types";
+import type { Aircraft, AircraftListResponse } from "@/types/aircraft-types";
 
 function buildQuery(params: FlightQueryParams): string {
 	const query = new URLSearchParams();
@@ -58,18 +59,25 @@ export const flightService = {
 		return res.data ?? [];
 	},
 
-	getAircraftMap: async (signal?: AbortSignal) => {
-		const res = await api<AircraftApiResponse>("/aircraft/", { signal });
+	getAircraftMap: async (
+		signal?: AbortSignal,
+	): Promise<Record<string, string>> => {
+		const res = await api<ApiResponse<AircraftListResponse>>("/aircraft/", {
+			signal,
+		});
+
+		if (!res.data) {
+			throw new Error("Invalid aircraft response");
+		}
 
 		const map: Record<string, string> = {};
 
-		(res.data ?? []).forEach(a => {
+		(res.data.rows ?? []).forEach((a: Aircraft) => {
 			map[a.id] = `${a.registration} – ${a.model}`;
 		});
 
 		return map;
 	},
-
 	create: async (data: unknown) => {
 		await api("/flights/", {
 			method: "POST",

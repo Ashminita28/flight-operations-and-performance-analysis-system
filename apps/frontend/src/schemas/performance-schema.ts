@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 
 export const perfromanceSchema = z.object({
 	fuel_used_kg: z.number().positive(),

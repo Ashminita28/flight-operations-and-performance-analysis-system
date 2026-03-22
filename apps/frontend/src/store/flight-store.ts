@@ -4,7 +4,8 @@ import type {
 	Flight,
 	FlightQueryParams,
 	Paginationpagination,
-} from "@/types/types";
+} from "@/types/flight-types";
+import { DEFAULT_PAGINATION } from "@/constants/table-constants";
 
 interface State {
 	flights: Flight[];
@@ -28,15 +29,9 @@ interface State {
 	clearError: () => void;
 }
 
-const DEFAULT_PAGINATION: Paginationpagination = {
-	total: 0,
-	page: 1,
-	limit: 10,
-	total_pages: 1,
-};
-
 let fetchController: AbortController | null = null;
 let detailController: AbortController | null = null;
+let lastFlightsKey = "";
 
 export const useFlightStore = create<State>((set, get) => ({
 	flights: [],
@@ -48,28 +43,43 @@ export const useFlightStore = create<State>((set, get) => ({
 	error: null,
 
 	fetchFlights: async params => {
+		const current = get().filters;
+
+		const merged: FlightQueryParams = {
+			page: params?.page ?? current.page ?? 1,
+			limit: params?.limit ?? current.limit ?? 10,
+			status: params?.status ?? current.status,
+			sort_by: params?.sort_by ?? current.sort_by,
+			sort_order: params?.sort_order ?? current.sort_order,
+			flight_number: params?.flight_number ?? current.flight_number,
+		};
+
+		const key = JSON.stringify(merged);
+
+		// prevent duplicate calls
+		if (key === lastFlightsKey) return;
+		lastFlightsKey = key;
+
+		// cancel previous request
 		fetchController?.abort();
 		fetchController = new AbortController();
-
-		const activeFilters = params ?? get().filters;
 
 		set({ loading: true, error: null });
 
 		try {
-			const res = await flightService.getAll(
-				activeFilters,
-				fetchController.signal,
-			);
+			const res = await flightService.getAll(merged, fetchController.signal);
 
 			set({
 				flights: res.data,
 				pagination: res.pagination ?? DEFAULT_PAGINATION,
-				filters: activeFilters,
+				filters: merged,
 			});
 		} catch (err) {
-			if (err instanceof Error && err.name !== "AbortError") {
-				set({ error: err.message });
-			}
+			if (err instanceof DOMException && err.name === "AbortError") return;
+
+			set({
+				error: err instanceof Error ? err.message : "Failed to fetch flights",
+			});
 		} finally {
 			set({ loading: false });
 		}

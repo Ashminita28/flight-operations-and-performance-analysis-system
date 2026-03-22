@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 export const exportSchema = z.object({
 	email: z.string().email("Invalid email address"),
 	time_filter: z.enum(["daily", "weekly", "monthly", "yearly"]),

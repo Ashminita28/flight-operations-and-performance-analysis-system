@@ -1,5 +1,5 @@
 import { api, type ApiResponse } from "@/api/api";
-import type { OperationalEvent } from "@/types/types";
+import type { OperationalEvent } from "@/types/flight-types";
 
 export const operationService = {
 	getEvents: async (flightId: string, signal?: AbortSignal) => {
@@ -18,5 +18,18 @@ export const operationService = {
 			method: "POST",
 			body: JSON.stringify(payload),
 		});
+	},
+
+	getAllEvents: async (signal?: AbortSignal) => {
+		const res = await api<ApiResponse<OperationalEvent[]>>(
+			"/operations/events",
+			{
+				signal,
+			},
+		);
+
+		if (!res.data) throw new Error("Invalid events response");
+
+		return res.data;
 	},
 };

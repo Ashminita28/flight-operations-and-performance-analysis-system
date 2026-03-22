@@ -1,10 +1,11 @@
 import { api, type ApiResponse } from "@/api/api";
-import type { RegisterPayload } from "@/types/auth-types";
+import type { RegisterPayload } from "../types/auth-types";
 
 export interface User {
 	id: string;
 	name: string;
 	email: string;
+	phone?: number;
 	roles?: string[];
 }
 

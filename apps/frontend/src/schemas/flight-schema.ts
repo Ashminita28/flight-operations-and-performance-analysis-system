@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 export const flightSchema = z.object({
 	flight_number: z.string().min(1, "Flight number is required"),
 	airline_code: z.string().min(1, "Airline code is required"),
@@ -25,3 +25,5 @@ export const flightSchema = z.object({
 	gate_arrival: z.string().optional(),
 	is_return_flight: z.boolean().optional(),
 });
+
+export type FlightFormValues = z.infer<typeof flightSchema>;

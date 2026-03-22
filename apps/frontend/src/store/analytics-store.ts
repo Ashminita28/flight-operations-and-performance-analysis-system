@@ -1,17 +1,22 @@
 import { create } from "zustand";
-import { analyticsService } from "@/services/analytics-service";
+import { api } from "@/api/api";
+
 import type {
 	DashboardCounters,
 	OnTimePerformanceDataPoint,
 	DelayAnalysisDataPoint,
 	ActiveFlightData,
 	AnalyticsFilters,
+	AnalyticsCountersResponse,
+	AnalyticsChartResponse,
+	ActiveFlightsResponse,
 	ChartTimeFilter,
-	ExportReportPayload,
 } from "@/types/analytics-types";
-import type { Paginationpagination } from "@/types/types";
 
-interface State {
+import type { ExportReportPayload } from "@/types/export-report-types";
+import type { Paginationpagination } from "@/types/flight-types";
+
+interface AnalyticsStore {
 	counters: DashboardCounters | null;
 	onTimePerformanceData: OnTimePerformanceDataPoint[];
 	delayAnalysisData: DelayAnalysisDataPoint[];
@@ -19,16 +24,23 @@ interface State {
 	pagination: Paginationpagination;
 	filters: AnalyticsFilters;
 	chartTimeFilter: ChartTimeFilter;
-	loading: boolean;
+
+	countersLoading: boolean;
+	performanceLoading: boolean;
+	delayLoading: boolean;
+	flightsLoading: boolean;
+
 	error: string | null;
 	exporting: boolean;
 	exportError: string | null;
 
 	fetchCounters: (filters?: AnalyticsFilters) => Promise<void>;
-	fetchOnTimePerformance: (filter?: ChartTimeFilter) => Promise<void>;
-	fetchDelayAnalysis: (filter?: ChartTimeFilter) => Promise<void>;
-	fetchActiveFlights: () => Promise<void>;
+	fetchOnTimePerformance: (timeFilter?: ChartTimeFilter) => Promise<void>;
+	fetchDelayAnalysis: (timeFilter?: ChartTimeFilter) => Promise<void>;
+	fetchActiveFlights: (filters?: AnalyticsFilters) => Promise<void>;
+
 	initiateExport: (payload: ExportReportPayload) => Promise<{ job_id: string }>;
+
 	setFilters: (filters: Partial<AnalyticsFilters>) => void;
 	setChartTimeFilter: (filter: ChartTimeFilter) => void;
 	clearError: () => void;
@@ -41,140 +53,220 @@ const DEFAULT_PAGINATION: Paginationpagination = {
 	total_pages: 0,
 };
 
-export const useAnalyticsStore = create<State>((set, get) => {
-	let controller: AbortController | null = null;
+const DEFAULT_FILTERS: AnalyticsFilters = {
+	page: 1,
+	limit: 20,
+	time_filter: "daily",
+};
 
-	const createController = () => {
-		controller?.abort();
-		controller = new AbortController();
-		return controller;
-	};
+const isAbortError = (err: unknown): err is DOMException =>
+	err instanceof DOMException && err.name === "AbortError";
 
-	return {
-		counters: null,
-		onTimePerformanceData: [],
-		delayAnalysisData: [],
-		activeFlights: [],
-		pagination: DEFAULT_PAGINATION,
-		filters: { page: 1, limit: 20, time_filter: "daily" },
-		chartTimeFilter: "monthly",
-		loading: false,
-		error: null,
-		exporting: false,
-		exportError: null,
+function buildQueryString(params: Record<string, unknown>): string {
+	const query = new URLSearchParams();
 
-		fetchCounters: async overrideFilters => {
-			const ctrl = createController();
+	for (const [key, value] of Object.entries(params)) {
+		if (value !== undefined && value !== null) {
+			query.set(key, String(value));
+		}
+	}
 
-			set({ loading: true, error: null });
+	return query.toString();
+}
 
-			try {
-				const filters = overrideFilters ?? get().filters;
+let countersController: AbortController | null = null;
+let performanceController: AbortController | null = null;
+let delayController: AbortController | null = null;
+let flightsController: AbortController | null = null;
 
-				const data = await analyticsService.getCounters(filters, ctrl.signal);
+/* -------------------- STORE -------------------- */
 
-				set({ counters: data });
-			} catch (err) {
-				if (err instanceof Error && err.name !== "AbortError") {
-					set({ error: err.message });
-				}
-			} finally {
-				set({ loading: false });
+export const useAnalyticsStore = create<AnalyticsStore>((set, get) => ({
+	counters: null,
+	onTimePerformanceData: [],
+	delayAnalysisData: [],
+	activeFlights: [],
+	pagination: DEFAULT_PAGINATION,
+	filters: DEFAULT_FILTERS,
+	chartTimeFilter: "monthly",
+
+	countersLoading: false,
+	performanceLoading: false,
+	delayLoading: false,
+	flightsLoading: false,
+
+	error: null,
+	exporting: false,
+	exportError: null,
+
+	/* ---------- COUNTERS ---------- */
+	fetchCounters: async filters => {
+		const params = filters ?? get().filters;
+		countersController?.abort();
+		countersController = new AbortController();
+
+		set({ countersLoading: true });
+
+		try {
+			const qs = buildQueryString({
+				time_filter: params.time_filter,
+				origin_airport: params.origin_airport,
+				destination_airport: params.destination_airport,
+			});
+
+			const res = await api<AnalyticsCountersResponse>(
+				`/analytics/counters?${qs}`,
+				{ signal: countersController.signal },
+			);
+
+			set({ counters: res.data });
+		} catch (err: unknown) {
+			if (!isAbortError(err)) {
+				const message =
+					err instanceof Error ? err.message : "Failed to load counters";
+				set({ error: message });
 			}
-		},
+		} finally {
+			set({ countersLoading: false });
+		}
+	},
 
-		fetchOnTimePerformance: async filter => {
-			const ctrl = createController();
+	/* ---------- PERFORMANCE ---------- */
+	fetchOnTimePerformance: async timeFilter => {
+		const filter = timeFilter ?? get().chartTimeFilter;
 
-			set({ loading: true, error: null });
+		performanceController?.abort();
+		performanceController = new AbortController();
 
-			try {
-				const data = await analyticsService.getOnTimePerformance(
-					filter ?? get().chartTimeFilter,
-					get().filters,
-					ctrl.signal,
-				);
+		set({ performanceLoading: true });
 
-				set({ onTimePerformanceData: data });
-			} catch (err) {
-				if (err instanceof Error && err.name !== "AbortError") {
-					set({ error: err.message });
-				}
-			} finally {
-				set({ loading: false });
+		try {
+			const qs = buildQueryString({ time_filter: filter });
+
+			const res = await api<AnalyticsChartResponse>(
+				`/analytics/on-time-performance?${qs}`,
+				{ signal: performanceController.signal },
+			);
+
+			set({
+				onTimePerformanceData: res.data as OnTimePerformanceDataPoint[],
+			});
+		} catch (err: unknown) {
+			if (!isAbortError(err)) {
+				const message =
+					err instanceof Error ? err.message : "Failed to load performance";
+				set({ error: message });
 			}
-		},
+		} finally {
+			set({ performanceLoading: false });
+		}
+	},
 
-		fetchDelayAnalysis: async filter => {
-			const ctrl = createController();
+	/* ---------- DELAY ---------- */
+	fetchDelayAnalysis: async timeFilter => {
+		const filter = timeFilter ?? get().chartTimeFilter;
 
-			set({ loading: true, error: null });
+		delayController?.abort();
+		delayController = new AbortController();
 
-			try {
-				const data = await analyticsService.getDelayAnalysis(
-					filter ?? get().chartTimeFilter,
-					get().filters,
-					ctrl.signal,
-				);
+		set({ delayLoading: true });
 
-				set({ delayAnalysisData: data });
-			} catch (err) {
-				if (err instanceof Error && err.name !== "AbortError") {
-					set({ error: err.message });
-				}
-			} finally {
-				set({ loading: false });
+		try {
+			const qs = buildQueryString({ time_filter: filter });
+
+			const res = await api<AnalyticsChartResponse>(
+				`/analytics/delay-analysis?${qs}`,
+				{ signal: delayController.signal },
+			);
+
+			set({
+				delayAnalysisData: res.data as DelayAnalysisDataPoint[],
+			});
+		} catch (err: unknown) {
+			if (!isAbortError(err)) {
+				const message =
+					err instanceof Error ? err.message : "Failed to load delay data";
+				set({ error: message });
 			}
-		},
+		} finally {
+			set({ delayLoading: false });
+		}
+	},
 
-		fetchActiveFlights: async () => {
-			const ctrl = createController();
+	/* ---------- ACTIVE FLIGHTS ---------- */
+	fetchActiveFlights: async filters => {
+		const params = filters ?? get().filters;
 
-			set({ loading: true, error: null });
+		flightsController?.abort();
+		flightsController = new AbortController();
 
-			try {
-				const res = await analyticsService.getActiveFlights(
-					get().filters,
-					ctrl.signal,
-				);
+		set({ flightsLoading: true });
 
-				set({
-					activeFlights: res.data ?? [],
-					pagination: res.pagination ?? DEFAULT_PAGINATION,
-				});
-			} catch (err) {
-				if (err instanceof Error && err.name !== "AbortError") {
-					set({ error: err.message });
-				}
-			} finally {
-				set({ loading: false });
+		try {
+			const qs = buildQueryString({
+				page: params.page,
+				limit: params.limit,
+				origin_airport: params.origin_airport,
+				destination_airport: params.destination_airport,
+				sort_by: params.sort_by,
+				sort_order: params.sort_order,
+			});
+
+			const res = await api<ActiveFlightsResponse>(
+				`/analytics/active-flights?${qs}`,
+				{ signal: flightsController.signal },
+			);
+
+			set({
+				activeFlights: res.data,
+				pagination: res.pagination ?? DEFAULT_PAGINATION,
+			});
+		} catch (err: unknown) {
+			if (!isAbortError(err)) {
+				const message =
+					err instanceof Error ? err.message : "Failed to load flights";
+				set({ error: message });
 			}
-		},
+		} finally {
+			set({ flightsLoading: false });
+		}
+	},
 
-		initiateExport: async payload => {
-			set({ exporting: true, exportError: null });
+	/* ---------- EXPORT ---------- */
+	initiateExport: async payload => {
+		set({ exporting: true, exportError: null });
 
-			try {
-				const data = await analyticsService.exportReport(payload);
-				return data;
-			} catch (err) {
-				if (err instanceof Error) {
-					set({ exportError: err.message });
-					throw err;
-				}
-				throw new Error("Export failed");
-			} finally {
-				set({ exporting: false });
-			}
-		},
+		try {
+			const res = await api<{ data: { job_id: string } }>(
+				"/analytics/export-report",
+				{
+					method: "POST",
+					body: JSON.stringify(payload),
+				},
+			);
 
-		setFilters: filters =>
-			set(state => ({
-				filters: { ...state.filters, ...filters },
-			})),
+			return { job_id: res.data.job_id };
+		} catch (err: unknown) {
+			const message = err instanceof Error ? err.message : "Export failed";
+			set({ exportError: message });
+			throw new Error(message);
+		} finally {
+			set({ exporting: false });
+		}
+	},
 
-		setChartTimeFilter: filter => set({ chartTimeFilter: filter }),
+	/* ---------- STATE ---------- */
+	setFilters: newFilters => {
+		set(state => ({
+			filters: { ...state.filters, ...newFilters },
+		}));
+	},
 
-		clearError: () => set({ error: null, exportError: null }),
-	};
-});
+	setChartTimeFilter: filter => {
+		set({ chartTimeFilter: filter });
+	},
+
+	clearError: () => {
+		set({ error: null, exportError: null });
+	},
+}));

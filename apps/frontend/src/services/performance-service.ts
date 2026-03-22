@@ -1,5 +1,5 @@
 import { api, type ApiResponse } from "@/api/api";
-import type { Performance } from "@/types/types";
+import type { Performance } from "@/types/flight-types";
 
 export const performanceService = {
 	get: async (flightId: string, signal?: AbortSignal) => {
@@ -18,5 +18,16 @@ export const performanceService = {
 			method: "POST",
 			body: JSON.stringify(payload),
 		});
+	},
+	getAllPerformance: async (signal?: AbortSignal): Promise<Performance[]> => {
+		const res = await api<ApiResponse<Performance[]>>("/performance/", {
+			signal,
+		});
+
+		if (!res.data) {
+			throw new Error("Invalid aircraft list response");
+		}
+
+		return res.data;
 	},
 };

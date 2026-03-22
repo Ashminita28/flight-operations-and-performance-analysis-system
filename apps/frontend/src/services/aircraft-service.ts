@@ -5,7 +5,7 @@ import type {
 	AircraftListResponse,
 	CreateAircraftDto,
 	UpdateAircraftDto,
-} from "@/types/aircraft";
+} from "../types/aircraft-types";
 
 export const aircraftService = {
 	getAll: async (signal?: AbortSignal): Promise<Aircraft[]> => {

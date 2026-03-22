@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 
 export const aircraftSchema = z.object({
 	registration: z.string().min(3),
@@ -13,3 +13,6 @@ export const aircraftSchema = z.object({
 	base_airport_code: z.string().min(3),
 	notes: z.string().optional(),
 });
+
+export type AircraftFormInput = z.input<typeof aircraftSchema>;
+export type AircraftFormOutput = z.output<typeof aircraftSchema>;

@@ -3,7 +3,7 @@ import type {
 	Aircraft,
 	CreateAircraftDto,
 	UpdateAircraftDto,
-} from "@/types/aircraft";
+} from "../types/aircraft-types";
 import { aircraftService } from "@/services/aircraft-service";
 
 interface AircraftState {
