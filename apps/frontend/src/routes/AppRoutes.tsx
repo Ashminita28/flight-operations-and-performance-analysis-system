@@ -1,29 +1,34 @@
-import React, { Suspense, lazy, memo } from "react";
+"use client";
+
+import { Suspense, lazy, memo } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import ProtectedRoute from "./ProtectedRoute";
-import { DashboardLayout } from "@/layouts/DashboardLayout";
-import { PublicLayout } from "@/layouts/PublicLayout";
 
+import ProtectedRoute from "./ProtectedRoute";
+import DashboardLayout from "@/layouts/dashboard-layout";
+const Unauthorized = lazy(() => import("@/pages/Unauthorized"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+
+const EventsDashboard = lazy(() => import("@/pages/EventsDashboard"));
+const PerformanceDashboard = lazy(() => import("@/pages/PerformanceDashboard"));
 const HomePage = lazy(() => import("@/pages/common/HomePage"));
 const Login = lazy(() => import("@/pages/common/Login"));
 const ForgotPassword = lazy(() => import("@/pages/common/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/common/ResetPassword"));
 
 const UserManagement = lazy(() => import("@/pages/admin/UserMangement"));
-
 const Profile = lazy(() => import("@/pages/common/Profile"));
+
 const MainDashboard = lazy(() => import("@/pages/MainDashboard"));
 const AircraftForm = lazy(() => import("@/pages/operations/AircraftRegister"));
-
-const AnalyticsDashboard = lazy(() =>
-	import("@/pages/MainDashboard").catch(() => import("@/pages/MainDashboard")),
-);
-
 const FlightDashboard = lazy(() => import("@/pages/FlightDashboard"));
 const FlightDetail = lazy(() =>
-	import("@/pages/FlightDetail").then(m => ({ default: m.FlightDetail })),
+	import("@/pages/FlightDetail").then(m => ({
+		default: m.FlightDetail,
+	})),
 );
+
+/*FALLBACK*/
 
 const PageFallback = memo(function PageFallback() {
 	return (
@@ -40,126 +45,109 @@ const PageFallback = memo(function PageFallback() {
 	);
 });
 
-function ProtectedDashboard({
-	children,
-	allowedRoles,
-}: {
-	children: React.ReactNode;
-	allowedRoles?: string[];
-}) {
-	return (
-		<ProtectedRoute allowedRoles={allowedRoles}>
-			<DashboardLayout>{children}</DashboardLayout>
-		</ProtectedRoute>
-	);
-}
-
-function ProtectedPublic({
-	children,
-	allowedRoles,
-}: {
-	children: React.ReactNode;
-	allowedRoles?: string[];
-}) {
-	return (
-		<ProtectedRoute allowedRoles={allowedRoles}>
-			<PublicLayout>{children}</PublicLayout>
-		</ProtectedRoute>
-	);
-}
+/*ROUTES*/
 
 export default function AppRoutes() {
 	return (
 		<BrowserRouter>
 			<Suspense fallback={<PageFallback />}>
 				<Routes>
+					{/* PUBLIC */}
 					<Route
 						path="/"
-						element={
-							<PublicLayout showBrand={false}>
-								<HomePage />
-							</PublicLayout>
-						}
+						element={<HomePage />}
 					/>
 					<Route
 						path="/login"
-						element={
-							<PublicLayout>
-								<Login />
-							</PublicLayout>
-						}
+						element={<Login />}
 					/>
 					<Route
 						path="/forget-password"
-						element={
-							<PublicLayout>
-								<ForgotPassword />
-							</PublicLayout>
-						}
+						element={<ForgotPassword />}
 					/>
 					<Route
 						path="/reset-password"
-						element={
-							<PublicLayout>
-								<ResetPassword />
-							</PublicLayout>
-						}
+						element={<ResetPassword />}
 					/>
+
+					<Route element={<DashboardLayout />}>
+						<Route
+							path="/register"
+							element={
+								<ProtectedRoute allowedRoles={["Admin"]}>
+									<UserManagement />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/aircraft"
+							element={
+								<ProtectedRoute allowedRoles={["Operations"]}>
+									<AircraftForm />
+								</ProtectedRoute>
+							}
+						/>
+
+						<Route
+							path="/flight-dashboard"
+							element={
+								<ProtectedRoute>
+									<FlightDashboard />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/flights/:id"
+							element={
+								<ProtectedRoute>
+									<FlightDetail />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/profile"
+							element={
+								<ProtectedRoute>
+									<Profile />
+								</ProtectedRoute>
+							}
+						/>
+
+						<Route
+							path="/main-dashboard"
+							element={
+								<ProtectedRoute>
+									<MainDashboard />
+								</ProtectedRoute>
+							}
+						/>
+
+						<Route
+							path="/events"
+							element={
+								<ProtectedRoute allowedRoles={["Admin", "Manager"]}>
+									<EventsDashboard />
+								</ProtectedRoute>
+							}
+						/>
+
+						<Route
+							path="/performances"
+							element={
+								<ProtectedRoute allowedRoles={["Admin", "Manager", "Analyst"]}>
+									<PerformanceDashboard />
+								</ProtectedRoute>
+							}
+						/>
+					</Route>
 					<Route
-						path="/register"
-						element={
-							<ProtectedPublic allowedRoles={["Admin"]}>
-								<UserManagement />
-							</ProtectedPublic>
-						}
+						path="/unauthorized"
+						element={<Unauthorized />}
 					/>
+
 					<Route
-						path="/profile"
-						element={
-							<ProtectedDashboard>
-								<Profile />
-							</ProtectedDashboard>
-						}
-					/>
-					<Route
-						path="/main-dashboard"
-						element={
-							<ProtectedDashboard>
-								<MainDashboard />
-							</ProtectedDashboard>
-						}
-					/>
-					<Route
-						path="/aircraft"
-						element={
-							<ProtectedDashboard allowedRoles={["Admin", "Operations"]}>
-								<AircraftForm />
-							</ProtectedDashboard>
-						}
-					/>
-					<Route
-						path="/analytics"
-						element={
-							<ProtectedDashboard allowedRoles={["Admin", "Analyst"]}>
-								<AnalyticsDashboard />
-							</ProtectedDashboard>
-						}
-					/>
-					<Route
-						path="/flight-dashboard"
-						element={
-							<ProtectedRoute>
-								<FlightDashboard />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/flights/:id"
-						element={
-							<ProtectedRoute>
-								<FlightDetail />
-							</ProtectedRoute>
-						}
+						path="*"
+						element={<NotFound />}
 					/>
 				</Routes>
 			</Suspense>

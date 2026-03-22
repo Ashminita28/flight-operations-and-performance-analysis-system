@@ -1,4 +1,4 @@
-import { CHART_COLORS } from "../../constants/delay-analysis-constans";
+import { CHART_COLORS } from "../../constants/delay-analysis-constant";
 import type {
 	DelayAnalysisItem,
 	EnrichedDelayAnalysisItem,

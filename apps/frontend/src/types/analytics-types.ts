@@ -1,4 +1,4 @@
-import type { Paginationpagination } from "./types";
+import type { Paginationpagination } from "./flight-types";
 
 // Analytics Types
 export type TimeFilter =
@@ -31,6 +31,7 @@ export interface DelayAnalysisDataPoint {
 	percentage: number;
 }
 
+export type ActiveFlightStatus = "scheduled" | "boarding" | "departed";
 export interface ActiveFlightData {
 	id: string;
 	flight_number: string;
@@ -38,7 +39,7 @@ export interface ActiveFlightData {
 	origin_airport: string;
 	destination_airport: string;
 	aircraft_id: string;
-	status: "scheduled" | "boarding" | "departed";
+	status: ActiveFlightStatus;
 	scheduled_departure: string;
 	scheduled_arrival: string;
 	estimated_departure?: string;
@@ -79,12 +80,4 @@ export interface ActiveFlightsResponse {
 	message: string;
 	data: ActiveFlightData[];
 	pagination: Paginationpagination;
-}
-
-export interface ExportReportPayload {
-	time_filter: TimeFilter;
-	origin_airport?: string;
-	destination_airport?: string;
-	aircraft_id?: string;
-	email: string;
 }

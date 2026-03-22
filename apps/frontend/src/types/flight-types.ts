@@ -85,11 +85,6 @@ export interface SingleFlightApiResponse {
 	data: Flight;
 }
 
-export interface FlightListApiResponse {
-	success: boolean;
-	data: Flight[];
-}
-
 export interface FlightQueryParams {
 	page?: number;
 	limit?: number;
@@ -99,21 +94,32 @@ export interface FlightQueryParams {
 	date?: string;
 	sort_by?: "date" | "route" | "departure";
 	sort_order?: "ASC" | "DESC";
-}
-
-export interface Aircraft {
-	id: string;
-	registration: string;
-	model: string;
-	name?: string;
-}
-
-export interface AircraftApiResponse {
-	success: boolean;
-	data: Aircraft[];
+	flight_number?: string;
 }
 
 export interface FlightRow {
+	id: string;
+	flightNumber: string;
+	airline: string;
+	route: string;
+	aircraft: string;
+	date: string;
+	departure: string;
+	arrival: string;
+	status: FlightStatus;
+	return: string;
+}
+
+export interface FlightListApiResponse {
+	data: never[];
+	rows: Flight[];
+	total: number;
+	page: number;
+	limit: number;
+	total_pages: number;
+}
+
+export interface PerformanceRow {
 	id: string;
 	flightNumber: string;
 	airline: string;

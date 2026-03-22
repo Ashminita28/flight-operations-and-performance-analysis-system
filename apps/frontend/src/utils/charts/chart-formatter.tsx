@@ -4,7 +4,7 @@ import type {
 	NameType,
 } from "recharts/types/component/DefaultTooltipContent";
 
-import { RADIAN } from "../../constants/delay-analysis-constans";
+import { RADIAN } from "../../constants/delay-analysis-constant";
 import type { EnrichedDelayAnalysisItem } from "../../types/delay-analysis-types";
 import type { CustomLabelProps } from "@/props/custom-label-props";
 

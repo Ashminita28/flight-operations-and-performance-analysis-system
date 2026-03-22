@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth-store";
 import { AppSidebar } from "../components/app-sidebar";
-import { navItems } from "../types/sidebar-type";
+import { navItems } from "../constants/sidebar-constant";
 import type { AppSidebarContainerProps } from "@/props/sidebar-props";
 
 export function AppSidebarContainer(props: AppSidebarContainerProps) {
