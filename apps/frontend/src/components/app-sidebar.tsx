@@ -22,27 +22,39 @@ export function AppSidebar({
 	return (
 		<Sidebar
 			collapsible="offcanvas"
+			className="border-r border-gray-200 bg-white"
+			aria-label="Main navigation"
 			{...props}
 		>
-			<SidebarHeader>
+			<SidebarHeader className="border-b border-gray-100 px-4 py-3">
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<SidebarMenuButton asChild>
-							<Plane className="size-5" />
-							<span className="text-base font-semibold">Fligo</span>
+						<SidebarMenuButton
+							asChild
+							aria-label="Fligo home"
+							className="hover:bg-transparent"
+						>
+							<div className="flex items-center gap-2">
+								<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-950">
+									<Plane className="size-4 text-white" />
+								</div>
+								<span className="text-base font-semibold text-gray-900">
+									Fligo
+								</span>
+							</div>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>
 			</SidebarHeader>
 
-			<SidebarContent>
+			<SidebarContent className="px-2 py-2">
 				<NavMain
 					items={navItems}
 					isAdmin={isAdmin}
 				/>
 			</SidebarContent>
 
-			<SidebarFooter>
+			<SidebarFooter className="border-t border-gray-100 px-2 py-2">
 				<NavUser
 					user={user}
 					onLogout={onLogout}

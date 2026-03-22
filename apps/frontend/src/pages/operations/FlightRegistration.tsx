@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useFlightStore } from "@/store/flight-store";
@@ -28,13 +27,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthStore } from "@/store/auth-store";
 import { flightSchema } from "@/schemas/flight-schema";
-
-interface FlightRegistrationProps {
-	onClose?: () => void;
-	refreshFlights?: () => void;
-}
-
-type FlightFormValues = z.infer<typeof flightSchema>;
+import type { FlightRegistrationProps } from "@/props/flight-register-props";
+import type { FlightFormValues } from "@/schemas/flight-schema";
+import { X } from "lucide-react";
 
 export default function FlightRegistration({
 	onClose,
@@ -53,7 +48,7 @@ export default function FlightRegistration({
 
 	async function onSubmit(data: FlightFormValues) {
 		try {
-			let user = useAuthStore.getState().user;
+			const user = useAuthStore.getState().user;
 			if (!user) {
 				alert("User not authenticated");
 				return;
@@ -68,23 +63,28 @@ export default function FlightRegistration({
 				await refreshFlights();
 			}
 			if (onClose) onClose();
-		} catch (err: any) {
-			alert(err.message ?? "Failed to register flight");
+		} catch (err: unknown) {
+			alert(err instanceof Error ? err.message : "Failed to register aircraft");
 		}
 	}
 
 	const aircraftList = Array.isArray(aircraft) ? aircraft : [];
+	const inp =
+		"border-gray-200 focus:border-sky-950 text-gray-900 placeholder:text-gray-400";
 
 	return (
-		<Card className="bg-[#0f2847] border border-slate-600 text-white shadow-2xl">
-			<CardHeader className="flex flex-row justify-between items-center border-b border-slate-600 pb-4">
-				<CardTitle className="text-white text-xl">Register Flight</CardTitle>
+		<Card className="bg-white border border-gray-200 shadow-sm">
+			<CardHeader className="flex flex-row justify-between items-center border-b border-gray-100 pb-4">
+				<CardTitle className="text-lg font-semibold text-gray-900">
+					Register Flight
+				</CardTitle>
 				<Button
 					variant="ghost"
 					onClick={onClose}
-					className="text-slate-300 hover:text-white hover:bg-slate-700 h-8 w-8 p-0 text-lg"
+					aria-label="Close"
+					className="h-8 w-8 p-0 text-gray-400 hover:text-gray-700 hover:bg-gray-100"
 				>
-					✕
+					<X className="h-4 w-4" />
 				</Button>
 			</CardHeader>
 
@@ -93,6 +93,7 @@ export default function FlightRegistration({
 					<form
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="space-y-4"
+						aria-label="Register flight form"
 					>
 						<div className="grid grid-cols-2 gap-3">
 							<FormField
@@ -100,17 +101,17 @@ export default function FlightRegistration({
 								name="flight_number"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
-											Flight Number *
+										<FormLabel className="text-sm font-medium text-gray-700">
+											Flight Number <span className="text-red-500">*</span>
 										</FormLabel>
 										<FormControl>
 											<Input
 												placeholder="AI203"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+												className={inp}
 											/>
 										</FormControl>
-										<FormMessage className="text-red-400" />
+										<FormMessage />
 									</FormItem>
 								)}
 							/>
@@ -119,17 +120,17 @@ export default function FlightRegistration({
 								name="airline_code"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
-											Airline Code *
+										<FormLabel className="text-sm font-medium text-gray-700">
+											Airline Code <span className="text-red-500">*</span>
 										</FormLabel>
 										<FormControl>
 											<Input
 												placeholder="AI"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+												className={inp}
 											/>
 										</FormControl>
-										<FormMessage className="text-red-400" />
+										<FormMessage />
 									</FormItem>
 								)}
 							/>
@@ -141,17 +142,17 @@ export default function FlightRegistration({
 								name="origin_airport"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
-											Origin Airport *
+										<FormLabel className="text-sm font-medium text-gray-700">
+											Origin Airport <span className="text-red-500">*</span>
 										</FormLabel>
 										<FormControl>
 											<Input
 												placeholder="DEL"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+												className={inp}
 											/>
 										</FormControl>
-										<FormMessage className="text-red-400" />
+										<FormMessage />
 									</FormItem>
 								)}
 							/>
@@ -160,17 +161,18 @@ export default function FlightRegistration({
 								name="destination_airport"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
-											Destination Airport *
+										<FormLabel className="text-sm font-medium text-gray-700">
+											Destination Airport{" "}
+											<span className="text-red-500">*</span>
 										</FormLabel>
 										<FormControl>
 											<Input
 												placeholder="BOM"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+												className={inp}
 											/>
 										</FormControl>
-										<FormMessage className="text-red-400" />
+										<FormMessage />
 									</FormItem>
 								)}
 							/>
@@ -181,22 +183,27 @@ export default function FlightRegistration({
 							name="aircraft_id"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel className="text-slate-300">Aircraft *</FormLabel>
+									<FormLabel className="text-sm font-medium text-gray-700">
+										Aircraft <span className="text-red-500">*</span>
+									</FormLabel>
 									<Select
 										onValueChange={field.onChange}
 										value={field.value}
 									>
 										<FormControl>
-											<SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+											<SelectTrigger
+												aria-label="Select aircraft"
+												className="border-gray-200 text-gray-900"
+											>
 												<SelectValue placeholder="Select aircraft" />
 											</SelectTrigger>
 										</FormControl>
-										<SelectContent className="bg-slate-800 border-slate-600">
+										<SelectContent>
 											{aircraftList.length === 0 ? (
 												<SelectItem
 													value="loading"
 													disabled
-													className="text-slate-400"
+													className="text-gray-400"
 												>
 													Loading aircraft...
 												</SelectItem>
@@ -205,7 +212,7 @@ export default function FlightRegistration({
 													<SelectItem
 														key={a.id}
 														value={a.id}
-														className="text-white hover:bg-slate-700"
+														className="text-gray-900"
 													>
 														{a.registration} — {a.model}
 													</SelectItem>
@@ -213,7 +220,7 @@ export default function FlightRegistration({
 											)}
 										</SelectContent>
 									</Select>
-									<FormMessage className="text-red-400" />
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -224,62 +231,42 @@ export default function FlightRegistration({
 								name="status"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">Status *</FormLabel>
+										<FormLabel className="text-sm font-medium text-gray-700">
+											Status <span className="text-red-500">*</span>
+										</FormLabel>
 										<Select
 											onValueChange={field.onChange}
 											value={field.value}
 										>
 											<FormControl>
-												<SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+												<SelectTrigger
+													aria-label="Select status"
+													className="border-gray-200 text-gray-900"
+												>
 													<SelectValue />
 												</SelectTrigger>
 											</FormControl>
-											<SelectContent className="bg-slate-800 border-slate-600">
-												<SelectItem
-													value="scheduled"
-													className="text-white"
-												>
-													Scheduled
-												</SelectItem>
-												<SelectItem
-													value="boarding"
-													className="text-white"
-												>
-													Boarding
-												</SelectItem>
-												<SelectItem
-													value="departed"
-													className="text-white"
-												>
-													Departed
-												</SelectItem>
-												<SelectItem
-													value="landed"
-													className="text-white"
-												>
-													Landed
-												</SelectItem>
-												<SelectItem
-													value="delayed"
-													className="text-white"
-												>
-													Delayed
-												</SelectItem>
-												<SelectItem
-													value="diverted"
-													className="text-white"
-												>
-													Diverted
-												</SelectItem>
-												<SelectItem
-													value="cancelled"
-													className="text-white"
-												>
-													Cancelled
-												</SelectItem>
+											<SelectContent>
+												{[
+													"scheduled",
+													"boarding",
+													"departed",
+													"landed",
+													"delayed",
+													"diverted",
+													"cancelled",
+												].map(s => (
+													<SelectItem
+														key={s}
+														value={s}
+														className="text-gray-900 capitalize"
+													>
+														{s.charAt(0).toUpperCase() + s.slice(1)}
+													</SelectItem>
+												))}
 											</SelectContent>
 										</Select>
-										<FormMessage className="text-red-400" />
+										<FormMessage />
 									</FormItem>
 								)}
 							/>
@@ -288,17 +275,17 @@ export default function FlightRegistration({
 								name="flight_date"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
-											Flight Date *
+										<FormLabel className="text-sm font-medium text-gray-700">
+											Flight Date <span className="text-red-500">*</span>
 										</FormLabel>
 										<FormControl>
 											<Input
 												type="date"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white"
+												className={inp}
 											/>
 										</FormControl>
-										<FormMessage className="text-red-400" />
+										<FormMessage />
 									</FormItem>
 								)}
 							/>
@@ -310,17 +297,18 @@ export default function FlightRegistration({
 								name="scheduled_departure"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
-											Scheduled Departure *
+										<FormLabel className="text-sm font-medium text-gray-700">
+											Scheduled Departure{" "}
+											<span className="text-red-500">*</span>
 										</FormLabel>
 										<FormControl>
 											<Input
 												type="datetime-local"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white"
+												className={inp}
 											/>
 										</FormControl>
-										<FormMessage className="text-red-400" />
+										<FormMessage />
 									</FormItem>
 								)}
 							/>
@@ -329,17 +317,17 @@ export default function FlightRegistration({
 								name="scheduled_arrival"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
-											Scheduled Arrival *
+										<FormLabel className="text-sm font-medium text-gray-700">
+											Scheduled Arrival <span className="text-red-500">*</span>
 										</FormLabel>
 										<FormControl>
 											<Input
 												type="datetime-local"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white"
+												className={inp}
 											/>
 										</FormControl>
-										<FormMessage className="text-red-400" />
+										<FormMessage />
 									</FormItem>
 								)}
 							/>
@@ -351,14 +339,14 @@ export default function FlightRegistration({
 								name="estimated_departure"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
+										<FormLabel className="text-sm font-medium text-gray-700">
 											Estimated Departure
 										</FormLabel>
 										<FormControl>
 											<Input
 												type="datetime-local"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white"
+												className={inp}
 											/>
 										</FormControl>
 									</FormItem>
@@ -369,14 +357,14 @@ export default function FlightRegistration({
 								name="estimated_arrival"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
+										<FormLabel className="text-sm font-medium text-gray-700">
 											Estimated Arrival
 										</FormLabel>
 										<FormControl>
 											<Input
 												type="datetime-local"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white"
+												className={inp}
 											/>
 										</FormControl>
 									</FormItem>
@@ -390,14 +378,14 @@ export default function FlightRegistration({
 								name="actual_departure"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
+										<FormLabel className="text-sm font-medium text-gray-700">
 											Actual Departure
 										</FormLabel>
 										<FormControl>
 											<Input
 												type="datetime-local"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white"
+												className={inp}
 											/>
 										</FormControl>
 									</FormItem>
@@ -408,14 +396,14 @@ export default function FlightRegistration({
 								name="actual_arrival"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
+										<FormLabel className="text-sm font-medium text-gray-700">
 											Actual Arrival
 										</FormLabel>
 										<FormControl>
 											<Input
 												type="datetime-local"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white"
+												className={inp}
 											/>
 										</FormControl>
 									</FormItem>
@@ -429,14 +417,14 @@ export default function FlightRegistration({
 								name="gate_departure"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
+										<FormLabel className="text-sm font-medium text-gray-700">
 											Departure Gate
 										</FormLabel>
 										<FormControl>
 											<Input
 												placeholder="A12"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+												className={inp}
 											/>
 										</FormControl>
 									</FormItem>
@@ -447,14 +435,14 @@ export default function FlightRegistration({
 								name="gate_arrival"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel className="text-slate-300">
+										<FormLabel className="text-sm font-medium text-gray-700">
 											Arrival Gate
 										</FormLabel>
 										<FormControl>
 											<Input
 												placeholder="B4"
 												{...field}
-												className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+												className={inp}
 											/>
 										</FormControl>
 									</FormItem>
@@ -472,10 +460,10 @@ export default function FlightRegistration({
 											type="checkbox"
 											checked={field.value ?? false}
 											onChange={e => field.onChange(e.target.checked)}
-											className="w-4 h-4 accent-blue-500 cursor-pointer"
+											className="w-4 h-4 accent-sky-950 cursor-pointer rounded border-gray-300"
 										/>
 									</FormControl>
-									<FormLabel className="text-slate-300 mt-0! cursor-pointer">
+									<FormLabel className="text-sm font-medium text-gray-700 mt-0! cursor-pointer">
 										Return Flight
 									</FormLabel>
 								</FormItem>
@@ -485,7 +473,7 @@ export default function FlightRegistration({
 						<Button
 							type="submit"
 							disabled={form.formState.isSubmitting}
-							className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+							className="w-full bg-sky-950 hover:bg-sky-900 text-white font-medium"
 						>
 							{form.formState.isSubmitting
 								? "Registering..."

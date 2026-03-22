@@ -1,42 +1,43 @@
-import { useState } from "react";
+import { useState, useCallback, useRef, memo } from "react";
 import { api } from "../../api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 
-export default function ResetPassword() {
+const ResetPassword = memo(function ResetPassword() {
 	const navigate = useNavigate();
 
-	const [email, setEmail] = useState("");
-	const [otp, setOtp] = useState("");
-	const [password, setPassword] = useState("");
+	const emailRef = useRef<HTMLInputElement>(null);
+	const otpRef = useRef<HTMLInputElement>(null);
+	const passwordRef = useRef<HTMLInputElement>(null);
+
 	const [message, setMessage] = useState("");
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleSubmit = useCallback(
+		async (e: React.FormEvent<HTMLFormElement>) => {
+			e.preventDefault();
 
-		try {
-			await api("/password/reset-password", {
-				method: "POST",
+			const email = emailRef.current?.value ?? "";
+			const otp = otpRef.current?.value ?? "";
+			const password = passwordRef.current?.value ?? "";
 
-				body: JSON.stringify({
-					email,
+			try {
+				await api("/password/reset-password", {
+					method: "POST",
+					body: JSON.stringify({ email, otp, password }),
+				});
 
-					otp,
+				setMessage("Password Reset Success");
 
-					password,
-				}),
-			});
-
-			setMessage("Password Reset Success");
-
-			setTimeout(() => {
-				navigate("/login");
-			}, 1500);
-		} catch (err: any) {
-			setMessage(err.message);
-		}
-	};
+				setTimeout(() => {
+					navigate("/login");
+				}, 1500);
+			} catch (err: unknown) {
+				setMessage(err instanceof Error ? err.message : "Something went wrong");
+			}
+		},
+		[navigate],
+	);
 
 	return (
 		<div className="min-h-screen bg-sky-950 flex items-center justify-center">
@@ -49,21 +50,21 @@ export default function ResetPassword() {
 				</h2>
 
 				<Input
+					ref={emailRef}
 					placeholder="Email"
-					onChange={e => setEmail(e.target.value)}
 					required
 				/>
 
 				<Input
+					ref={otpRef}
 					placeholder="OTP"
-					onChange={e => setOtp(e.target.value)}
 					required
 				/>
 
 				<Input
+					ref={passwordRef}
 					type="password"
 					placeholder="New Password"
-					onChange={e => setPassword(e.target.value)}
 					required
 				/>
 
@@ -78,4 +79,6 @@ export default function ResetPassword() {
 			</form>
 		</div>
 	);
-}
+});
+
+export default ResetPassword;

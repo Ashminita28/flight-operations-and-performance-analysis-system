@@ -19,8 +19,10 @@ function NavMenuItem({ title, url, icon: Icon }: NavItem) {
 			<SidebarMenuButton
 				tooltip={title}
 				onClick={() => navigate(url)}
+				aria-label={`Navigate to ${title}`}
+				className="text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-950 transition-colors"
 			>
-				{Icon && <Icon />}
+				{Icon && <Icon className="size-4 text-gray-500" />}
 				<span>{title}</span>
 			</SidebarMenuButton>
 		</SidebarMenuItem>
@@ -35,18 +37,20 @@ function AdminMenuItem() {
 			<SidebarMenuButton
 				onClick={() => navigate("/register")}
 				tooltip="Quick Create"
-				className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+				aria-label="Register new user"
+				className="bg-sky-950 text-white hover:bg-sky-900 hover:text-white active:bg-sky-900 active:text-white min-w-8 duration-200 ease-linear text-sm font-medium"
 			>
-				<IconCirclePlusFilled />
+				<IconCirclePlusFilled className="size 4" />
 				<span>Register User</span>
 			</SidebarMenuButton>
 
 			<Button
 				size="icon"
-				className="size-8 group-data-[collapsible=icon]:opacity-0"
+				className="size-8 group-data-[collapsible=icon]:opacity-0 border-gray-200 text-gray-600 hover:bg-gray-50"
 				variant="outline"
+				aria-label="Inbox"
 			>
-				<IconMail />
+				<IconMail className="size-4" />
 				<span className="sr-only">Inbox</span>
 			</Button>
 		</SidebarMenuItem>

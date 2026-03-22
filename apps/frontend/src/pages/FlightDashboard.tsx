@@ -1,16 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/data-table";
+import { FlightTable } from "@/components/all-flights-table";
 import FlightRegistration from "./operations/FlightRegistration";
 import { useFlightStore } from "@/store/flight-store";
 import { useAircraftStore } from "@/store/aircraft-store";
-import type { FlightRow, FlightStatus, FlightQueryParams } from "@/types/types";
+import type {
+	FlightRow,
+	FlightStatus,
+	FlightQueryParams,
+} from "@/types/flight-types";
 
 export default function FlightDashboard() {
-	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
-
 	const flights = useFlightStore(s => s.flights);
 	const pagination = useFlightStore(s => s.pagination);
 	const filters = useFlightStore(s => s.filters);
@@ -18,14 +18,14 @@ export default function FlightDashboard() {
 	const aircraftMap = useFlightStore(s => s.aircraftMap);
 	const fetchAircraft = useAircraftStore(s => s.fetchAircraft);
 	const fetchFlights = useFlightStore(s => s.fetchFlights);
-	const searchFlights = useFlightStore(s => s.searchFlights);
 	const deleteFlight = useFlightStore(s => s.deleteFlight);
 
 	useEffect(() => {
 		const fetchData = async () => {
 			await fetchAircraft();
-			await fetchFlights({ page: 1, limit: 10 });
+			await fetchFlights();
 		};
+
 		fetchData();
 	}, [fetchAircraft, fetchFlights]);
 
@@ -48,39 +48,38 @@ export default function FlightDashboard() {
 		(page: number) => {
 			fetchFlights({ page });
 		},
-		[filters, fetchFlights],
+		[fetchFlights],
 	);
 
 	const handlePageSizeChange = useCallback(
 		(limit: number) => {
 			fetchFlights({ limit, page: 1 });
 		},
-		[filters, fetchFlights],
+		[fetchFlights],
 	);
 
 	const handleSearch = useCallback(
 		(query: string) => {
-			if (query === "") {
-				fetchFlights({ page: 1 });
-			} else {
-				searchFlights(query);
-			}
+			fetchFlights({
+				page: 1,
+				flight_number: query || undefined,
+			});
 		},
-		[filters, fetchFlights, searchFlights],
+		[fetchFlights],
 	);
 
 	const handleStatusFilter = useCallback(
 		(status: FlightStatus | "") => {
 			fetchFlights({ status, page: 1 });
 		},
-		[filters, fetchFlights],
+		[fetchFlights],
 	);
 
 	const handleSort = useCallback(
 		(params: Pick<FlightQueryParams, "sort_by" | "sort_order">) => {
 			fetchFlights({ ...params, page: 1 });
 		},
-		[filters, fetchFlights],
+		[fetchFlights],
 	);
 
 	const handleDelete = useCallback(
@@ -102,19 +101,10 @@ export default function FlightDashboard() {
 	}, [filters, fetchFlights]);
 
 	return (
-		<div className="flex flex-1 flex-col bg-[#0a1628] min-h-screen">
-			<div>
-				<Button
-					onClick={() => navigate("/main-dashboard")}
-					className="absolute top-4 left-4 w-auto bg-slate-700 hover:bg-slate-600 text-white"
-				>
-					Back to Dashboard
-				</Button>
-			</div>
-
+		<div className="flex flex-1 flex-col bg-gray-50 min-h-screen">
 			<div className="@container/main flex flex-1 flex-col gap-2">
 				<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-					<DataTable
+					<FlightTable
 						data={tableData}
 						loading={loading}
 						currentPage={pagination.page}

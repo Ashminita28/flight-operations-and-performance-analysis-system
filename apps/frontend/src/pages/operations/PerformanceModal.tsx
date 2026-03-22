@@ -10,32 +10,17 @@ import { Button } from "../../components/ui/button";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import { usePerformanceStore } from "../../store/performance-store";
+import type {
+	PerformanceProps,
+	FormErrors,
+} from "@/props/performance-modal-props";
+import { validatePositiveNumber } from "@/utils/reports/positive-number-validator";
 
-interface Props {
-	open: boolean;
-	onClose: () => void;
-	flightId: string;
-}
-
-interface FormErrors {
-	fuel_used_kg?: string;
-	distance_km?: string;
-	flight_time_minutes?: string;
-	passengers_count?: string;
-	payload_kg?: string;
-}
-
-function validatePositiveNumber(
-	value: string,
-	fieldName: string,
-): string | undefined {
-	if (!value) return undefined;
-	const num = parseFloat(value);
-	if (isNaN(num) || num <= 0) return `${fieldName} must be a positive number`;
-	return undefined;
-}
-
-export function AddPerformanceModal({ open, onClose, flightId }: Props) {
+export function AddPerformanceModal({
+	open,
+	onClose,
+	flightId,
+}: PerformanceProps) {
 	const { createPerformance, error: storeError } = usePerformanceStore();
 
 	const [fuelUsed, setFuelUsed] = useState("");
@@ -108,7 +93,11 @@ export function AddPerformanceModal({ open, onClose, flightId }: Props) {
 			setFieldErrors({});
 			onClose();
 		} catch (error: unknown) {
-			setSubmitError(error instanceof Error ? error.message :"Failed to save performance data");
+			setSubmitError(
+				error instanceof Error
+					? error.message
+					: "Failed to save performance data",
+			);
 		} finally {
 			setSaving(false);
 		}
@@ -123,22 +112,34 @@ export function AddPerformanceModal({ open, onClose, flightId }: Props) {
 	return (
 		<Dialog
 			open={open}
-			onOpenChange={isOpen => !isOpen && handleClose()}
+			onOpenChange={(isOpen: unknown) => !isOpen && handleClose()}
 		>
-			<DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+			<DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto border border-gray-200 shadow-md">
 				<DialogHeader>
-					<DialogTitle>Record Flight Performance</DialogTitle>
+					<DialogTitle className="text-lg font-semibold text-gray-900">
+						Record Flight Performance
+					</DialogTitle>
 				</DialogHeader>
 
-				<div className="flex flex-col gap-4 py-2">
+				<div
+					className="flex flex-col gap-4 py-2"
+					aria-label="Performance form"
+				>
 					{(submitError || storeError) && (
-						<div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+						<div
+							role="alert"
+							className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700"
+						>
 							{submitError || storeError}
 						</div>
 					)}
 
-					<div className="flex flex-col gap-1">
-						<Label htmlFor="fuel_used">
+					{/* Fuel Used */}
+					<div className="flex flex-col gap-1.5">
+						<Label
+							htmlFor="fuel_used"
+							className="text-sm font-medium text-gray-700"
+						>
 							Fuel Used (kg) <span className="text-red-500">*</span>
 						</Label>
 						<Input
@@ -149,15 +150,27 @@ export function AddPerformanceModal({ open, onClose, flightId }: Props) {
 							placeholder="e.g. 4500"
 							value={fuelUsed}
 							onChange={e => setFuelUsed(e.target.value)}
-							className={fieldErrors.fuel_used_kg ? "border-red-400" : ""}
+							aria-describedby={
+								fieldErrors.fuel_used_kg ? "fuel-error" : undefined
+							}
+							className={`border-gray-200 focus:border-sky-950 focus:ring-sky-950/20 ${fieldErrors.fuel_used_kg ? "border-red-400" : ""}`}
 						/>
 						{fieldErrors.fuel_used_kg && (
-							<p className="text-xs text-red-500">{fieldErrors.fuel_used_kg}</p>
+							<p
+								id="fuel-error"
+								className="text-xs text-red-500"
+							>
+								{fieldErrors.fuel_used_kg}
+							</p>
 						)}
 					</div>
 
-					<div className="flex flex-col gap-1">
-						<Label htmlFor="distance">
+					{/* Distance */}
+					<div className="flex flex-col gap-1.5">
+						<Label
+							htmlFor="distance"
+							className="text-sm font-medium text-gray-700"
+						>
 							Distance (km) <span className="text-red-500">*</span>
 						</Label>
 						<Input
@@ -168,15 +181,27 @@ export function AddPerformanceModal({ open, onClose, flightId }: Props) {
 							placeholder="e.g. 1200"
 							value={distance}
 							onChange={e => setDistance(e.target.value)}
-							className={fieldErrors.distance_km ? "border-red-400" : ""}
+							aria-describedby={
+								fieldErrors.distance_km ? "dist-error" : undefined
+							}
+							className={`border-gray-200 focus:border-sky-950 focus:ring-sky-950/20 ${fieldErrors.distance_km ? "border-red-400" : ""}`}
 						/>
 						{fieldErrors.distance_km && (
-							<p className="text-xs text-red-500">{fieldErrors.distance_km}</p>
+							<p
+								id="dist-error"
+								className="text-xs text-red-500"
+							>
+								{fieldErrors.distance_km}
+							</p>
 						)}
 					</div>
 
-					<div className="flex flex-col gap-1">
-						<Label htmlFor="flight_time">
+					{/* Flight Time */}
+					<div className="flex flex-col gap-1.5">
+						<Label
+							htmlFor="flight_time"
+							className="text-sm font-medium text-gray-700"
+						>
 							Flight Time (minutes) <span className="text-red-500">*</span>
 						</Label>
 						<Input
@@ -187,19 +212,29 @@ export function AddPerformanceModal({ open, onClose, flightId }: Props) {
 							placeholder="e.g. 120"
 							value={flightTime}
 							onChange={e => setFlightTime(e.target.value)}
-							className={
-								fieldErrors.flight_time_minutes ? "border-red-400" : ""
+							aria-describedby={
+								fieldErrors.flight_time_minutes ? "time-error" : undefined
 							}
+							className={`border-gray-200 focus:border-sky-950 focus:ring-sky-950/20 ${fieldErrors.flight_time_minutes ? "border-red-400" : ""}`}
 						/>
 						{fieldErrors.flight_time_minutes && (
-							<p className="text-xs text-red-500">
+							<p
+								id="time-error"
+								className="text-xs text-red-500"
+							>
 								{fieldErrors.flight_time_minutes}
 							</p>
 						)}
 					</div>
 
-					<div className="flex flex-col gap-1">
-						<Label htmlFor="passengers">Passengers Count</Label>
+					{/* Passengers */}
+					<div className="flex flex-col gap-1.5">
+						<Label
+							htmlFor="passengers"
+							className="text-sm font-medium text-gray-700"
+						>
+							Passengers Count
+						</Label>
 						<Input
 							id="passengers"
 							type="number"
@@ -208,7 +243,7 @@ export function AddPerformanceModal({ open, onClose, flightId }: Props) {
 							placeholder="e.g. 165"
 							value={passengers}
 							onChange={e => setPassengers(e.target.value)}
-							className={fieldErrors.passengers_count ? "border-red-400" : ""}
+							className={`border-gray-200 focus:border-sky-950 focus:ring-sky-950/20 ${fieldErrors.passengers_count ? "border-red-400" : ""}`}
 						/>
 						{fieldErrors.passengers_count && (
 							<p className="text-xs text-red-500">
@@ -217,8 +252,14 @@ export function AddPerformanceModal({ open, onClose, flightId }: Props) {
 						)}
 					</div>
 
-					<div className="flex flex-col gap-1">
-						<Label htmlFor="payload">Payload (kg)</Label>
+					{/* Payload */}
+					<div className="flex flex-col gap-1.5">
+						<Label
+							htmlFor="payload"
+							className="text-sm font-medium text-gray-700"
+						>
+							Payload (kg)
+						</Label>
 						<Input
 							id="payload"
 							type="number"
@@ -227,29 +268,31 @@ export function AddPerformanceModal({ open, onClose, flightId }: Props) {
 							placeholder="e.g. 15000"
 							value={payload}
 							onChange={e => setPayload(e.target.value)}
-							className={fieldErrors.payload_kg ? "border-red-400" : ""}
+							className={`border-gray-200 focus:border-sky-950 focus:ring-sky-950/20 ${fieldErrors.payload_kg ? "border-red-400" : ""}`}
 						/>
 						{fieldErrors.payload_kg && (
 							<p className="text-xs text-red-500">{fieldErrors.payload_kg}</p>
 						)}
 					</div>
 
-					<p className="text-xs text-gray-500">
+					<p className="text-xs text-gray-400">
 						<span className="text-red-500">*</span> Required fields
 					</p>
 				</div>
 
-				<DialogFooter>
+				<DialogFooter className="gap-2">
 					<Button
 						variant="outline"
 						onClick={handleClose}
 						disabled={saving}
+						className="border-gray-200 text-gray-700 hover:bg-gray-50"
 					>
 						Cancel
 					</Button>
 					<Button
 						onClick={handleSubmit}
 						disabled={saving}
+						className="bg-sky-950 hover:bg-sky-900 text-white"
 					>
 						{saving ? "Saving..." : "Record Performance"}
 					</Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
 	flexRender,
 	getCoreRowModel,
@@ -8,7 +8,6 @@ import {
 	getPaginationRowModel,
 	getSortedRowModel,
 	useReactTable,
-	type ColumnDef,
 	type ColumnFiltersState,
 	type SortingState,
 } from "@tanstack/react-table";
@@ -21,7 +20,6 @@ import {
 } from "@tabler/icons-react";
 
 import { useAnalyticsStore } from "@/store/analytics-store";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,125 +38,25 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import type { ActiveFlightData } from "@/types/analytics-types";
+import { columns } from "../constants/table-columns/active-flights-column";
 
-const STATUS_COLORS: Record<string, string> = {
-	scheduled: "bg-blue-100 text-blue-800 border-blue-200",
-	boarding: "bg-purple-100 text-purple-800 border-purple-200",
-	departed: "bg-green-100 text-green-800 border-green-200",
-};
+export default function ActiveFlightsTable() {
+	const { activeFlights, pagination, flightsLoading, filters, setFilters } =
+		useAnalyticsStore();
 
-const columns: ColumnDef<ActiveFlightData>[] = [
-	{
-		accessorKey: "flight_number",
-		header: "Flight #",
-		cell: ({ row }) => (
-			<span className="font-semibold">{row.getValue("flight_number")}</span>
-		),
-	},
-	{
-		accessorKey: "airline_code",
-		header: "Airline",
-		cell: ({ row }) => <span>{row.getValue("airline_code")}</span>,
-	},
-	{
-		id: "route",
-		header: "Route",
-		accessorFn: row => `${row.origin_airport} → ${row.destination_airport}`,
-		cell: ({ row }) => (
-			<span>{row.renderValue("route") as React.ReactNode}</span>
-		),
-	},
-	{
-		accessorKey: "aircraft_id",
-		header: "Aircraft",
-		cell: ({ row }) => (
-			<span className="text-sm">{row.getValue("aircraft_id")}</span>
-		),
-	},
-	{
-		accessorKey: "status",
-		header: "Status",
-		cell: ({ row }) => {
-			const status = row.getValue("status") as string;
-			return (
-				<Badge
-					variant="outline"
-					className={`${STATUS_COLORS[status] || "bg-gray-100 text-gray-800"}`}
-				>
-					{status.charAt(0).toUpperCase() + status.slice(1)}
-				</Badge>
-			);
-		},
-	},
-	{
-		accessorKey: "scheduled_departure",
-		header: "Scheduled Departure",
-		cell: ({ row }) => {
-			const date = new Date(row.getValue("scheduled_departure") as string);
-			return (
-				<span className="text-sm">
-					{date.toLocaleTimeString("en-US", {
-						hour: "2-digit",
-						minute: "2-digit",
-					})}
-				</span>
-			);
-		},
-	},
-	{
-		accessorKey: "estimated_departure",
-		header: "Est. Departure",
-		cell: ({ row }) => {
-			const time = row.getValue("estimated_departure");
-			if (!time) return <span className="text-muted-foreground">-</span>;
-			const date = new Date(time as string);
-			return (
-				<span className="text-sm">
-					{date.toLocaleTimeString("en-US", {
-						hour: "2-digit",
-						minute: "2-digit",
-					})}
-				</span>
-			);
-		},
-	},
-];
-
-interface ActiveFlightsTableProps {
-	onFilterChange?: (filters: any) => void;
-}
-
-export function ActiveFlightsTable({}: ActiveFlightsTableProps) {
-	const {
-		activeFlights,
-		pagination,
-		loading,
-		filters,
-		fetchActiveFlights,
-		setFilters,
-	} = useAnalyticsStore();
-
-	// Local state for filters
+	// Local UI state (only for inputs)
 	const [originAirport, setOriginAirport] = useState(
 		filters.origin_airport || "",
 	);
 	const [destinationAirport, setDestinationAirport] = useState(
 		filters.destination_airport || "",
 	);
+
 	const [sortingState, setSortingState] = useState<SortingState>([]);
 	const [columnFiltersState, setColumnFiltersState] =
 		useState<ColumnFiltersState>([]);
 
-	// Load active flights on mount and filter change
-	useEffect(() => {
-		fetchActiveFlights({
-			...filters,
-			origin_airport: originAirport || undefined,
-			destination_airport: destinationAirport || undefined,
-		});
-	}, [originAirport, destinationAirport]);
-
+	// eslint-disable-next-line react-hooks/incompatible-library
 	const table = useReactTable({
 		data: activeFlights,
 		columns,
@@ -176,33 +74,9 @@ export function ActiveFlightsTable({}: ActiveFlightsTableProps) {
 		pageCount: pagination.total_pages,
 	});
 
-	const handleNextPage = () => {
-		if (pagination.page < pagination.total_pages) {
-			setFilters({ page: pagination.page + 1 });
-			fetchActiveFlights({
-				...filters,
-				page: pagination.page + 1,
-				origin_airport: originAirport || undefined,
-				destination_airport: destinationAirport || undefined,
-			});
-		}
-	};
-
-	const handlePreviousPage = () => {
-		if (pagination.page > 1) {
-			setFilters({ page: pagination.page - 1 });
-			fetchActiveFlights({
-				...filters,
-				page: pagination.page - 1,
-				origin_airport: originAirport || undefined,
-				destination_airport: destinationAirport || undefined,
-			});
-		}
-	};
-
-	const handleFirstPage = () => {
-		setFilters({ page: 1 });
-		fetchActiveFlights({
+	// Apply filters
+	const applyFilters = () => {
+		setFilters({
 			...filters,
 			page: 1,
 			origin_airport: originAirport || undefined,
@@ -210,14 +84,36 @@ export function ActiveFlightsTable({}: ActiveFlightsTableProps) {
 		});
 	};
 
-	const handleLastPage = () => {
-		setFilters({ page: pagination.total_pages });
-		fetchActiveFlights({
+	const clearFilters = () => {
+		setOriginAirport("");
+		setDestinationAirport("");
+		setFilters({
 			...filters,
-			page: pagination.total_pages,
-			origin_airport: originAirport || undefined,
-			destination_airport: destinationAirport || undefined,
+			page: 1,
+			origin_airport: undefined,
+			destination_airport: undefined,
 		});
+	};
+
+	// Pagination
+	const handleNextPage = () => {
+		if (pagination.page < pagination.total_pages) {
+			setFilters({ ...filters, page: pagination.page + 1 });
+		}
+	};
+
+	const handlePreviousPage = () => {
+		if (pagination.page > 1) {
+			setFilters({ ...filters, page: pagination.page - 1 });
+		}
+	};
+
+	const handleFirstPage = () => {
+		setFilters({ ...filters, page: 1 });
+	};
+
+	const handleLastPage = () => {
+		setFilters({ ...filters, page: pagination.total_pages });
 	};
 
 	return (
@@ -230,6 +126,7 @@ export function ActiveFlightsTable({}: ActiveFlightsTableProps) {
 					</CardDescription>
 				</div>
 			</CardHeader>
+
 			<CardContent className="flex-1 space-y-4">
 				{/* Filters */}
 				<div className="flex flex-col gap-3 border-b pb-4 @container/filters">
@@ -252,6 +149,7 @@ export function ActiveFlightsTable({}: ActiveFlightsTableProps) {
 								/>
 							</div>
 						</div>
+
 						<div className="space-y-2">
 							<Label
 								htmlFor="destination"
@@ -273,17 +171,26 @@ export function ActiveFlightsTable({}: ActiveFlightsTableProps) {
 							</div>
 						</div>
 					</div>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => {
-							setOriginAirport("");
-							setDestinationAirport("");
-						}}
-						className="w-full @[480px]/filters:w-auto"
-					>
-						Clear Filters
-					</Button>
+
+					<div className="flex gap-2">
+						<Button
+							variant="default"
+							size="sm"
+							onClick={applyFilters}
+							className="w-full @[480px]/filters:w-auto"
+						>
+							Apply Filters
+						</Button>
+
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={clearFilters}
+							className="w-full @[480px]/filters:w-auto"
+						>
+							Clear Filters
+						</Button>
+					</div>
 				</div>
 
 				{/* Table */}
@@ -311,8 +218,9 @@ export function ActiveFlightsTable({}: ActiveFlightsTableProps) {
 								</TableRow>
 							))}
 						</TableHeader>
+
 						<TableBody>
-							{loading ? (
+							{flightsLoading ? (
 								<TableRow>
 									<TableCell
 										colSpan={columns.length}
@@ -362,40 +270,44 @@ export function ActiveFlightsTable({}: ActiveFlightsTableProps) {
 						</span>
 						{pagination.total} flights
 					</div>
+
 					<div className="flex items-center gap-1">
 						<Button
 							variant="outline"
 							size="sm"
 							onClick={handleFirstPage}
-							disabled={pagination.page === 1 || loading}
-							title="First page"
+							disabled={pagination.page === 1 || flightsLoading}
 						>
 							<IconChevronsLeft className="w-4 h-4" />
 						</Button>
+
 						<Button
 							variant="outline"
 							size="sm"
 							onClick={handlePreviousPage}
-							disabled={pagination.page === 1 || loading}
-							title="Previous page"
+							disabled={pagination.page === 1 || flightsLoading}
 						>
 							<IconChevronLeft className="w-4 h-4" />
 						</Button>
+
 						<Button
 							variant="outline"
 							size="sm"
 							onClick={handleNextPage}
-							disabled={pagination.page >= pagination.total_pages || loading}
-							title="Next page"
+							disabled={
+								pagination.page >= pagination.total_pages || flightsLoading
+							}
 						>
 							<IconChevronRight className="w-4 h-4" />
 						</Button>
+
 						<Button
 							variant="outline"
 							size="sm"
 							onClick={handleLastPage}
-							disabled={pagination.page >= pagination.total_pages || loading}
-							title="Last page"
+							disabled={
+								pagination.page >= pagination.total_pages || flightsLoading
+							}
 						>
 							<IconChevronsRight className="w-4 h-4" />
 						</Button>

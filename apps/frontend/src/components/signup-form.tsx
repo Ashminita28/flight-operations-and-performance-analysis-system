@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -8,11 +7,8 @@ import {
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
-
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-
 import { Input } from "@/components/ui/input";
-
 import {
 	Select,
 	SelectContent,
@@ -20,175 +16,122 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type { SignupFormProps } from "@/props/signup-props";
 
-import { useState } from "react";
-import { useAuthStore } from "../store/auth-store";
-import { useNavigate } from "react-router-dom";
-
-export function SignupForm() {
-	const register = useAuthStore(s => s.register);
-
-	const navigate = useNavigate();
-
-	const [form, setForm] = useState({
-		first_name: "",
-
-		last_name: "",
-
-		email: "",
-
-		phone: "",
-
-		password: "",
-
-		roleName: "Operations",
-	});
-
-	const [message, setMessage] = useState("");
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-
-		try {
-			await register(
-				form.first_name,
-
-				form.last_name,
-
-				form.email,
-
-				form.phone,
-
-				form.password,
-
-				form.roleName,
-			);
-
-			setMessage("User Registered Successfully");
-
-			navigate("/main-dashboard");
-		} catch (err: any) {
-			setMessage(err.message || "Registration Failed");
-		}
-	};
-
+export function SignupForm({
+	values,
+	onChange,
+	message,
+	onSubmit,
+}: SignupFormProps) {
 	return (
-		<Card className="bg-white">
-			<CardHeader>
-				<CardTitle>Register User</CardTitle>
-
-				<CardDescription>Admin creates users here</CardDescription>
+		<Card className="border border-gray-200 shadow-sm">
+			<CardHeader className="pb-4">
+				<CardTitle className="text-lg font-semibold text-gray-900">
+					Register User
+				</CardTitle>
+				<CardDescription className="text-sm text-gray-500">
+					Admin creates new user accounts here
+				</CardDescription>
 			</CardHeader>
 
 			<CardContent>
-				<form onSubmit={handleSubmit}>
+				<form
+					onSubmit={onSubmit}
+					aria-label="Register user form"
+				>
 					<FieldGroup>
-						<Field>
-							<FieldLabel>First Name</FieldLabel>
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<Field>
+								<FieldLabel className="text-sm font-medium text-gray-700">
+									First Name
+								</FieldLabel>
+								<Input
+									value={values.first_name}
+									onChange={e => onChange("first_name", e.target.value)}
+									required
+									aria-required="true"
+									placeholder="John"
+									className="border-gray-200 focus:border-sky-950 focus:ring-sky-950/20"
+								/>
+							</Field>
 
-							<Input
-								value={form.first_name}
-								onChange={e =>
-									setForm({
-										...form,
-
-										first_name: e.target.value,
-									})
-								}
-								required
-							/>
-						</Field>
-
-						<Field>
-							<FieldLabel>Last Name</FieldLabel>
-
-							<Input
-								value={form.last_name}
-								onChange={e =>
-									setForm({
-										...form,
-
-										last_name: e.target.value,
-									})
-								}
-								required
-							/>
-						</Field>
+							<Field>
+								<FieldLabel className="text-sm font-medium text-gray-700">
+									Last Name
+								</FieldLabel>
+								<Input
+									value={values.last_name}
+									onChange={e => onChange("last_name", e.target.value)}
+									required
+									aria-required="true"
+									placeholder="Doe"
+									className="border-gray-200 focus:border-sky-950 focus:ring-sky-950/20"
+								/>
+							</Field>
+						</div>
 
 						<Field>
-							<FieldLabel>Email</FieldLabel>
-
+							<FieldLabel className="text-sm font-medium text-gray-700">
+								Email
+							</FieldLabel>
 							<Input
 								type="email"
-								value={form.email}
-								onChange={e =>
-									setForm({
-										...form,
-
-										email: e.target.value,
-									})
-								}
+								value={values.email}
+								onChange={e => onChange("email", e.target.value)}
 								required
+								aria-required="true"
+								placeholder="john.doe@example.com"
+								className="border-gray-200 focus:border-sky-950 focus:ring-sky-950/20"
 							/>
 						</Field>
 
 						<Field>
-							<FieldLabel>Phone</FieldLabel>
-
+							<FieldLabel className="text-sm font-medium text-gray-700">
+								Phone
+							</FieldLabel>
 							<Input
-								value={form.phone}
-								onChange={e =>
-									setForm({
-										...form,
-
-										phone: e.target.value,
-									})
-								}
+								value={values.phone}
+								onChange={e => onChange("phone", e.target.value)}
 								required
+								aria-required="true"
+								placeholder="+91 98765 43210"
+								className="border-gray-200 focus:border-sky-950 focus:ring-sky-950/20"
 							/>
 						</Field>
 
 						<Field>
-							<FieldLabel>Password</FieldLabel>
-
+							<FieldLabel className="text-sm font-medium text-gray-700">
+								Password
+							</FieldLabel>
 							<Input
 								type="password"
-								value={form.password}
-								onChange={e =>
-									setForm({
-										...form,
-
-										password: e.target.value,
-									})
-								}
+								value={values.password}
+								onChange={e => onChange("password", e.target.value)}
 								required
+								aria-required="true"
+								className="border-gray-200 focus:border-sky-950 focus:ring-sky-950/20"
 							/>
 						</Field>
 
 						<Field>
-							<FieldLabel>Role</FieldLabel>
-
+							<FieldLabel className="text-sm font-medium text-gray-700">
+								Role
+							</FieldLabel>
 							<Select
-								value={form.roleName}
-								onValueChange={value =>
-									setForm({
-										...form,
-
-										roleName: value,
-									})
-								}
+								value={values.roleName}
+								onValueChange={(value: string) => onChange("roleName", value)}
 							>
-								<SelectTrigger>
-									<SelectValue />
+								<SelectTrigger
+									aria-label="Select user role"
+									className="border-gray-200"
+								>
+									<SelectValue placeholder="Select a role" />
 								</SelectTrigger>
-
 								<SelectContent>
 									<SelectItem value="Operations">Operations</SelectItem>
-
 									<SelectItem value="Manager">Manager</SelectItem>
-
 									<SelectItem value="Analyst">Analyst</SelectItem>
-
 									<SelectItem value="Admin">Admin</SelectItem>
 								</SelectContent>
 							</Select>
@@ -196,13 +139,18 @@ export function SignupForm() {
 
 						<Button
 							type="submit"
-							className="bg-sky-950 w-full"
+							className="w-full bg-sky-950 hover:bg-sky-900 text-white font-medium"
 						>
 							Register User
 						</Button>
 
 						{message && (
-							<p className="text-center text-red-500 mt-3">{message}</p>
+							<p
+								role="alert"
+								className="text-sm text-center text-red-500 mt-1"
+							>
+								{message}
+							</p>
 						)}
 					</FieldGroup>
 				</form>

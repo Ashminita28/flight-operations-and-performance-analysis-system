@@ -5,91 +5,89 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { useAuthStore } from "../store/auth-store";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import type { LoginFormProps } from "@/props/login-props";
 
 export function LoginForm({
+	emailRef,
+	passwordRef,
+	error,
+	onSubmit,
 	className,
-	...props
-}: React.ComponentProps<"div">) {
-	const login = useAuthStore(s => s.login);
-	const navigate = useNavigate();
-
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [error, setError] = useState("");
-
-	const handleSubmit = async (e: React.SubmitEvent) => {
-		e.preventDefault();
-		try {
-			await login(email, password);
-			const user = useAuthStore.getState().user;
-			if (user) {
-				navigate("/main-dashboard");
-			} else {
-				toast.error("Login Failed");
-				navigate("/login");
-			}
-			toast("Login Successfull!!");
-		} catch (err: any) {
-			setError(err.message || "Login failed");
-		}
-	};
-
+}: LoginFormProps) {
 	return (
-		<div
-			className={cn("flex flex-col gap-6", className)}
-			{...props}
-		>
-			<Card>
-				<CardHeader className="text-center">
-					<CardTitle className="text-xl">Welcome back</CardTitle>
+		<div className={cn("flex flex-col gap-6", className)}>
+			<Card className="border border-gray-200 shadow-sm">
+				<CardHeader className="text-center pb-4">
+					<CardTitle className="text-xl font-semibold text-gray-900">
+						Welcome back
+					</CardTitle>
+					<p className="text-sm text-gray-500 mt-1">
+						Sign in to your Fligo account
+					</p>
 				</CardHeader>
 
 				<CardContent>
-					<form onSubmit={handleSubmit}>
+					<form
+						onSubmit={onSubmit}
+						aria-label="Login form"
+					>
 						<FieldGroup>
 							<Field>
-								<FieldLabel>Email</FieldLabel>
+								<FieldLabel className="text-sm font-medium text-gray-700">
+									Email
+								</FieldLabel>
 								<Input
+									ref={emailRef}
 									type="email"
-									onChange={e => setEmail(e.target.value)}
 									required
+									aria-required="true"
+									aria-label="Email address"
+									placeholder="you@example.com"
+									className="border-gray-200 focus:border-sky-950 focus:ring-sky-950/20"
 								/>
 							</Field>
 
 							<Field>
-								<div className="flex items-center">
-									<FieldLabel>Password</FieldLabel>
-
+								<div className="flex items-center justify-between">
+									<FieldLabel className="text-sm font-medium text-gray-700">
+										Password
+									</FieldLabel>
 									<a
 										href="/forget-password"
-										className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+										className="text-xs text-sky-950 hover:underline underline-offset-4"
 									>
-										Forgot your password?
+										Forgot password?
 									</a>
 								</div>
 								<Input
+									ref={passwordRef}
 									type="password"
-									onChange={e => setPassword(e.target.value)}
 									required
+									aria-required="true"
+									aria-label="Password"
+									className="border-gray-200 focus:border-sky-950 focus:ring-sky-950/20"
 								/>
 							</Field>
 
 							<Field>
 								<Button
 									type="submit"
-									className="bg-sky-950 w-full"
+									className="w-full bg-sky-950 hover:bg-sky-900 text-white font-medium"
 								>
-									Login
+									Sign In
 								</Button>
 							</Field>
 						</FieldGroup>
 					</form>
 
-					{error && <p className="text-red-500 text-center mt-3">{error}</p>}
+					{error && (
+						<p
+							role="alert"
+							className="text-sm text-red-500 text-center mt-3"
+						>
+							{error}
+						</p>
+					)}
 				</CardContent>
 			</Card>
 		</div>

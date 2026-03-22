@@ -1,8 +1,6 @@
 "use client";
-
-import { useEffect } from "react";
+import { memo } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { useAnalyticsStore } from "@/store/analytics-store";
 import {
 	Card,
 	CardAction,
@@ -15,7 +13,6 @@ import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
-	type ChartConfig,
 } from "@/components/ui/chart";
 import {
 	Select,
@@ -25,95 +22,85 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { OnTimePerformanceChartProps } from "@/props/performance-props";
+import { formatDate, formatTooltipValue } from "@/utils/charts/date-formatter";
 
-const chartConfig = {
-	on_time_percentage: {
-		label: "On-Time Performance",
-		color: "var(--primary)",
-	},
-	total_flights: {
-		label: "Total Flights",
-		color: "var(--primary)",
-	},
-} satisfies ChartConfig;
-
-export function OnTimePerformanceChart() {
-	const {
-		onTimePerformanceData,
-		chartTimeFilter,
-		loading,
-		fetchOnTimePerformance,
-		setChartTimeFilter,
-	} = useAnalyticsStore();
-
-	useEffect(() => {
-		fetchOnTimePerformance(chartTimeFilter);
-	}, [chartTimeFilter, fetchOnTimePerformance]);
-
-	const handleFilterChange = (value: string) => {
-		setChartTimeFilter(value as any);
-	};
-
+export const OnTimePerformanceChart = memo(function OnTimePerformanceChart({
+	data,
+	loading,
+	timeFilter,
+	timeLabels,
+	chartConfig,
+	onFilterChange,
+}: OnTimePerformanceChartProps) {
 	return (
-		<Card className="@container/card">
+		<Card className="@container/card border border-gray-200 shadow-sm">
 			<CardHeader>
-				<CardTitle>On-Time Performance</CardTitle>
-				<CardDescription>
+				<CardTitle className="text-base font-semibold text-gray-900">
+					On-Time Performance
+				</CardTitle>
+				<CardDescription className="text-sm text-gray-500">
 					<span className="hidden @[540px]/card:block">
-						Flight performance trends for{" "}
-						{chartTimeFilter === "weekly"
-							? "the last week"
-							: chartTimeFilter === "monthly"
-								? "the last month"
-								: "the last year"}
+						Flight performance trends for {timeLabels.long}
 					</span>
-					<span className="@[540px]/card:hidden">
-						{chartTimeFilter === "weekly"
-							? "Last week"
-							: chartTimeFilter === "monthly"
-								? "Last month"
-								: "Last year"}
-					</span>
+					<span className="@[540px]/card:hidden">{timeLabels.short}</span>
 				</CardDescription>
 				<CardAction>
 					<ToggleGroup
 						type="single"
-						value={chartTimeFilter}
-						onValueChange={handleFilterChange}
+						value={timeFilter}
+						onValueChange={onFilterChange}
 						variant="outline"
+						aria-label="Select time range"
 						className="hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
 					>
-						<ToggleGroupItem value="weekly">Last Week</ToggleGroupItem>
-						<ToggleGroupItem value="monthly">Last Month</ToggleGroupItem>
-						<ToggleGroupItem value="yearly">Last Year</ToggleGroupItem>
+						<ToggleGroupItem
+							value="weekly"
+							className="text-sm"
+						>
+							Last Week
+						</ToggleGroupItem>
+						<ToggleGroupItem
+							value="monthly"
+							className="text-sm"
+						>
+							Last Month
+						</ToggleGroupItem>
+						<ToggleGroupItem
+							value="yearly"
+							className="text-sm"
+						>
+							Last Year
+						</ToggleGroupItem>
 					</ToggleGroup>
+
 					<Select
-						value={chartTimeFilter}
-						onValueChange={handleFilterChange}
+						value={timeFilter}
+						onValueChange={onFilterChange}
 					>
 						<SelectTrigger
-							className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
+							className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden border-gray-200 text-sm"
 							size="sm"
-							aria-label="Select a value"
+							aria-label="Select a time range"
 						>
 							<SelectValue placeholder="Last month" />
 						</SelectTrigger>
-						<SelectContent className="rounded-xl">
+						<SelectContent className="rounded-lg">
 							<SelectItem
 								value="weekly"
-								className="rounded-lg"
+								className="rounded-md text-sm"
 							>
 								Last Week
 							</SelectItem>
 							<SelectItem
 								value="monthly"
-								className="rounded-lg"
+								className="rounded-md text-sm"
 							>
 								Last Month
 							</SelectItem>
 							<SelectItem
 								value="yearly"
-								className="rounded-lg"
+								className="rounded-md text-sm"
 							>
 								Last Year
 							</SelectItem>
@@ -121,13 +108,18 @@ export function OnTimePerformanceChart() {
 					</Select>
 				</CardAction>
 			</CardHeader>
+
 			<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
 				{loading ? (
-					<div className="flex items-center justify-center h-62.5 text-muted-foreground">
+					<div
+						role="status"
+						aria-label="Loading chart data"
+						className="flex items-center justify-center h-62.5 text-sm text-gray-400"
+					>
 						Loading chart data...
 					</div>
-				) : !onTimePerformanceData || onTimePerformanceData.length === 0 ? (
-					<div className="flex items-center justify-center h-62.5 text-muted-foreground">
+				) : !data || data.length === 0 ? (
+					<div className="flex items-center justify-center h-62.5 text-sm text-gray-400">
 						No performance data available
 					</div>
 				) : (
@@ -135,7 +127,7 @@ export function OnTimePerformanceChart() {
 						config={chartConfig}
 						className="aspect-auto h-62.5 w-full"
 					>
-						<AreaChart data={onTimePerformanceData}>
+						<AreaChart data={data}>
 							<defs>
 								<linearGradient
 									id="fillPerformance"
@@ -147,45 +139,35 @@ export function OnTimePerformanceChart() {
 									<stop
 										offset="5%"
 										stopColor="var(--color-on_time_percentage)"
-										stopOpacity={0.8}
+										stopOpacity={0.2}
 									/>
 									<stop
 										offset="95%"
 										stopColor="var(--color-on_time_percentage)"
-										stopOpacity={0.1}
+										stopOpacity={0}
 									/>
 								</linearGradient>
 							</defs>
-							<CartesianGrid vertical={false} />
+							<CartesianGrid
+								vertical={false}
+								stroke="#f0f0f0"
+							/>
 							<XAxis
 								dataKey="date"
 								tickLine={false}
 								axisLine={false}
 								tickMargin={8}
 								minTickGap={32}
-								tickFormatter={value => {
-									const date = new Date(value);
-									return date.toLocaleDateString("en-US", {
-										month: "short",
-										day: "numeric",
-									});
-								}}
+								tickFormatter={formatDate}
+								tick={{ fontSize: 12, fill: "#9ca3af" }}
 							/>
 							<ChartTooltip
 								cursor={false}
 								content={
 									<ChartTooltipContent
-										labelFormatter={value => {
-											return new Date(value).toLocaleDateString("en-US", {
-												month: "short",
-												day: "numeric",
-											});
-										}}
+										labelFormatter={formatDate}
 										indicator="dot"
-										formatter={value => {
-											const num = Number(value);
-											return `${num.toFixed(2)}%`;
-										}}
+										formatter={formatTooltipValue}
 									/>
 								}
 							/>
@@ -194,6 +176,7 @@ export function OnTimePerformanceChart() {
 								type="natural"
 								fill="url(#fillPerformance)"
 								stroke="var(--color-on_time_percentage)"
+								strokeWidth={2}
 								name="On-Time %"
 							/>
 						</AreaChart>
@@ -202,4 +185,4 @@ export function OnTimePerformanceChart() {
 			</CardContent>
 		</Card>
 	);
-}
+});
